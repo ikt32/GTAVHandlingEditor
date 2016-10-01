@@ -1,3 +1,12 @@
+/*
+ * GTA V Real Time Handling editor
+ * This plugin is intended for help with creating handling mods, preventing
+ * the need to restart the game to test each change to each parameter. As such
+ * this plugin is not intended for normal usage during gameplay.
+ * 
+ * These offsets are based on game version VER_1_0_791_2_STEAM
+ */
+
 #include "script.h"
 #include "NativeMemory.hpp"
 #include <sstream>
@@ -13,6 +22,9 @@ Ped playerPed;
 Vehicle vehicle;
 Hash model;
 MemoryAccess mem;
+
+int handlingOffset = 0x830;
+
 
 class Logger {
 public:
@@ -60,40 +72,95 @@ void showText(float x, float y, float scale, const char* text) {
 	UI::_DRAW_TEXT(x, y);
 }
 
+/*
+ * Getters
+ */
+
+// 1.0f-(value/2.0f)
 float get_fBrakeBiasFront(Vehicle veh) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int handlingOffset = 0x830;
 	int valueOffset = 0x78;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	float value = *reinterpret_cast<float *>(handlingPtr+valueOffset);
 	return 1.0f-(value/2.0f);
 }
 
+// 1.0f-(value/2.0f)
 float get_fTractionBiasFront(Vehicle veh) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int handlingOffset = 0x830;
 	int valueOffset = 0xB4;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
 	return 1.0f - (value / 2.0f);
 }
 
+float get_fDriveInertia(Vehicle veh) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
+	int valueOffset = 0x54;
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
+	return value;
+}
+
+float get_fBrakeForce(Vehicle veh) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
+	int valueOffset = 0x6C;
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
+	return value;
+}
+
+// value*10000.0f
+float get_fInitialDragCoeff(Vehicle veh) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
+	int valueOffset = 0x10;
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
+	return value*10000.0f;
+}
+
+/*
+ * Setters
+ */
+
 void set_fBrakeBiasFront(Vehicle veh, float val) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int handlingOffset = 0x830;
 	int valueOffset = 0x78;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-
 	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
 }
 
 void set_fTractionBiasFront(Vehicle veh, float val) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int handlingOffset = 0x830;
 	int valueOffset = 0xB4;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
 }
+
+void set_fDriveInertia(Vehicle veh, float val) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
+	int valueOffset = 0x54;
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
+}
+
+void set_fBrakeForce(Vehicle veh, float val) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
+	int valueOffset = 0x6C;
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
+}
+
+void set_fInitialDriveDragCoeff(Vehicle veh, float val) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
+	int valueOffset = 0x10;
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
+}
+
+/*
+ * main loop
+ */
 
 void update()
 {
@@ -136,16 +203,44 @@ void update()
 		logger.Write(vehName.str());
 		logger.Write("fBrakeBiasFront = " + std::to_string(get_fBrakeBiasFront(vehicle)));
 		logger.Write("fTractionBiasFront = " + std::to_string(get_fTractionBiasFront(vehicle)));
+		logger.Write("fDriveInertia = " + std::to_string(get_fDriveInertia(vehicle)));
+		logger.Write("fBrakeForce = " + std::to_string(get_fBrakeForce(vehicle)));
+		logger.Write("fInitialDriveDragCoeff = " + std::to_string(get_fInitialDragCoeff(vehicle)));
 		logger.Write("------------------------------");
 	}
 
 	if (IsKeyJustUp(readKey)) {
 
-		float fBrakeBiasFront = 2.0f*(1.0f-(GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1000000, SETTINGSFILE) / 1000000.0f));
-		float fTractionBiasFront = 2.0f*(1.0f-(GetPrivateProfileIntA("handling", "fTractionBiasFront", -1000000, SETTINGSFILE) / 1000000.0f));
+		int raw_fBrakeBiasFront 	= GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1337, SETTINGSFILE) 	;
+		int raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE)  ;
+		int raw_fDriveInertia		= GetPrivateProfileIntA("handling", "fDriveInertia", -1337, SETTINGSFILE)		;
+		int raw_fBrakeForce			= GetPrivateProfileIntA("handling", "fBrakeForce", -1337, SETTINGSFILE)			;
+		int raw_fInitialDragCoeff	= GetPrivateProfileIntA("handling", "fInitialDriveCoeff", -1337, SETTINGSFILE)  ;
 
-		set_fBrakeBiasFront(vehicle, fBrakeBiasFront);
-		set_fTractionBiasFront(vehicle, fTractionBiasFront);
+		if (raw_fBrakeBiasFront != -1337) {
+			float fBrakeBiasFront = 2.0f*(1.0f - (raw_fBrakeBiasFront / 1000000.0f));
+			set_fBrakeBiasFront(vehicle, fBrakeBiasFront);
+		}
+		
+		if (raw_fTractionBiasFront != -1337) {
+			float fTractionBiasFront = 2.0f*(1.0f - (raw_fTractionBiasFront / 1000000.0f));
+			set_fTractionBiasFront(vehicle, fTractionBiasFront);
+		}
+		
+		if (raw_fDriveInertia != -1337) {
+			float fDriveInertia = raw_fDriveInertia / 1000000.0f;
+			set_fDriveInertia(vehicle, fDriveInertia);
+		}
+		
+		if (raw_fBrakeForce != -1337) {
+			float fBrakeForce = raw_fBrakeForce / 1000000.0f;
+			set_fBrakeForce(vehicle, fBrakeForce);
+		}
+
+		if (raw_fInitialDragCoeff != -1337) {
+			float fInitialDriveCoeff = (raw_fInitialDragCoeff / 1000000.0f) / 10000.0f;
+			set_fInitialDriveDragCoeff(vehicle, fInitialDriveCoeff);
+		}
 	}
 
 }
