@@ -27,6 +27,81 @@ VehicleData vehData;
 
 int handlingOffset = 0x830;
 
+struct vecOffset {
+	int X;
+	int Y;
+	int Z;
+};
+
+const struct HandlingOffset {
+	
+	int fMass = 0xC;
+	
+	// *10000.0f!
+	int fInitialDragCoeff = 0x10; 
+	
+	vecOffset vecCentreOfMass = {
+		0x20, 0x24, 0x28
+	};
+	vecOffset vecInteriaMultiplier = {
+		0x30, 0x34, 0x38
+	};
+	int fPercentSubmerged = 0x40;
+	int fDriveBiasFront = 0x4C;
+	int nInitialDriveGears = 0x50;
+	int fDriveInertia = 0x54;
+	int fClutchChangeRateScaleUpShift = 0x58;
+	int fClutchChangeRateScaleDownShift = 0x5C;
+	int fInitialDriveForce = 0x60;
+	int fInitialDriveMaxFlatVel = 0x64;
+	//int fSteeringLock = 0x68; // GUESSING
+	
+	// NORMAL/VERIFIED
+	int fBrakeForce = 0x6C;
+	
+	// 1.0f - (value / 2.0f)
+	int fBrakeBiasFront = 0x78;
+	int fHandBrakeForce = 0x7C;
+	int fSteeringLock = 0x80; // GUESSING
+	int fTractionCurveMax = 0x88;
+	//int m_fAcceleration = 0x8C; // ???
+
+	int fTractionCurveMin = 0x90;
+	//int fInitialDragCoeff = 0x94; //WRONG?
+	int m_fGrip = 0x9C;
+	int fTractionSpringDeltaMax = 0xA0;
+	int fLowSpeedTractionLostMult = 0xA8;
+	int fCamberStiffness = 0xAC; // GUESSING
+
+	// 1.0f - (value / 2.0f)
+	int fTractionBiasFront = 0xB4;
+
+	int fTractionLossMult = 0xB8;	// VERIFIED
+	int fSuspensionForce = 0xBC; // VERIFIED
+	int fSuspensionCompDamp = 0xC0;
+	int fSuspensionReboundDamp = 0xC4;
+	int fSuspensionUpperLimit = 0xC8;
+	int fSuspensionLowerLimit = 0xCC;
+	int fAntiRollBarForce = 0xDC;
+	
+	int fRollCentreHeightFront = 0xE8; // VERIFIED
+	int fRollCentreHeightRear = 0xEC; // VERIFIED
+	int fCollisionDamageMult = 0xF0; // VERIFIED
+	int fWeaponDamageMult = 0xF4; // VERIFIED
+	int fDeformationDamageMult = 0xF8; // VERIFIED
+	int fEngineDamageMult = 0xFC; // VERIFIED
+	int fPetrolTankVolume = 0x100; // VERIFIED
+	int fOilVolume = 0x104; // VERIFIED
+	int fSeatOffsetDistX = 0x10C;
+	int fSeatOffsetDistY = 0x110; // VERIFIED
+	int fSeatOffsetDistZ = 0x114;
+	int dwMonetaryValue = 0x118; // VERIFIED
+	int dwStrModelFlags = 0x11C; // VERIFIED
+	int dwStrHandlingFlags = 0x120;
+	int dwStrDamageFlags = 0x124;
+	int dwAIHandlingHash = 0x134; // VERIFIED
+} hOffsets = {};
+
 
 class Logger {
 public:
@@ -74,90 +149,51 @@ void showText(float x, float y, float scale, const char* text) {
 	UI::_DRAW_TEXT(x, y);
 }
 
-/*
- * Getters
- */
-
-// 1.0f-(value/2.0f)
-float get_fBrakeBiasFront(Vehicle veh) {
+// 1.0f - (value / 2.0f)
+float getHandlingValueInvHalf(Vehicle veh, int valueOffset) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x78;
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	float value = *reinterpret_cast<float *>(handlingPtr+valueOffset);
-	return 1.0f-(value/2.0f);
-}
-
-// 1.0f-(value/2.0f)
-float get_fTractionBiasFront(Vehicle veh) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0xB4;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
 	return 1.0f - (value / 2.0f);
 }
 
-float get_fDriveInertia(Vehicle veh) {
+// no change between handling.meta and memory
+float getHandlingValue(Vehicle veh, int valueOffset) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x54;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
-	return value;
+	return *reinterpret_cast<float *>(handlingPtr + valueOffset);
+	//return 1.0f - (value / 2.0f);
 }
 
-float get_fBrakeForce(Vehicle veh) {
+// *10000.0f
+float getHandlingValueMult10000(Vehicle veh, int valueOffset) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x6C;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
-	return value;
-}
-
-// value*10000.0f
-float get_fInitialDragCoeff(Vehicle veh) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x10;
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
-	return value*10000.0f;
+	return *reinterpret_cast<float *>(handlingPtr + valueOffset) * 10000.0f;
+	//return 1.0f - (value / 2.0f);
 }
 
 /*
  * Setters
  */
 
-void set_fBrakeBiasFront(Vehicle veh, float val) {
+void setHandlingValueInvHalf(Vehicle veh, int valueOffset, float val) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x78;
+	float invHalf = 2.0f*(1.0f - (val));
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	*reinterpret_cast<float *>(handlingPtr + valueOffset) = invHalf;
+}
+
+void setHandlingValue(Vehicle veh, int valueOffset, float val) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
 }
 
-void set_fTractionBiasFront(Vehicle veh, float val) {
+void setHandlingValueMult10000(Vehicle veh, int valueOffset, float val) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0xB4;
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
-}
-
-void set_fDriveInertia(Vehicle veh, float val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x54;
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
-}
-
-void set_fBrakeForce(Vehicle veh, float val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x6C;
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
-}
-
-void set_fInitialDriveDragCoeff(Vehicle veh, float val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	int valueOffset = 0x10;
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
+	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val/10000.0f;
 }
 
 /*
@@ -248,45 +284,40 @@ void update()
 		vehName << "VEHICLE: " << VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(model);
 		Logger logger(LOGFILE);
 		logger.Write(vehName.str());
-		logger.Write("fBrakeBiasFront = " + std::to_string(get_fBrakeBiasFront(vehicle)));
-		logger.Write("fTractionBiasFront = " + std::to_string(get_fTractionBiasFront(vehicle)));
-		logger.Write("fDriveInertia = " + std::to_string(get_fDriveInertia(vehicle)));
-		logger.Write("fBrakeForce = " + std::to_string(get_fBrakeForce(vehicle)));
-		logger.Write("fInitialDriveDragCoeff = " + std::to_string(get_fInitialDragCoeff(vehicle)));
+		logger.Write("fBrakeBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront)));
+		logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront)));
+		logger.Write("fDriveInertia = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDriveInertia)));
+		logger.Write("fBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fBrakeForce)));
+		logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff)));
 		logger.Write("------------------------------");
 	}
 
 	if (IsKeyJustUp(readKey)) {
 
-		int raw_fBrakeBiasFront 	= GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1337, SETTINGSFILE) 	;
-		int raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE)  ;
-		int raw_fDriveInertia		= GetPrivateProfileIntA("handling", "fDriveInertia", -1337, SETTINGSFILE)		;
-		int raw_fBrakeForce			= GetPrivateProfileIntA("handling", "fBrakeForce", -1337, SETTINGSFILE)			;
-		int raw_fInitialDragCoeff	= GetPrivateProfileIntA("handling", "fInitialDriveCoeff", -1337, SETTINGSFILE)  ;
+		float raw_fBrakeBiasFront 	= GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1337, SETTINGSFILE) / 1000000.0f;
+		float raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE) / 1000000.0f;
+		float raw_fDriveInertia		= GetPrivateProfileIntA("handling", "fDriveInertia", -1337, SETTINGSFILE) / 1000000.0f;
+		float raw_fBrakeForce			= GetPrivateProfileIntA("handling", "fBrakeForce", -1337, SETTINGSFILE) / 1000000.0f;
+		float raw_fInitialDragCoeff	= GetPrivateProfileIntA("handling", "fInitialDragCoeff", -1337, SETTINGSFILE) / 1000000.0f;
 
 		if (raw_fBrakeBiasFront != -1337) {
-			float fBrakeBiasFront = 2.0f*(1.0f - (raw_fBrakeBiasFront / 1000000.0f));
-			set_fBrakeBiasFront(vehicle, fBrakeBiasFront);
+			setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, raw_fBrakeBiasFront);
 		}
 		
 		if (raw_fTractionBiasFront != -1337) {
-			float fTractionBiasFront = 2.0f*(1.0f - (raw_fTractionBiasFront / 1000000.0f));
-			set_fTractionBiasFront(vehicle, fTractionBiasFront);
+			setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, raw_fTractionBiasFront);
 		}
 		
 		if (raw_fDriveInertia != -1337) {
-			float fDriveInertia = raw_fDriveInertia / 1000000.0f;
-			set_fDriveInertia(vehicle, fDriveInertia);
+			setHandlingValue(vehicle, hOffsets.fDriveInertia, raw_fDriveInertia);
 		}
 		
 		if (raw_fBrakeForce != -1337) {
-			float fBrakeForce = raw_fBrakeForce / 1000000.0f;
-			set_fBrakeForce(vehicle, fBrakeForce);
+			setHandlingValue(vehicle, hOffsets.fBrakeForce, raw_fBrakeForce);
 		}
 
 		if (raw_fInitialDragCoeff != -1337) {
-			float fInitialDriveCoeff = (raw_fInitialDragCoeff / 1000000.0f) / 10000.0f;
-			set_fInitialDriveDragCoeff(vehicle, fInitialDriveCoeff);
+			setHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff, raw_fInitialDragCoeff);
 		}
 	}
 
