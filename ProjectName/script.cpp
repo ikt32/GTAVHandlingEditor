@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <fstream>
 #include "VehicleData.h"
+#include "../inih/cpp/INIReader.h"
 
 #define SETTINGSFILE "./RTHandlingEditor.ini"
 #define LOGFILE "./RTHandlingEditor.log"
@@ -49,7 +50,7 @@ const struct HandlingOffset {
 	int fPercentSubmerged = 0x40; // VERIFIED
 
 	// 2*meta
-	//int fDriveBiasFront = 0x48; // No? 0x48?
+	int fDriveBiasFront_2 = 0x48; // No? 0x48?
 	
 	// 2*(1.0-meta)
 	int fDriveBiasFront = 0x4C;
@@ -67,7 +68,7 @@ const struct HandlingOffset {
 	int fBrakeForce = 0x6C;
 	
 	// 2*meta
-	//int fBrakeBiasFront = 0x74;
+	int fBrakeBiasFront_2 = 0x74;
 
 	// 2*(1.0-meta)
 	int fBrakeBiasFront = 0x78;
@@ -91,7 +92,7 @@ const struct HandlingOffset {
 	int fCamberStiffness = 0xAC; // VERIFIED
 
 	// meta*2
-	// int fTractionBiasFront = 0xB0
+	int fTractionBiasFront_2 = 0xB0;
 
 	// 1.0f - (value / 2.0f)
 	int fTractionBiasFront = 0xB4;
@@ -105,7 +106,7 @@ const struct HandlingOffset {
 	int fSuspensionRaise = 0xD0; // VERIFIED
 
 	// meta*2
-	// int fSuspensionBiasFront = 0xD4; // VERIFIED
+	int fSuspensionBiasFront_2 = 0xD4; // VERIFIED
 
 	// 1.0-(meta/2)
 	int fSuspensionBiasFront = 0xD8; // VERIFIED
@@ -113,7 +114,7 @@ const struct HandlingOffset {
 	int fAntiRollBarForce = 0xDC; // VERIFIED
 	
 	// meta*2
-	// int fAntiRollBarBiasFront = 0xE0;
+	int fAntiRollBarBiasFront_2 = 0xE0;
 	
 	// 1.0-(meta/2)
 	int fAntiRollBarBiasFront = 0xE4;
@@ -345,7 +346,7 @@ void update()
 		Logger logger(LOGFILE);
 		logger.Write(vehName.str());
 		logger.Write("fMass = " + std::to_string(getHandlingValue(vehicle, hOffsets.fMass)));
-		logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff)));
+		logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff))); // * 10000
 		logger.Write("fPercentSubmerged = " + std::to_string(getHandlingValue(vehicle, hOffsets.fPercentSubmerged)));
 
 		logger.Write("vecCentreOfMassOffsetX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.X)));
@@ -356,9 +357,9 @@ void update()
 		logger.Write("vecInertiaMultiplierY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y)));
 		logger.Write("vecInertiaMultiplierZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z)));
 
-		logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront)));
+		logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront))); // 1.0f - (val / 2.0f)
 
-		logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValueInt(vehicle, hOffsets.nInitialDriveGears)));
+		logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValueInt(vehicle, hOffsets.nInitialDriveGears))); // int
 		logger.Write("fInitialDriveForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveForce)));
 		logger.Write("fDriveInertia = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDriveInertia)));
 		logger.Write("fClutchChangeRateScaleUpShift = " + std::to_string(getHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift)));
@@ -366,7 +367,7 @@ void update()
 		logger.Write("fInitialDriveMaxFlatVel = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel)*3.6f)); // m/s -> kph
 		
 		logger.Write("fBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fBrakeForce)));
-		logger.Write("fBrakeBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront)));
+		logger.Write("fBrakeBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront))); // 1.0f - (val / 2.0f)
 		logger.Write("fHandBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fHandBrakeForce)));
 		
 		logger.Write("fSteeringLock = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSteeringLock)*(180.0f / 3.14159265359f))); // rad -> deg
@@ -376,7 +377,7 @@ void update()
 		logger.Write("fTractionSpringDeltaMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax)));
 		logger.Write("fLowSpeedTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult)));
 		logger.Write("fCamberStiffness = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCamberStiffness)));
-		logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront)));
+		logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront))); // 1.0f - (val / 2.0f)
 		logger.Write("fTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionLossMult)));
 		
 		logger.Write("fSuspensionForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionForce)));
@@ -385,9 +386,9 @@ void update()
 		logger.Write("fSuspensionUpperLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit)));
 		logger.Write("fSuspensionLowerLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit)));
 		logger.Write("fSuspensionRaise = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionRaise)));
-		logger.Write("fSuspensionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront)));
+		logger.Write("fSuspensionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront))); // 1.0f - (val / 2.0f)
 		logger.Write("fAntiRollBarForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fAntiRollBarForce)));
-		logger.Write("fAntiRollBarBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront)));
+		logger.Write("fAntiRollBarBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront))); // 1.0f - (val / 2.0f)
 		logger.Write("fRollCentreHeightFront = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightFront)));
 		logger.Write("fRollCentreHeightRear = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightRear)));
 		logger.Write("fCollisionDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCollisionDamageMult)));
@@ -403,6 +404,65 @@ void update()
 	}
 
 	if (IsKeyJustUp(readKey)) {
+		INIReader reader(SETTINGSFILE);
+		Logger logger(LOGFILE);
+
+		if (reader.ParseError() < 0) {
+			logger.Write("Can't load RTHandlingEditor.ini");
+			return;
+		}
+		
+		float fMass = reader.GetReal("handling","fMass",-1337);
+		float fInitialDragCoeff = reader.GetReal("handling", "fInitialDragCoeff", -1337);
+		float fPercentSubmerged = reader.GetReal("handling", "fPercentSubmerged", -1337);
+		float vecCentreOfMassOffsetX = reader.GetReal("handling", "vecCentreOfMassOffsetX", -1337);
+		float vecCentreOfMassOffsetY = reader.GetReal("handling", "vecCentreOfMassOffsetY", -1337);
+		float vecCentreOfMassOffsetZ = reader.GetReal("handling", "vecCentreOfMassOffsetZ", -1337);
+		float vecInertiaMultiplierX = reader.GetReal("handling", "vecInertiaMultiplierX", -1337);
+		float vecInertiaMultiplierY = reader.GetReal("handling", "vecInertiaMultiplierY", -1337);
+		float vecInertiaMultiplierZ = reader.GetReal("handling", "vecInertiaMultiplierZ", -1337);
+		float fDriveBiasFront = reader.GetReal("handling", "fDriveBiasFront", -1337);
+		int   nInitialDriveGears = reader.GetInteger("handling", "nInitialDriveGears", -1337);
+		float fInitialDriveForce = reader.GetReal("handling", "fInitialDriveForce", -1337);
+		float fDriveInertia = reader.GetReal("handling", "fDriveInertia", -1337);
+		float fClutchChangeRateScaleUpShift = reader.GetReal("handling", "fClutchChangeRateScaleUpShift", -1337);
+		float fClutchChangeRateScaleDownShift = reader.GetReal("handling", "fClutchChangeRateScaleDownShift", -1337);
+		float fInitialDriveMaxFlatVel = reader.GetReal("handling", "fInitialDriveMaxFlatVel", -1337)/3.6f; // kph -> m/s
+		float fBrakeForce = reader.GetReal("handling", "fBrakeForce", -1337);
+		float fBrakeBiasFront = reader.GetReal("handling", "fBrakeBiasFront", -1337);
+		float fHandBrakeForce = reader.GetReal("handling", "fHandBrakeForce", -1337);
+		float fSteeringLock = reader.GetReal("handling", "fSteeringLock", -1337) * (3.14159265359f / 180.0f); // deg -> rad
+		float fTractionCurveMax = reader.GetReal("handling", "fTractionCurveMax", -1337);
+		float fTractionCurveMin = reader.GetReal("handling", "fTractionCurveMin", -1337);
+		float fTractionCurveLateral = reader.GetReal("handling", "fTractionCurveLateral", -1337) * (3.14159265359f / 180.0f); // deg -> rad
+		float fTractionSpringDeltaMax = reader.GetReal("handling", "fTractionSpringDeltaMax", -1337);
+		float fLowSpeedTractionLossMult = reader.GetReal("handling", "fLowSpeedTractionLossMult", -1337);
+		float fCamberStiffness = reader.GetReal("handling", "fCamberStiffness", -1337);
+		float fTractionBiasFront = reader.GetReal("handling", "fTractionBiasFront", -1337);
+		float fTractionLossMult = reader.GetReal("handling", "fTractionLossMult", -1337);
+		float fSuspensionForce = reader.GetReal("handling", "fSuspensionForce", -1337);
+		float fSuspensionCompDamp = reader.GetReal("handling", "fSuspensionCompDamp", -1337);
+		float fSuspensionReboundDamp = reader.GetReal("handling", "fSuspensionReboundDamp", -1337);
+		float fSuspensionUpperLimit = reader.GetReal("handling", "fSuspensionUpperLimit", -1337);
+		float fSuspensionLowerLimit = reader.GetReal("handling", "fSuspensionLowerLimit", -1337);
+		float fSuspensionRaise = reader.GetReal("handling", "fSuspensionRaise", -1337);
+		float fSuspensionBiasFront = reader.GetReal("handling", "fSuspensionBiasFront", -1337);
+		float fAntiRollBarForce = reader.GetReal("handling", "fAntiRollBarForce", -1337);
+		float fAntiRollBarBiasFront = reader.GetReal("handling", "fAntiRollBarBiasFront", -1337);
+		float fRollCentreHeightFront = reader.GetReal("handling", "fRollCentreHeightFront", -1337);
+		float fRollCentreHeightRear = reader.GetReal("handling", "fRollCentreHeightRear", -1337);
+		float fCollisionDamageMult = reader.GetReal("handling", "fCollisionDamageMult", -1337);
+		float fWeaponDamageMult = reader.GetReal("handling", "fWeaponDamageMult", -1337);
+		float fDeformationDamageMult = reader.GetReal("handling", "fDeformationDamageMult", -1337);
+		float fEngineDamageMult = reader.GetReal("handling", "fEngineDamageMult", -1337);
+		float fPetrolTankVolume = reader.GetReal("handling", "fPetrolTankVolume", -1337);
+		float fOilVolume = reader.GetReal("handling", "fOilVolume", -1337);
+		float fSeatOffsetDistX = reader.GetReal("handling", "fSeatOffsetDistX", -1337);
+		float fSeatOffsetDistY = reader.GetReal("handling", "fSeatOffsetDistY", -1337);
+		float fSeatOffsetDistZ = reader.GetReal("handling", "fSeatOffsetDistZ", -1337);
+	}
+
+	if (0) {
 
 		int raw_fBrakeBiasFront 	= GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1337, SETTINGSFILE);
 		int raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE);

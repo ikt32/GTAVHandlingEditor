@@ -141,6 +141,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\inih\cpp\INIReader.cpp" />
+    <ClCompile Include="..\inih\ini.c" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NativeMemory.cpp" />
@@ -152,6 +154,8 @@
     <ClInclude Include="..\..\ScriptHookV_SDK\inc\main.h" />
     <ClInclude Include="..\..\ScriptHookV_SDK\inc\natives.h" />
     <ClInclude Include="..\..\ScriptHookV_SDK\inc\types.h" />
+    <ClInclude Include="..\inih\cpp\INIReader.h" />
+    <ClInclude Include="..\inih\ini.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="NativeMemory.hpp" />
     <ClInclude Include="script.h" />

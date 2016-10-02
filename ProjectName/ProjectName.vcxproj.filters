@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="script.cpp" />
+    <ClCompile Include="..\inih\ini.c">
+      <Filter>inih</Filter>
+    </ClCompile>
+    <ClCompile Include="..\inih\cpp\INIReader.cpp">
+      <Filter>inih</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\enums.h" />
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\main.h" />
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\natives.h" />
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\types.h" />
+    <ClInclude Include="script.h" />
+    <ClInclude Include="..\inih\ini.h">
+      <Filter>inih</Filter>
+    </ClInclude>
+    <ClInclude Include="..\inih\cpp\INIReader.h">
+      <Filter>inih</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="inih">
+      <UniqueIdentifier>{a0640629-34fe-4476-9302-111b2b4c0223}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
