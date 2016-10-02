@@ -35,71 +35,100 @@ struct vecOffset {
 
 const struct HandlingOffset {
 	
-	int fMass = 0xC;
+	int fMass = 0xC; // VERIFIED
 	
 	// *10000.0f!
-	int fInitialDragCoeff = 0x10; 
+	int fInitialDragCoeff = 0x10;  // VERIFIED
 	
-	vecOffset vecCentreOfMass = {
+	vecOffset vecCentreOfMass = { // VERIFIED
 		0x20, 0x24, 0x28
 	};
-	vecOffset vecInteriaMultiplier = {
+	vecOffset vecInteriaMultiplier = { // VERIFIED
 		0x30, 0x34, 0x38
 	};
-	int fPercentSubmerged = 0x40;
-	int fDriveBiasFront = 0x4C;
-	int nInitialDriveGears = 0x50;
-	int fDriveInertia = 0x54;
-	int fClutchChangeRateScaleUpShift = 0x58;
-	int fClutchChangeRateScaleDownShift = 0x5C;
-	int fInitialDriveForce = 0x60;
-	int fInitialDriveMaxFlatVel = 0x64;
-	//int fSteeringLock = 0x68; // GUESSING
+	int fPercentSubmerged = 0x40; // VERIFIED
+
+	// 2*meta
+	int fDriveBiasFront = 0x48; // No? 0x48?
+	
+	// 2*(1.0-meta)
+	// int fDriveBiasFront = 0x4C
+	
+	int nInitialDriveGears = 0x50; // VERIFIED
+	int fDriveInertia = 0x54; // VERIFIED
+	int fClutchChangeRateScaleUpShift = 0x58; // VERIFIED
+	int fClutchChangeRateScaleDownShift = 0x5C; // VERIFIED
+	int fInitialDriveForce = 0x60; // VERIFIED
+	
+   //int fInitialDriveMaxFlatVel = 0x64; // meta/3 // doesn't seem to read changes
+	int fInitialDriveMaxFlatVel = 0x68; // meta/3.6 (kph -> m/s)
 	
 	// NORMAL/VERIFIED
 	int fBrakeForce = 0x6C;
 	
-	// 1.0f - (value / 2.0f)
+	// 2*meta
+	//int fBrakeBiasFront = 0x74;
+
+	// 2*(1.0-meta)
 	int fBrakeBiasFront = 0x78;
-	int fHandBrakeForce = 0x7C;
-	int fSteeringLock = 0x80; // GUESSING
-	int fTractionCurveMax = 0x88;
+
+
+	int fHandBrakeForce = 0x7C; // VERIFIED
+
+	int fSteeringLock = 0x80; // (meta*pi)/180 (degrees -> radians), for inner wheel
+	
+	int fTractionCurveMax = 0x88; // VERIFIED
 	//int m_fAcceleration = 0x8C; // ???
 
-	int fTractionCurveMin = 0x90;
+	int fTractionCurveMin = 0x90; // VERIFIED
 	//int fInitialDragCoeff = 0x94; //WRONG?
-	int m_fGrip = 0x9C;
-	int fTractionSpringDeltaMax = 0xA0;
-	int fLowSpeedTractionLostMult = 0xA8;
-	int fCamberStiffness = 0xAC; // GUESSING
+	//int m_fGrip = 0x9C; // lateral grip?
+
+	int fTractionSpringDeltaMax = 0xA0; // VERIFIED
+	int fLowSpeedTractionLostMult = 0xA8; // VERIFIED
+	int fCamberStiffness = 0xAC; // VERIFIED
+
+	// meta*2
+	// int fTractionBiasFront = 0xB0
 
 	// 1.0f - (value / 2.0f)
 	int fTractionBiasFront = 0xB4;
 
 	int fTractionLossMult = 0xB8;	// VERIFIED
 	int fSuspensionForce = 0xBC; // VERIFIED
-	int fSuspensionCompDamp = 0xC0;
-	int fSuspensionReboundDamp = 0xC4;
-	int fSuspensionUpperLimit = 0xC8;
-	int fSuspensionLowerLimit = 0xCC;
-	int fAntiRollBarForce = 0xDC;
-	
+	int fSuspensionCompDamp = 0xC0; // VERIFIED
+	int fSuspensionReboundDamp = 0xC4; // VERIFIED
+	int fSuspensionUpperLimit = 0xC8; // VERIFIED
+	int fSuspensionLowerLimit = 0xCC; // VERIFIED
+	int fSuspensionRaise = 0xD0; // VERIFIED
+
+	// meta*2
+	int fSuspensionBiasFront = 0xD4; // VERIFIED
+
+	// 1.0-(meta/2)
+	//int fSuspensionBiasFront = 0xD8; // VERIFIED
+
+	int fAntiRollBarForce = 0xDC; // VERIFIED
 	int fRollCentreHeightFront = 0xE8; // VERIFIED
 	int fRollCentreHeightRear = 0xEC; // VERIFIED
+
 	int fCollisionDamageMult = 0xF0; // VERIFIED
 	int fWeaponDamageMult = 0xF4; // VERIFIED
 	int fDeformationDamageMult = 0xF8; // VERIFIED
 	int fEngineDamageMult = 0xFC; // VERIFIED
+	
 	int fPetrolTankVolume = 0x100; // VERIFIED
 	int fOilVolume = 0x104; // VERIFIED
-	int fSeatOffsetDistX = 0x10C;
+	
+	int fSeatOffsetDistX = 0x10C; // VERIFIED
 	int fSeatOffsetDistY = 0x110; // VERIFIED
-	int fSeatOffsetDistZ = 0x114;
+	int fSeatOffsetDistZ = 0x114; // VERIFIED
+
 	int dwMonetaryValue = 0x118; // VERIFIED
 	int dwStrModelFlags = 0x11C; // VERIFIED
-	int dwStrHandlingFlags = 0x120;
-	int dwStrDamageFlags = 0x124;
-	int dwAIHandlingHash = 0x134; // VERIFIED
+	int dwStrHandlingFlags = 0x120; // VERIFIED
+	int dwStrDamageFlags = 0x124; // VERIFIED
+	//int dwAIHandlingHash = 0x134; // VERIFIED ???
 } hOffsets = {};
 
 
@@ -196,9 +225,39 @@ void setHandlingValueMult10000(Vehicle veh, int valueOffset, float val) {
 	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val/10000.0f;
 }
 
+void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, float yPos) {
+	std::stringstream ssVRawY;
+	ssVRawY << "velY = " << velocities.y;
+	showText(xPos, yPos, 0.4f, ssVRawY.str().c_str());
+
+	std::stringstream ssVRawX;
+	ssVRawX << "velX = " << velocities.x;
+	showText(xPos, yPos+0.025f, 0.4f, ssVRawX.str().c_str());
+
+	std::stringstream ssAccelAvgY;
+	ssAccelAvgY << "avgAY = " << accelValsAvg.y;
+	showText(xPos, yPos+0.050f, 0.4f, ssAccelAvgY.str().c_str());
+
+	std::stringstream ssAccelAvgX;
+	ssAccelAvgX << "avgAX = " << accelValsAvg.x;
+	showText(xPos, yPos+0.075f, 0.4f, ssAccelAvgX.str().c_str());
+
+	std::stringstream ssRotVal;
+	ssRotVal << "rotZ = " << vehData.RotationVelocity.z;
+	showText(xPos, yPos+0.100f, 0.4f, ssRotVal.str().c_str());
+
+	std::stringstream ssGForceL;
+	ssGForceL << "G-Force X = " << (vehData.RotationVelocity.z*vehData.Velocity) / 9.81f;
+	showText(xPos, yPos+0.125f, 0.4f, ssGForceL.str().c_str());
+
+	std::stringstream ssGForceY;
+	ssGForceY << "G-Force Y = " << (accelValsAvg.y) / 9.81f;
+	showText(xPos, yPos+0.150f, 0.4f, ssGForceY.str().c_str());
+}
+
 /*
- * main loop
- */
+* main loop
+*/
 
 void update()
 {
@@ -208,6 +267,9 @@ void update()
 
 	GetPrivateProfileStringA("key", "log", "L", kbKeyBuffer, 24, SETTINGSFILE);
 	int logKey = str2key(kbKeyBuffer);
+
+	float posX = GetPrivateProfileIntA("util", "infox", 1, SETTINGSFILE)/100.0f;
+	float posY = GetPrivateProfileIntA("util", "infoy", 30, SETTINGSFILE)/100.0f;
 	
 	player = PLAYER::PLAYER_ID();
 	playerPed = PLAYER::PLAYER_PED_ID();
@@ -239,33 +301,7 @@ void update()
 	ssAccelRawX << "rawAX = " << accelVals.x;
 	showText(0.01f, 0.325f, 0.4f, ssAccelRawX.str().c_str());*/
 
-	std::stringstream ssVRawY;
-	ssVRawY << "velY = " << velocities.y;
-	showText(0.01f, 0.300f, 0.4f, ssVRawY.str().c_str());
-
-	std::stringstream ssVRawX;
-	ssVRawX << "velX = " << velocities.x;
-	showText(0.01f, 0.325f, 0.4f, ssVRawX.str().c_str());
-
-	std::stringstream ssAccelAvgY;
-	ssAccelAvgY << "avgAY = " << accelValsAvg.y;
-	showText(0.01f, 0.350f, 0.4f, ssAccelAvgY.str().c_str());
-
-	std::stringstream ssAccelAvgX;
-	ssAccelAvgX << "avgAX = " << accelValsAvg.x;
-	showText(0.01f, 0.375f, 0.4f, ssAccelAvgX.str().c_str());
-
-	std::stringstream ssRotVal;
-	ssRotVal << "rotZ = " << vehData.RotationVelocity.z;
-	showText(0.01f, 0.400f, 0.4f, ssRotVal.str().c_str());
-
-	std::stringstream ssGForceL;
-	ssGForceL << "G-Force X = " << (vehData.RotationVelocity.z*vehData.Velocity) / 9.81f;
-	showText(0.01f, 0.425, 0.4f, ssGForceL.str().c_str());
-
-	std::stringstream ssGForceY;
-	ssGForceY << "G-Force Y = " << (accelValsAvg.y) / 9.81f;
-	showText(0.01f, 0.450, 0.4f, ssGForceY.str().c_str());
+	showPhysicsValues(velocities, accelValsAvg, posX, posY);
 
 
 
@@ -289,16 +325,24 @@ void update()
 		logger.Write("fDriveInertia = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDriveInertia)));
 		logger.Write("fBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fBrakeForce)));
 		logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff)));
+		logger.Write("vecCentreOfMassOffsetX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.X)));
+		logger.Write("vecCentreOfMassOffsetY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y)));
+		logger.Write("vecCentreOfMassOffsetZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z)));
 		logger.Write("------------------------------");
 	}
 
 	if (IsKeyJustUp(readKey)) {
 
 		int raw_fBrakeBiasFront 	= GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1337, SETTINGSFILE);
-		int raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE) / 1000000.0f;
-		int raw_fDriveInertia		= GetPrivateProfileIntA("handling", "fDriveInertia", -1337, SETTINGSFILE) / 1000000.0f;
-		int raw_fBrakeForce			= GetPrivateProfileIntA("handling", "fBrakeForce", -1337, SETTINGSFILE) / 1000000.0f;
-		int raw_fInitialDragCoeff	= GetPrivateProfileIntA("handling", "fInitialDragCoeff", -1337, SETTINGSFILE) / 1000000.0f;
+		int raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE);
+		int raw_fDriveInertia		= GetPrivateProfileIntA("handling", "fDriveInertia", -1337, SETTINGSFILE);
+		int raw_fBrakeForce			= GetPrivateProfileIntA("handling", "fBrakeForce", -1337, SETTINGSFILE);
+		int raw_fInitialDragCoeff	= GetPrivateProfileIntA("handling", "fInitialDragCoeff", -1337, SETTINGSFILE);
+
+		int raw_vecCentreOfMassOffsetX = GetPrivateProfileIntA("handling", "vecCentreOfMassOffsetX", -1337, SETTINGSFILE);
+		int raw_vecCentreOfMassOffsetY = GetPrivateProfileIntA("handling", "vecCentreOfMassOffsetY", -1337, SETTINGSFILE);
+		int raw_vecCentreOfMassOffsetZ = GetPrivateProfileIntA("handling", "vecCentreOfMassOffsetZ", -1337, SETTINGSFILE);
+
 
 		if (raw_fBrakeBiasFront != -1337) {
 			setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, raw_fBrakeBiasFront / 1000000.0f);
@@ -319,6 +363,20 @@ void update()
 		if (raw_fInitialDragCoeff != -1337) {
 			setHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff, raw_fInitialDragCoeff / 1000000.0f);
 		}
+
+		if (raw_vecCentreOfMassOffsetX != -1337) {
+			setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, raw_vecCentreOfMassOffsetX / 1000000.0f);
+		}
+
+		if (raw_vecCentreOfMassOffsetY != -1337) {
+			setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y, raw_vecCentreOfMassOffsetY / 1000000.0f);
+		}
+
+		if (raw_vecCentreOfMassOffsetZ != -1337) {
+			setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z, raw_vecCentreOfMassOffsetZ / 1000000.0f);
+		}
+
+
 	}
 
 }
