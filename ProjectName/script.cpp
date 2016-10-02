@@ -13,6 +13,7 @@
 #include "keyboard.h"
 #include <iomanip>
 #include <fstream>
+#include "VehicleData.h"
 
 #define SETTINGSFILE "./RTHandlingEditor.ini"
 #define LOGFILE "./RTHandlingEditor.log"
@@ -22,6 +23,7 @@ Ped playerPed;
 Vehicle vehicle;
 Hash model;
 MemoryAccess mem;
+VehicleData vehData;
 
 int handlingOffset = 0x830;
 
@@ -187,7 +189,52 @@ void update()
 
 	if (!ENTITY::DOES_ENTITY_EXIST(vehicle))
 		return;
-	
+
+	vehData.UpdateValues(vehicle);
+	Vector3 velocities = ENTITY::GET_ENTITY_SPEED_VECTOR(vehicle, true);
+	Vector3 accelVals = vehData.getAccelerationVectors(velocities);
+	Vector3 accelValsAvg = vehData.getAccelerationVectorsAverage();
+
+	/*std::stringstream ssAccelRawY;
+	ssAccelRawY << "rawAY = " << accelVals.y;
+	showText(0.01f, 0.300f, 0.4f, ssAccelRawY.str().c_str());
+
+	std::stringstream ssAccelRawX;
+	ssAccelRawX << "rawAX = " << accelVals.x;
+	showText(0.01f, 0.325f, 0.4f, ssAccelRawX.str().c_str());*/
+
+	std::stringstream ssVRawY;
+	ssVRawY << "velY = " << velocities.y;
+	showText(0.01f, 0.300f, 0.4f, ssVRawY.str().c_str());
+
+	std::stringstream ssVRawX;
+	ssVRawX << "velX = " << velocities.x;
+	showText(0.01f, 0.325f, 0.4f, ssVRawX.str().c_str());
+
+	std::stringstream ssAccelAvgY;
+	ssAccelAvgY << "avgAY = " << accelValsAvg.y;
+	showText(0.01f, 0.350f, 0.4f, ssAccelAvgY.str().c_str());
+
+	std::stringstream ssAccelAvgX;
+	ssAccelAvgX << "avgAX = " << accelValsAvg.x;
+	showText(0.01f, 0.375f, 0.4f, ssAccelAvgX.str().c_str());
+
+	std::stringstream ssRotVal;
+	ssRotVal << "rotZ = " << vehData.RotationVelocity.z;
+	showText(0.01f, 0.400f, 0.4f, ssRotVal.str().c_str());
+
+	std::stringstream ssGForceL;
+	ssGForceL << "G-Force X = " << (vehData.RotationVelocity.z*vehData.Velocity) / 9.81f;
+	showText(0.01f, 0.425, 0.4f, ssGForceL.str().c_str());
+
+	std::stringstream ssGForceY;
+	ssGForceY << "G-Force Y = " << (accelValsAvg.y) / 9.81f;
+	showText(0.01f, 0.450, 0.4f, ssGForceY.str().c_str());
+
+
+
+
+		
 	/*std::stringstream ss_fBrakeBiasFront;
 	ss_fBrakeBiasFront << "fBrakeBiasFront = " << get_fBrakeBiasFront(vehicle);
 	showText(0.2, 0.2, 1.0, ss_fBrakeBiasFront.str().c_str());
