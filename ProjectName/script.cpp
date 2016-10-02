@@ -294,30 +294,30 @@ void update()
 
 	if (IsKeyJustUp(readKey)) {
 
-		float raw_fBrakeBiasFront 	= GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1337, SETTINGSFILE) / 1000000.0f;
-		float raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE) / 1000000.0f;
-		float raw_fDriveInertia		= GetPrivateProfileIntA("handling", "fDriveInertia", -1337, SETTINGSFILE) / 1000000.0f;
-		float raw_fBrakeForce			= GetPrivateProfileIntA("handling", "fBrakeForce", -1337, SETTINGSFILE) / 1000000.0f;
-		float raw_fInitialDragCoeff	= GetPrivateProfileIntA("handling", "fInitialDragCoeff", -1337, SETTINGSFILE) / 1000000.0f;
+		int raw_fBrakeBiasFront 	= GetPrivateProfileIntA("handling", "fBrakeBiasFront", -1337, SETTINGSFILE);
+		int raw_fTractionBiasFront	= GetPrivateProfileIntA("handling", "fTractionBiasFront", -1337, SETTINGSFILE) / 1000000.0f;
+		int raw_fDriveInertia		= GetPrivateProfileIntA("handling", "fDriveInertia", -1337, SETTINGSFILE) / 1000000.0f;
+		int raw_fBrakeForce			= GetPrivateProfileIntA("handling", "fBrakeForce", -1337, SETTINGSFILE) / 1000000.0f;
+		int raw_fInitialDragCoeff	= GetPrivateProfileIntA("handling", "fInitialDragCoeff", -1337, SETTINGSFILE) / 1000000.0f;
 
 		if (raw_fBrakeBiasFront != -1337) {
-			setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, raw_fBrakeBiasFront);
+			setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, raw_fBrakeBiasFront / 1000000.0f);
 		}
 		
 		if (raw_fTractionBiasFront != -1337) {
-			setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, raw_fTractionBiasFront);
+			setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, raw_fTractionBiasFront / 1000000.0f);
 		}
 		
 		if (raw_fDriveInertia != -1337) {
-			setHandlingValue(vehicle, hOffsets.fDriveInertia, raw_fDriveInertia);
+			setHandlingValue(vehicle, hOffsets.fDriveInertia, raw_fDriveInertia / 1000000.0f);
 		}
 		
 		if (raw_fBrakeForce != -1337) {
-			setHandlingValue(vehicle, hOffsets.fBrakeForce, raw_fBrakeForce);
+			setHandlingValue(vehicle, hOffsets.fBrakeForce, raw_fBrakeForce / 1000000.0f);
 		}
 
 		if (raw_fInitialDragCoeff != -1337) {
-			setHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff, raw_fInitialDragCoeff);
+			setHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff, raw_fInitialDragCoeff / 1000000.0f);
 		}
 	}
 
