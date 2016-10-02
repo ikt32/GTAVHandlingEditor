@@ -84,8 +84,10 @@ const struct HandlingOffset {
 
 	//int m_fGrip = 0x9C; // lateral grip?
 
+	int fTractionCurveLateral = 0x98; // (meta*pi)/180 (degrees -> radians) 
+
 	int fTractionSpringDeltaMax = 0xA0; // VERIFIED
-	int fLowSpeedTractionLostMult = 0xA8; // VERIFIED
+	int fLowSpeedTractionLossMult = 0xA8; // VERIFIED
 	int fCamberStiffness = 0xAC; // VERIFIED
 
 	// meta*2
@@ -103,12 +105,20 @@ const struct HandlingOffset {
 	int fSuspensionRaise = 0xD0; // VERIFIED
 
 	// meta*2
-	//int fSuspensionBiasFront = 0xD4; // VERIFIED
+	// int fSuspensionBiasFront = 0xD4; // VERIFIED
 
 	// 1.0-(meta/2)
 	int fSuspensionBiasFront = 0xD8; // VERIFIED
 
 	int fAntiRollBarForce = 0xDC; // VERIFIED
+	
+	// meta*2
+	// int fAntiRollBarBiasFront = 0xE0;
+	
+	// 1.0-(meta/2)
+	int fAntiRollBarBiasFront = 0xE4;
+
+
 	int fRollCentreHeightFront = 0xE8; // VERIFIED
 	int fRollCentreHeightRear = 0xEC; // VERIFIED
 
@@ -362,9 +372,9 @@ void update()
 		logger.Write("fSteeringLock = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSteeringLock)*(180.0f / 3.14159265359f))); // rad -> deg
 		logger.Write("fTractionCurveMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMax)));
 		logger.Write("fTractionCurveMin = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMin)));
-		logger.Write("fTractionCurveLateral = "); // MISSING!!!!!
+		logger.Write("fTractionCurveLateral = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveLateral)*(180.0f / 3.14159265359f))); // rad -> deg
 		logger.Write("fTractionSpringDeltaMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax)));
-		logger.Write("fLowSpeedTractionLossMult = "); // MISSING!!!!!
+		logger.Write("fLowSpeedTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult)));
 		logger.Write("fCamberStiffness = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCamberStiffness)));
 		logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront)));
 		logger.Write("fTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionLossMult)));
@@ -377,7 +387,7 @@ void update()
 		logger.Write("fSuspensionRaise = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionRaise)));
 		logger.Write("fSuspensionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront)));
 		logger.Write("fAntiRollBarForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fAntiRollBarForce)));
-		logger.Write("fAntiRollBarBiasFront = "); // MISSING!!!!!
+		logger.Write("fAntiRollBarBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront)));
 		logger.Write("fRollCentreHeightFront = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightFront)));
 		logger.Write("fRollCentreHeightRear = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightRear)));
 		logger.Write("fCollisionDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCollisionDamageMult)));
