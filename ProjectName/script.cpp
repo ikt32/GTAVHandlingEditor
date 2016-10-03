@@ -258,8 +258,8 @@ void setHandlingValueInt(Vehicle veh, int valueOffset, uint8_t val) {
 
 
 
-void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, float yPos) {
-	std::stringstream ssVRawY;
+void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, float yPos, float size) {
+	/*std::stringstream ssVRawY;
 	ssVRawY << "velY = " << velocities.y;
 	showText(xPos, yPos, 0.4f, ssVRawY.str().c_str());
 
@@ -277,15 +277,18 @@ void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, flo
 
 	std::stringstream ssRotVal;
 	ssRotVal << "rotZ = " << vehData.RotationVelocity.z;
-	showText(xPos, yPos+0.100f, 0.4f, ssRotVal.str().c_str());
+	showText(xPos, yPos+0.100f, 0.4f, ssRotVal.str().c_str());*/
 
 	std::stringstream ssGForceL;
-	ssGForceL << "G-Force X = " << (vehData.RotationVelocity.z*vehData.Velocity) / 9.81f;
-	showText(xPos, yPos+0.125f, 0.4f, ssGForceL.str().c_str());
+	ssGForceL << "G-Force Lat  = " << (vehData.RotationVelocity.z*vehData.Velocity) / 9.81f;
+	showText(xPos, yPos, size, ssGForceL.str().c_str());
 
 	std::stringstream ssGForceY;
-	ssGForceY << "G-Force Y = " << (accelValsAvg.y) / 9.81f;
-	showText(xPos, yPos+0.150f, 0.4f, ssGForceY.str().c_str());
+	ssGForceY << "G-Force Long = " << (accelValsAvg.y) / 9.81f;
+	showText(xPos, yPos + (size * 0.025f)/0.40f, size, ssGForceY.str().c_str());
+
+	std::stringstream ssAccelAvgY;
+	showText(xPos, yPos + (size * 0.050f)/0.40f, size, ssAccelAvgY.str().c_str());
 }
 
 /*
@@ -301,8 +304,9 @@ void update()
 	GetPrivateProfileStringA("key", "log", "L", kbKeyBuffer, 24, SETTINGSFILE);
 	int logKey = str2key(kbKeyBuffer);
 
-	float posX = GetPrivateProfileIntA("util", "infox", 1, SETTINGSFILE)/100.0f;
-	float posY = GetPrivateProfileIntA("util", "infoy", 30, SETTINGSFILE)/100.0f;
+	float posX = GetPrivateProfileIntA("util", "infox", 1, SETTINGSFILE)  / 100.0f;
+	float posY = GetPrivateProfileIntA("util", "infoy", 30, SETTINGSFILE) / 100.0f;
+	float size = GetPrivateProfileIntA("util", "infosz", 100, SETTINGSFILE) / 100.0f;
 	
 	player = PLAYER::PLAYER_ID();
 	playerPed = PLAYER::PLAYER_PED_ID();
@@ -334,7 +338,7 @@ void update()
 	ssAccelRawX << "rawAX = " << accelVals.x;
 	showText(0.01f, 0.325f, 0.4f, ssAccelRawX.str().c_str());*/
 
-	showPhysicsValues(velocities, accelValsAvg, posX, posY);
+	showPhysicsValues(velocities, accelValsAvg, posX, posY, size);
 
 
 
