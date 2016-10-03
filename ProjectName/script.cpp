@@ -71,10 +71,10 @@ const struct HandlingOffset {
 	int fBrakeForce = 0x6C;
 	
 	// 2*meta
-	int fBrakeBiasFront_2 = 0x74;
+	int fBrakeBiasFront = 0x74;
 
 	// 2*(1.0-meta)
-	int fBrakeBiasFront = 0x78;
+	int fBrakeBiasRear = 0x78;
 
 
 	int fHandBrakeForce = 0x7C; // VERIFIED
@@ -95,10 +95,10 @@ const struct HandlingOffset {
 	int fCamberStiffness = 0xAC; // VERIFIED
 
 	// meta*2
-	int fTractionBiasFront_2 = 0xB0;
+	int fTractionBiasFront = 0xB0;
 
 	// 1.0f - (value / 2.0f)
-	int fTractionBiasFront = 0xB4;
+	int fTractionBiasRear = 0xB4;
 
 	int fTractionLossMult = 0xB8;	// VERIFIED
 	int fSuspensionForce = 0xBC; // VERIFIED
@@ -109,18 +109,18 @@ const struct HandlingOffset {
 	int fSuspensionRaise = 0xD0; // VERIFIED
 
 	// meta*2
-	int fSuspensionBiasFront_2 = 0xD4; // VERIFIED
+	int fSuspensionBiasFront = 0xD4; // VERIFIED
 
 	// 1.0-(meta/2)
-	int fSuspensionBiasFront = 0xD8; // VERIFIED
+	int fSuspensionBiasRear = 0xD8; // VERIFIED
 
 	int fAntiRollBarForce = 0xDC; // VERIFIED
 	
 	// meta*2
-	int fAntiRollBarBiasFront_2 = 0xE0;
+	int fAntiRollBarBiasFront = 0xE0;
 	
 	// 1.0-(meta/2)
-	int fAntiRollBarBiasFront = 0xE4;
+	int fAntiRollBarBiasRear = 0xE4;
 
 
 	int fRollCentreHeightFront = 0xE8; // VERIFIED
@@ -295,6 +295,174 @@ void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, flo
 	showText(xPos, yPos + (size * 0.050f)/0.40f, size, ssAccelAvgY.str().c_str());
 }
 
+
+void setHandling(float fMass, float fInitialDragCoeff, float fPercentSubmerged, float vecCentreOfMassOffsetX, float vecCentreOfMassOffsetY, float vecCentreOfMassOffsetZ, float vecInertiaMultiplierX, float vecInertiaMultiplierY, float vecInertiaMultiplierZ, float fDriveBiasFront, int nInitialDriveGears, float fInitialDriveForce, float fDriveInertia, float fClutchChangeRateScaleUpShift, float fClutchChangeRateScaleDownShift, float fInitialDriveMaxFlatVel, float fBrakeForce, float fBrakeBiasFront, float fHandBrakeForce, float fSteeringLock, float fTractionCurveMax, float fTractionCurveMin, float fTractionCurveLateral, float fTractionSpringDeltaMax, float fLowSpeedTractionLossMult, float fCamberStiffness, float fTractionBiasFront, float fTractionLossMult, float fSuspensionForce, float fSuspensionCompDamp, float fSuspensionReboundDamp, float fSuspensionUpperLimit, float fSuspensionLowerLimit, float fSuspensionRaise, float fSuspensionBiasFront, float fAntiRollBarForce, float fAntiRollBarBiasFront, float fRollCentreHeightFront, float fRollCentreHeightRear, float fCollisionDamageMult, float fWeaponDamageMult, float fDeformationDamageMult, float fEngineDamageMult, float fPetrolTankVolume, float fOilVolume, float fSeatOffsetDistX, float fSeatOffsetDistY, float fSeatOffsetDistZ) {
+	if (fMass != disableVal)
+		setHandlingValue(vehicle, hOffsets.fMass, fMass);
+
+	if (fInitialDragCoeff != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDragCoeff, fInitialDragCoeff / 10000.0f);
+
+	if (fPercentSubmerged != disableVal)
+		setHandlingValue(vehicle, hOffsets.fPercentSubmerged, fPercentSubmerged);
+
+	if (vecCentreOfMassOffsetX != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, vecCentreOfMassOffsetX);
+
+	if (vecCentreOfMassOffsetY != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y, vecCentreOfMassOffsetY);
+
+	if (vecCentreOfMassOffsetZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z, vecCentreOfMassOffsetZ);
+
+	if (vecInertiaMultiplierX != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X, vecInertiaMultiplierX);
+
+	if (vecInertiaMultiplierY != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y, vecInertiaMultiplierY);
+
+	if (vecInertiaMultiplierZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
+
+	if (fDriveBiasFront != disableVal) {
+		if (fDriveBiasFront == 1.0f) {
+			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 0.0f);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 1.0f);
+		}
+		else if (fDriveBiasFront == 0.0f) {
+			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 1.0f);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 0.0f);
+		}
+		else {
+			setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear, fDriveBiasFront);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront * 2.0f);
+		}
+	}
+
+	if (nInitialDriveGears != disableVal)
+		setHandlingValueInt(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
+
+	if (fInitialDriveForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
+
+	if (fDriveInertia != disableVal)
+		setHandlingValue(vehicle, hOffsets.fDriveInertia, fDriveInertia);
+
+	if (fClutchChangeRateScaleUpShift != disableVal)
+		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift, fClutchChangeRateScaleUpShift);
+
+	if (fClutchChangeRateScaleDownShift != disableVal)
+		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift, fClutchChangeRateScaleDownShift);
+
+	if (fInitialDriveMaxFlatVel != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel, fInitialDriveMaxFlatVel / 3.6f);
+
+	if (fBrakeForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
+
+	if (fBrakeBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasRear, fBrakeBiasFront);
+		setHandlingValue(vehicle, hOffsets.fBrakeBiasFront, fBrakeBiasFront * 2.0f);
+	}
+
+	if (fHandBrakeForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
+
+	if (fSteeringLock != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * (3.14159265359f / 180.0f));
+
+	if (fTractionCurveMax != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
+
+	if (fTractionCurveMin != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
+
+	if (fTractionCurveLateral != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * (3.14159265359f / 180.0f));
+
+	if (fTractionSpringDeltaMax != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax, fTractionSpringDeltaMax);
+
+	if (fLowSpeedTractionLossMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult, fLowSpeedTractionLossMult);
+
+	if (fCamberStiffness != disableVal)
+		setHandlingValue(vehicle, hOffsets.fCamberStiffness, fCamberStiffness);
+
+	if (fTractionBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasRear, fTractionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fTractionBiasFront, fTractionBiasFront * 2.0f);
+	}
+
+	if (fTractionLossMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionLossMult, fTractionLossMult);
+
+	if (fSuspensionForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionForce, fSuspensionForce);
+
+	if (fSuspensionCompDamp != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionCompDamp, fSuspensionCompDamp / 10.0f);
+
+	if (fSuspensionReboundDamp != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp, fSuspensionReboundDamp / 10.0f);
+
+	if (fSuspensionUpperLimit != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit, fSuspensionUpperLimit);
+
+	if (fSuspensionLowerLimit != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit, fSuspensionLowerLimit);
+
+	if (fSuspensionRaise != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionRaise, fSuspensionRaise);
+
+	if (fSuspensionBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasRear, fSuspensionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fSuspensionBiasFront, fSuspensionBiasFront * 2.0f);
+	}
+
+	if (fAntiRollBarForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarForce, fAntiRollBarForce);
+
+	if (fAntiRollBarBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasRear, fAntiRollBarBiasFront);
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront * 2.0f);
+	}
+
+	if (fRollCentreHeightFront != disableVal)
+		setHandlingValue(vehicle, hOffsets.fRollCentreHeightFront, fRollCentreHeightFront);
+
+	if (fRollCentreHeightRear != disableVal)
+		setHandlingValue(vehicle, hOffsets.fRollCentreHeightRear, fRollCentreHeightRear);
+
+	if (fCollisionDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fCollisionDamageMult, fCollisionDamageMult);
+
+	if (fWeaponDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fWeaponDamageMult, fWeaponDamageMult);
+
+	if (fDeformationDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fDeformationDamageMult, fDeformationDamageMult);
+
+	if (fEngineDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fEngineDamageMult, fEngineDamageMult);
+
+	if (fPetrolTankVolume != disableVal)
+		setHandlingValue(vehicle, hOffsets.fPetrolTankVolume, fPetrolTankVolume);
+
+	if (fOilVolume != disableVal)
+		setHandlingValue(vehicle, hOffsets.fOilVolume, fOilVolume);
+
+	if (fSeatOffsetDistX != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistX, fSeatOffsetDistX);
+
+	if (fSeatOffsetDistY != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistY, fSeatOffsetDistY);
+
+	if (fSeatOffsetDistZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ, fSeatOffsetDistZ);
+}
+
+
 void readMemorytoLog() {
 	std::stringstream vehName;
 	vehName << "VEHICLE: " << VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(model);
@@ -312,7 +480,7 @@ void readMemorytoLog() {
 	logger.Write("vecInertiaMultiplierY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y)));
 	logger.Write("vecInertiaMultiplierZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z)));
 
-	logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear))); // 1.0f - (val / 2.0f)
+	logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront))); // 1.0f - (val / 2.0f)
 
 	logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValueInt(vehicle, hOffsets.nInitialDriveGears))); // int
 	logger.Write("fInitialDriveForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveForce)));
@@ -481,169 +649,55 @@ void readXMLFile() {
 	pRoot->FirstChildElement("fSeatOffsetDistY")->QueryAttribute("value", &fSeatOffsetDistY);
 	pRoot->FirstChildElement("fSeatOffsetDistZ")->QueryAttribute("value", &fSeatOffsetDistZ);
 
-	if (fMass != disableVal)
-		setHandlingValue(vehicle, hOffsets.fMass, fMass);
-
-	if (fInitialDragCoeff != disableVal)
-		setHandlingValue(vehicle, hOffsets.fInitialDragCoeff, fInitialDragCoeff / 10000.0f);
-
-	if (fPercentSubmerged != disableVal)
-		setHandlingValue(vehicle, hOffsets.fPercentSubmerged, fPercentSubmerged);
-
-	if (vecCentreOfMassOffsetX != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, vecCentreOfMassOffsetX);
-
-	if (vecCentreOfMassOffsetY != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y, vecCentreOfMassOffsetY);
-
-	if (vecCentreOfMassOffsetZ != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z, vecCentreOfMassOffsetZ);
-
-	if (vecInertiaMultiplierX != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X, vecInertiaMultiplierX);
-
-	if (vecInertiaMultiplierY != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y, vecInertiaMultiplierY);
-
-	if (vecInertiaMultiplierZ != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
-
-	if (fDriveBiasFront != disableVal) {
-		if (fDriveBiasFront == 1.0f) {
-			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 0.0f);
-			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 1.0f);
-		}
-		else if (fDriveBiasFront == 0.0f) {
-			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 1.0f);
-			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 0.0f);
-		}
-		else {
-			setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear, fDriveBiasFront);
-			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront * 2.0f);
-		}
-	}
-
-	if (nInitialDriveGears != disableVal)
-		setHandlingValueInt(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
-
-	if (fInitialDriveForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
-
-	if (fDriveInertia != disableVal)
-		setHandlingValue(vehicle, hOffsets.fDriveInertia, fDriveInertia);
-
-	if (fClutchChangeRateScaleUpShift != disableVal)
-		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift, fClutchChangeRateScaleUpShift);
-
-	if (fClutchChangeRateScaleDownShift != disableVal)
-		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift, fClutchChangeRateScaleDownShift);
-
-	if (fInitialDriveMaxFlatVel != disableVal)
-		setHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel, fInitialDriveMaxFlatVel / 3.6f);
-
-	if (fBrakeForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
-
-	if (fBrakeBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, fBrakeBiasFront);
-		setHandlingValue(vehicle, hOffsets.fBrakeBiasFront_2, fBrakeBiasFront * 2.0f);
-	}
-
-	if (fHandBrakeForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
-
-	if (fSteeringLock != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * (3.14159265359f / 180.0f));
-
-	if (fTractionCurveMax != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
-
-	if (fTractionCurveMin != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
-
-	if (fTractionCurveLateral != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * (3.14159265359f / 180.0f));
-
-	if (fTractionSpringDeltaMax != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax, fTractionSpringDeltaMax);
-
-	if (fLowSpeedTractionLossMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult, fLowSpeedTractionLossMult);
-
-	if (fCamberStiffness != disableVal)
-		setHandlingValue(vehicle, hOffsets.fCamberStiffness, fCamberStiffness);
-
-	if (fTractionBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, fTractionBiasFront);
-		setHandlingValue(vehicle, hOffsets.fTractionBiasFront_2, fTractionBiasFront * 2.0f);
-	}
-
-	if (fTractionLossMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionLossMult, fTractionLossMult);
-
-	if (fSuspensionForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionForce, fSuspensionForce);
-
-	if (fSuspensionCompDamp != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionCompDamp, fSuspensionCompDamp / 10.0f);
-
-	if (fSuspensionReboundDamp != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp, fSuspensionReboundDamp / 10.0f);
-
-	if (fSuspensionUpperLimit != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit, fSuspensionUpperLimit);
-
-	if (fSuspensionLowerLimit != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit, fSuspensionLowerLimit);
-
-	if (fSuspensionRaise != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionRaise, fSuspensionRaise);
-
-	if (fSuspensionBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront, fSuspensionBiasFront);
-		setHandlingValue(vehicle, hOffsets.fSuspensionBiasFront_2, fSuspensionBiasFront * 2.0f);
-	}
-
-	if (fAntiRollBarForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fAntiRollBarForce, fAntiRollBarForce);
-
-	if (fAntiRollBarBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront);
-		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront_2, fAntiRollBarBiasFront * 2.0f);
-	}
-
-	if (fRollCentreHeightFront != disableVal)
-		setHandlingValue(vehicle, hOffsets.fRollCentreHeightFront, fRollCentreHeightFront);
-
-	if (fRollCentreHeightRear != disableVal)
-		setHandlingValue(vehicle, hOffsets.fRollCentreHeightRear, fRollCentreHeightRear);
-
-	if (fCollisionDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fCollisionDamageMult, fCollisionDamageMult);
-
-	if (fWeaponDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fWeaponDamageMult, fWeaponDamageMult);
-
-	if (fDeformationDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fDeformationDamageMult, fDeformationDamageMult);
-
-	if (fEngineDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fEngineDamageMult, fEngineDamageMult);
-
-	if (fPetrolTankVolume != disableVal)
-		setHandlingValue(vehicle, hOffsets.fPetrolTankVolume, fPetrolTankVolume);
-
-	if (fOilVolume != disableVal)
-		setHandlingValue(vehicle, hOffsets.fOilVolume, fOilVolume);
-
-	if (fSeatOffsetDistX != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistX, fSeatOffsetDistX);
-
-	if (fSeatOffsetDistY != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistY, fSeatOffsetDistY);
-
-	if (fSeatOffsetDistZ != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ, fSeatOffsetDistZ);
+	setHandling(
+		fMass,
+		fInitialDragCoeff,
+		fPercentSubmerged,
+		vecCentreOfMassOffsetX,
+		vecCentreOfMassOffsetY,
+		vecCentreOfMassOffsetZ,
+		vecInertiaMultiplierX,
+		vecInertiaMultiplierY,
+		vecInertiaMultiplierZ,
+		fDriveBiasFront,
+		nInitialDriveGears,
+		fInitialDriveForce,
+		fDriveInertia,
+		fClutchChangeRateScaleUpShift,
+		fClutchChangeRateScaleDownShift,
+		fInitialDriveMaxFlatVel,
+		fBrakeForce,
+		fBrakeBiasFront,
+		fHandBrakeForce,
+		fSteeringLock,
+		fTractionCurveMax,
+		fTractionCurveMin,
+		fTractionCurveLateral,
+		fTractionSpringDeltaMax,
+		fLowSpeedTractionLossMult,
+		fCamberStiffness,
+		fTractionBiasFront,
+		fTractionLossMult,
+		fSuspensionForce,
+		fSuspensionCompDamp,
+		fSuspensionReboundDamp,
+		fSuspensionUpperLimit,
+		fSuspensionLowerLimit,
+		fSuspensionRaise,
+		fSuspensionBiasFront,
+		fAntiRollBarForce,
+		fAntiRollBarBiasFront,
+		fRollCentreHeightFront,
+		fRollCentreHeightRear,
+		fCollisionDamageMult,
+		fWeaponDamageMult,
+		fDeformationDamageMult,
+		fEngineDamageMult,
+		fPetrolTankVolume,
+		fOilVolume,
+		fSeatOffsetDistX,
+		fSeatOffsetDistY,
+		fSeatOffsetDistZ);
 
 	showNotification(const_cast<char *>(handlingText.str().c_str()));
 }
@@ -707,169 +761,55 @@ void readINIFile() {
 	float fSeatOffsetDistY = reader.GetReal("handling", "fSeatOffsetDistY", disableVal);
 	float fSeatOffsetDistZ = reader.GetReal("handling", "fSeatOffsetDistZ", disableVal);
 
-	if (fMass != disableVal)
-		setHandlingValue(vehicle, hOffsets.fMass, fMass);
-
-	if (fInitialDragCoeff != disableVal)
-		setHandlingValue(vehicle, hOffsets.fInitialDragCoeff, fInitialDragCoeff/10000.0f);
-		
-	if (fPercentSubmerged != disableVal)
-		setHandlingValue(vehicle, hOffsets.fPercentSubmerged, fPercentSubmerged);
-
-	if (vecCentreOfMassOffsetX != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, vecCentreOfMassOffsetX);
-
-	if (vecCentreOfMassOffsetY != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y, vecCentreOfMassOffsetY);
-
-	if (vecCentreOfMassOffsetZ != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z, vecCentreOfMassOffsetZ);
-
-	if (vecInertiaMultiplierX != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X, vecInertiaMultiplierX);
-
-	if (vecInertiaMultiplierY != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y, vecInertiaMultiplierY);
-
-	if (vecInertiaMultiplierZ != disableVal)
-		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
-
-	if (fDriveBiasFront != disableVal) {
-		if (fDriveBiasFront == 1.0f) {
-			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 0.0f);
-			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 1.0f);
-		}
-		else if (fDriveBiasFront == 0.0f) {
-			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 1.0f);
-			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 0.0f);
-		}
-		else {
-			setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear, fDriveBiasFront);
-			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront * 2.0f);
-		}
-	}
-
-	if (nInitialDriveGears != disableVal)
-		setHandlingValueInt(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
-
-	if (fInitialDriveForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
-
-	if (fDriveInertia != disableVal)
-		setHandlingValue(vehicle, hOffsets.fDriveInertia, fDriveInertia);
-
-	if (fClutchChangeRateScaleUpShift != disableVal)
-		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift, fClutchChangeRateScaleUpShift);
-
-	if (fClutchChangeRateScaleDownShift != disableVal)
-		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift, fClutchChangeRateScaleDownShift);
-
-	if (fInitialDriveMaxFlatVel != disableVal)
-		setHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel, fInitialDriveMaxFlatVel / 3.6f);
-
-	if (fBrakeForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
-
-	if (fBrakeBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, fBrakeBiasFront);
-		setHandlingValue(vehicle, hOffsets.fBrakeBiasFront_2, fBrakeBiasFront * 2.0f);
-	}
-
-	if (fHandBrakeForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
-
-	if (fSteeringLock != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * (3.14159265359f / 180.0f));
-
-	if (fTractionCurveMax != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
-
-	if (fTractionCurveMin != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
-
-	if (fTractionCurveLateral != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * (3.14159265359f / 180.0f));
-
-	if (fTractionSpringDeltaMax != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax, fTractionSpringDeltaMax);
-
-	if (fLowSpeedTractionLossMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult, fLowSpeedTractionLossMult);
-
-	if (fCamberStiffness != disableVal)
-		setHandlingValue(vehicle, hOffsets.fCamberStiffness, fCamberStiffness);
-
-	if (fTractionBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, fTractionBiasFront);
-		setHandlingValue(vehicle, hOffsets.fTractionBiasFront_2, fTractionBiasFront * 2.0f);
-	}
-
-	if (fTractionLossMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionLossMult, fTractionLossMult);
-
-	if (fSuspensionForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionForce, fSuspensionForce);
-
-	if (fSuspensionCompDamp != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionCompDamp, fSuspensionCompDamp / 10.0f);
-
-	if (fSuspensionReboundDamp != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp, fSuspensionReboundDamp / 10.0f);
-
-	if (fSuspensionUpperLimit != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit, fSuspensionUpperLimit);
-
-	if (fSuspensionLowerLimit != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit, fSuspensionLowerLimit);
-
-	if (fSuspensionRaise != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSuspensionRaise, fSuspensionRaise);
-
-	if (fSuspensionBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront, fSuspensionBiasFront);
-		setHandlingValue(vehicle, hOffsets.fSuspensionBiasFront_2, fSuspensionBiasFront * 2.0f);
-	}
-
-	if (fAntiRollBarForce != disableVal)
-		setHandlingValue(vehicle, hOffsets.fAntiRollBarForce, fAntiRollBarForce);
-
-	if (fAntiRollBarBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront);
-		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront_2, fAntiRollBarBiasFront * 2.0f); 
-	}
-
-	if (fRollCentreHeightFront != disableVal)
-		setHandlingValue(vehicle, hOffsets.fRollCentreHeightFront, fRollCentreHeightFront);
-
-	if (fRollCentreHeightRear != disableVal)
-		setHandlingValue(vehicle, hOffsets.fRollCentreHeightRear, fRollCentreHeightRear);
-
-	if (fCollisionDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fCollisionDamageMult, fCollisionDamageMult);
-
-	if (fWeaponDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fWeaponDamageMult, fWeaponDamageMult);
-
-	if (fDeformationDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fDeformationDamageMult, fDeformationDamageMult);
-
-	if (fEngineDamageMult != disableVal)
-		setHandlingValue(vehicle, hOffsets.fEngineDamageMult, fEngineDamageMult);
-
-	if (fPetrolTankVolume != disableVal)
-		setHandlingValue(vehicle, hOffsets.fPetrolTankVolume, fPetrolTankVolume);
-
-	if (fOilVolume != disableVal)
-		setHandlingValue(vehicle, hOffsets.fOilVolume, fOilVolume);
-
-	if (fSeatOffsetDistX != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistX, fSeatOffsetDistX);
-
-	if (fSeatOffsetDistY != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistY, fSeatOffsetDistY);
-
-	if (fSeatOffsetDistZ != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ, fSeatOffsetDistZ);
+	setHandling(
+		fMass,
+		fInitialDragCoeff,
+		fPercentSubmerged,
+		vecCentreOfMassOffsetX,
+		vecCentreOfMassOffsetY,
+		vecCentreOfMassOffsetZ,
+		vecInertiaMultiplierX,
+		vecInertiaMultiplierY,
+		vecInertiaMultiplierZ,
+		fDriveBiasFront,
+		nInitialDriveGears,
+		fInitialDriveForce,
+		fDriveInertia,
+		fClutchChangeRateScaleUpShift,
+		fClutchChangeRateScaleDownShift,
+		fInitialDriveMaxFlatVel,
+		fBrakeForce,
+		fBrakeBiasFront,
+		fHandBrakeForce,
+		fSteeringLock,
+		fTractionCurveMax,
+		fTractionCurveMin,
+		fTractionCurveLateral,
+		fTractionSpringDeltaMax,
+		fLowSpeedTractionLossMult,
+		fCamberStiffness,
+		fTractionBiasFront,
+		fTractionLossMult,
+		fSuspensionForce,
+		fSuspensionCompDamp,
+		fSuspensionReboundDamp,
+		fSuspensionUpperLimit,
+		fSuspensionLowerLimit,
+		fSuspensionRaise,
+		fSuspensionBiasFront,
+		fAntiRollBarForce,
+		fAntiRollBarBiasFront,
+		fRollCentreHeightFront,
+		fRollCentreHeightRear,
+		fCollisionDamageMult,
+		fWeaponDamageMult,
+		fDeformationDamageMult,
+		fEngineDamageMult,
+		fPetrolTankVolume,
+		fOilVolume,
+		fSeatOffsetDistX,
+		fSeatOffsetDistY,
+		fSeatOffsetDistZ);
 	showNotification("RTHandlingEditor: Loaded RTHandlingEditor.ini");
 }
 
