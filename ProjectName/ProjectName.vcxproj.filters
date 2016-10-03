@@ -9,6 +9,9 @@
     <ClCompile Include="..\inih\cpp\INIReader.cpp">
       <Filter>inih</Filter>
     </ClCompile>
+    <ClCompile Include="..\tinyxml2\tinyxml2.cpp">
+      <Filter>tinyxml2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\ScriptHookV_SDK\inc\enums.h" />
@@ -22,10 +25,16 @@
     <ClInclude Include="..\inih\cpp\INIReader.h">
       <Filter>inih</Filter>
     </ClInclude>
+    <ClInclude Include="..\tinyxml2\tinyxml2.h">
+      <Filter>tinyxml2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inih">
       <UniqueIdentifier>{a0640629-34fe-4476-9302-111b2b4c0223}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="tinyxml2">
+      <UniqueIdentifier>{de410f6f-326e-4c9b-8558-64aadf4a42c6}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
