@@ -53,10 +53,10 @@ const struct HandlingOffset {
 	int fPercentSubmerged = 0x40; // VERIFIED
 
 	// 2*meta
-	int fDriveBiasFront_2 = 0x48; // No? 0x48?
+	int fDriveBiasFront = 0x48; // No? 0x48?
 	
 	// 2*(1.0-meta)
-	int fDriveBiasFront = 0x4C;
+	int fDriveBiasRear = 0x4C;
 	
 	uint8_t nInitialDriveGears = 0x50; // VERIFIED
 	int fDriveInertia = 0x54; // VERIFIED
@@ -312,7 +312,7 @@ void readMemorytoLog() {
 	logger.Write("vecInertiaMultiplierY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y)));
 	logger.Write("vecInertiaMultiplierZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z)));
 
-	logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront))); // 1.0f - (val / 2.0f)
+	logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear))); // 1.0f - (val / 2.0f)
 
 	logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValueInt(vehicle, hOffsets.nInitialDriveGears))); // int
 	logger.Write("fInitialDriveForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveForce)));
@@ -509,8 +509,18 @@ void readXMLFile() {
 		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
 
 	if (fDriveBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront);
-		setHandlingValue(vehicle, hOffsets.fDriveBiasFront_2, fDriveBiasFront * 2.0f);
+		if (fDriveBiasFront == 1.0f) {
+			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 0.0f);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 1.0f);
+		}
+		else if (fDriveBiasFront == 0.0f) {
+			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 1.0f);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 0.0f);
+		}
+		else {
+			setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear, fDriveBiasFront);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront * 2.0f);
+		}
 	}
 
 	if (nInitialDriveGears != disableVal)
@@ -725,8 +735,18 @@ void readINIFile() {
 		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
 
 	if (fDriveBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront);
-		setHandlingValue(vehicle, hOffsets.fDriveBiasFront_2, fDriveBiasFront * 2.0f);
+		if (fDriveBiasFront == 1.0f) {
+			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 0.0f);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 1.0f);
+		}
+		else if (fDriveBiasFront == 0.0f) {
+			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 1.0f);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 0.0f);
+		}
+		else {
+			setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear, fDriveBiasFront);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront * 2.0f);
+		}
 	}
 
 	if (nInitialDriveGears != disableVal)
