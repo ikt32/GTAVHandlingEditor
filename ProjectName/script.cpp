@@ -288,6 +288,7 @@ void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, flo
 	showText(xPos, yPos + (size * 0.025f)/0.40f, size, ssGForceY.str().c_str());
 
 	std::stringstream ssAccelAvgY;
+	ssAccelAvgY << "Accel Y (m/s2) = " << accelValsAvg.y;
 	showText(xPos, yPos + (size * 0.050f)/0.40f, size, ssAccelAvgY.str().c_str());
 }
 
