@@ -815,7 +815,7 @@ void readINIFile() {
 
 	if (fAntiRollBarBiasFront != disableVal) {
 		setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront);
-		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront_2, fAntiRollBarBiasFront * 2.0f);
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront_2, fAntiRollBarBiasFront * 2.0f); 
 	}
 
 	if (fRollCentreHeightFront != disableVal)
