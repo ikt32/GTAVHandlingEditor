@@ -15,6 +15,7 @@
 #include <fstream>
 #include "VehicleData.h"
 #include "../inih/cpp/INIReader.h"
+#include "../tinyxml2/tinyxml2.h"
 
 #define SETTINGSFILE "./RTHandlingEditor.ini"
 #define LOGFILE "./RTHandlingEditor.log"
@@ -25,8 +26,10 @@ Vehicle vehicle;
 Hash model;
 MemoryAccess mem;
 VehicleData vehData;
+int prevNotification = 0;
 
 int handlingOffset = 0x830;
+int disableVal = -1337;
 
 struct vecOffset {
 	int X;
@@ -175,6 +178,14 @@ void Logger::Write(const std::string& text) const {
 		text << "\n";
 }
 
+void showNotification(char* message) {
+	if (prevNotification)
+		UI::_REMOVE_NOTIFICATION(prevNotification);
+	UI::_SET_NOTIFICATION_TEXT_ENTRY("STRING");
+	UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(message);
+	prevNotification = UI::_DRAW_NOTIFICATION(false, false);
+}
+
 
 void showText(float x, float y, float scale, const char* text) {
 	UI::SET_TEXT_FONT(0);
@@ -217,14 +228,6 @@ uint8_t getHandlingValueInt(Vehicle veh, int valueOffset) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	return *reinterpret_cast<uint8_t *>(handlingPtr + valueOffset);
-}
-
-// *10000.0f
-float getHandlingValueMult10000(Vehicle veh, int valueOffset) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	return *reinterpret_cast<float *>(handlingPtr + valueOffset) * 10000.0f;
-	//return 1.0f - (value / 2.0f);
 }
 
 /*
@@ -292,10 +295,567 @@ void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, flo
 	showText(xPos, yPos + (size * 0.050f)/0.40f, size, ssAccelAvgY.str().c_str());
 }
 
+void readMemorytoLog() {
+	std::stringstream vehName;
+	vehName << "VEHICLE: " << VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(model);
+	Logger logger(LOGFILE);
+	logger.Write(vehName.str());
+	logger.Write("fMass = " + std::to_string(getHandlingValue(vehicle, hOffsets.fMass)));
+	logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDragCoeff)*10000.0f)); // * 10000
+	logger.Write("fPercentSubmerged = " + std::to_string(getHandlingValue(vehicle, hOffsets.fPercentSubmerged)));
+
+	logger.Write("vecCentreOfMassOffsetX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.X)));
+	logger.Write("vecCentreOfMassOffsetY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y)));
+	logger.Write("vecCentreOfMassOffsetZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z)));
+
+	logger.Write("vecInertiaMultiplierX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X)));
+	logger.Write("vecInertiaMultiplierY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y)));
+	logger.Write("vecInertiaMultiplierZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z)));
+
+	logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront))); // 1.0f - (val / 2.0f)
+
+	logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValueInt(vehicle, hOffsets.nInitialDriveGears))); // int
+	logger.Write("fInitialDriveForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveForce)));
+	logger.Write("fDriveInertia = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDriveInertia)));
+	logger.Write("fClutchChangeRateScaleUpShift = " + std::to_string(getHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift)));
+	logger.Write("fClutchChangeRateScaleDownShift = " + std::to_string(getHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift)));
+	logger.Write("fInitialDriveMaxFlatVel = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel)*3.6f)); // m/s -> kph
+
+	logger.Write("fBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fBrakeForce)));
+	logger.Write("fBrakeBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront))); // 1.0f - (val / 2.0f)
+	logger.Write("fHandBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fHandBrakeForce)));
+
+	logger.Write("fSteeringLock = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSteeringLock)*(180.0f / 3.14159265359f))); // rad -> deg
+	logger.Write("fTractionCurveMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMax)));
+	logger.Write("fTractionCurveMin = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMin)));
+	logger.Write("fTractionCurveLateral = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveLateral)*(180.0f / 3.14159265359f))); // rad -> deg
+	logger.Write("fTractionSpringDeltaMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax)));
+	logger.Write("fLowSpeedTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult)));
+	logger.Write("fCamberStiffness = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCamberStiffness)));
+	logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront))); // 1.0f - (val / 2.0f)
+	logger.Write("fTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionLossMult)));
+
+	logger.Write("fSuspensionForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionForce)));
+	logger.Write("fSuspensionCompDamp = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionCompDamp)*10.0f)); // * 10
+	logger.Write("fSuspensionReboundDamp = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp)*10.0f)); // * 10
+	logger.Write("fSuspensionUpperLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit)));
+	logger.Write("fSuspensionLowerLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit)));
+	logger.Write("fSuspensionRaise = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionRaise)));
+	logger.Write("fSuspensionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront))); // 1.0f - (val / 2.0f)
+	logger.Write("fAntiRollBarForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fAntiRollBarForce)));
+	logger.Write("fAntiRollBarBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront))); // 1.0f - (val / 2.0f)
+	logger.Write("fRollCentreHeightFront = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightFront)));
+	logger.Write("fRollCentreHeightRear = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightRear)));
+	logger.Write("fCollisionDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCollisionDamageMult)));
+	logger.Write("fWeaponDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fWeaponDamageMult)));
+	logger.Write("fDeformationDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDeformationDamageMult)));
+	logger.Write("fEngineDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fEngineDamageMult)));
+	logger.Write("fPetrolTankVolume = " + std::to_string(getHandlingValue(vehicle, hOffsets.fPetrolTankVolume)));
+	logger.Write("fOilVolume = " + std::to_string(getHandlingValue(vehicle, hOffsets.fOilVolume)));
+	logger.Write("fSeatOffsetDistX = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistX)));
+	logger.Write("fSeatOffsetDistY = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistY)));
+	logger.Write("fSeatOffsetDistZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ)));
+	logger.Write("------------------------------");
+}
+
+void readXMLFile() {
+	using namespace tinyxml2;
+	tinyxml2::XMLDocument doc;
+	XMLError err = doc.LoadFile("./RTHandlingEditor.meta");
+	int err2 = 0;
+
+
+	std::stringstream handlingText;
+	float fMass = disableVal;
+	float fInitialDragCoeff = disableVal;
+	float fPercentSubmerged = disableVal;
+	float vecCentreOfMassOffsetX = disableVal;
+	float vecCentreOfMassOffsetY = disableVal;
+	float vecCentreOfMassOffsetZ = disableVal;
+	float vecInertiaMultiplierX = disableVal;
+	float vecInertiaMultiplierY = disableVal;
+	float vecInertiaMultiplierZ = disableVal;
+	float fDriveBiasFront = disableVal;
+	int   nInitialDriveGears = disableVal;
+	float fInitialDriveForce = disableVal;
+	float fDriveInertia = disableVal;
+	float fClutchChangeRateScaleUpShift = disableVal;
+	float fClutchChangeRateScaleDownShift = disableVal;
+	float fInitialDriveMaxFlatVel = disableVal;
+	float fBrakeForce = disableVal;
+	float fBrakeBiasFront = disableVal;
+	float fHandBrakeForce = disableVal;
+	float fSteeringLock = disableVal;
+	float fTractionCurveMax = disableVal;
+	float fTractionCurveMin = disableVal;
+	float fTractionCurveLateral = disableVal;
+	float fTractionSpringDeltaMax = disableVal;
+	float fLowSpeedTractionLossMult = disableVal;
+	float fCamberStiffness = disableVal;
+	float fTractionBiasFront = disableVal;
+	float fTractionLossMult = disableVal;
+	float fSuspensionForce = disableVal;
+	float fSuspensionCompDamp = disableVal;
+	float fSuspensionReboundDamp = disableVal;
+	float fSuspensionUpperLimit = disableVal;
+	float fSuspensionLowerLimit = disableVal;
+	float fSuspensionRaise = disableVal;
+	float fSuspensionBiasFront = disableVal;
+	float fAntiRollBarForce = disableVal;
+	float fAntiRollBarBiasFront = disableVal;
+	float fRollCentreHeightFront = disableVal;
+	float fRollCentreHeightRear = disableVal;
+	float fCollisionDamageMult = disableVal;
+	float fWeaponDamageMult = disableVal;
+	float fDeformationDamageMult = disableVal;
+	float fEngineDamageMult = disableVal;
+	float fPetrolTankVolume = disableVal;
+	float fOilVolume = disableVal;
+	float fSeatOffsetDistX = disableVal;
+	float fSeatOffsetDistY = disableVal;
+	float fSeatOffsetDistZ = disableVal;
+
+	if (err != XML_SUCCESS) {
+		showNotification("RTHandlingEditor: Can't load RTHandlingEditor.meta");
+		return;
+	}
+	char *xmlGenericFormatError = "RTHandlingEditor: RTHandlingEditor.meta read error";
+	XMLNode * pRoot = doc.FirstChild();
+	if (!pRoot) {
+		showNotification(xmlGenericFormatError);
+		return;
+	}
+
+	XMLElement * pElement = pRoot->FirstChildElement("handlingName");
+	if (pElement) {
+		handlingText << "RTHandlingEditor: " << pElement->GetText();
+	}
+	
+	// Error checking not done because I'm lazy
+	pRoot->FirstChildElement("fMass")->QueryAttribute("value", &fMass);
+	pRoot->FirstChildElement("fInitialDragCoeff")->QueryAttribute("value", &fInitialDragCoeff);
+	pRoot->FirstChildElement("fPercentSubmerged")->QueryAttribute("value", &fPercentSubmerged);
+	pRoot->FirstChildElement("vecCentreOfMassOffset")->QueryAttribute("x", &vecCentreOfMassOffsetX);
+	pRoot->FirstChildElement("vecCentreOfMassOffset")->QueryAttribute("y", &vecCentreOfMassOffsetY);
+	pRoot->FirstChildElement("vecCentreOfMassOffset")->QueryAttribute("z", &vecCentreOfMassOffsetZ);
+	pRoot->FirstChildElement("vecInertiaMultiplier")->QueryAttribute("x", &vecInertiaMultiplierX);
+	pRoot->FirstChildElement("vecInertiaMultiplier")->QueryAttribute("y", &vecInertiaMultiplierY);
+	pRoot->FirstChildElement("vecInertiaMultiplier")->QueryAttribute("z", &vecInertiaMultiplierZ);
+	pRoot->FirstChildElement("fDriveBiasFront")->QueryAttribute("value", &fDriveBiasFront);
+	pRoot->FirstChildElement("nInitialDriveGears")->QueryAttribute("value", &nInitialDriveGears);
+	pRoot->FirstChildElement("fInitialDriveForce")->QueryAttribute("value", &fInitialDriveForce);
+	pRoot->FirstChildElement("fDriveInertia")->QueryAttribute("value", &fDriveInertia);
+	pRoot->FirstChildElement("fClutchChangeRateScaleUpShift")->QueryAttribute("value", &fClutchChangeRateScaleUpShift);
+	pRoot->FirstChildElement("fClutchChangeRateScaleDownShift")->QueryAttribute("value", &fClutchChangeRateScaleDownShift);
+	pRoot->FirstChildElement("fInitialDriveMaxFlatVel")->QueryAttribute("value", &fInitialDriveMaxFlatVel);
+	pRoot->FirstChildElement("fBrakeForce")->QueryAttribute("value", &fBrakeForce);
+	pRoot->FirstChildElement("fBrakeBiasFront")->QueryAttribute("value", &fBrakeBiasFront);
+	pRoot->FirstChildElement("fHandBrakeForce")->QueryAttribute("value", &fHandBrakeForce);
+	pRoot->FirstChildElement("fSteeringLock")->QueryAttribute("value", &fSteeringLock);
+	pRoot->FirstChildElement("fTractionCurveMax")->QueryAttribute("value", &fTractionCurveMax);
+	pRoot->FirstChildElement("fTractionCurveMin")->QueryAttribute("value", &fTractionCurveMin);
+	pRoot->FirstChildElement("fTractionCurveLateral")->QueryAttribute("value", &fTractionCurveLateral);
+	pRoot->FirstChildElement("fTractionSpringDeltaMax")->QueryAttribute("value", &fTractionSpringDeltaMax);
+	pRoot->FirstChildElement("fLowSpeedTractionLossMult")->QueryAttribute("value", &fLowSpeedTractionLossMult);
+	pRoot->FirstChildElement("fCamberStiffnesss")->QueryAttribute("value", &fCamberStiffness);
+	pRoot->FirstChildElement("fTractionBiasFront")->QueryAttribute("value", &fTractionBiasFront);
+	pRoot->FirstChildElement("fTractionLossMult")->QueryAttribute("value", &fTractionLossMult);
+	pRoot->FirstChildElement("fSuspensionForce")->QueryAttribute("value", &fSuspensionForce);
+	pRoot->FirstChildElement("fSuspensionCompDamp")->QueryAttribute("value", &fSuspensionCompDamp);
+	pRoot->FirstChildElement("fSuspensionReboundDamp")->QueryAttribute("value", &fSuspensionReboundDamp);
+	pRoot->FirstChildElement("fSuspensionUpperLimit")->QueryAttribute("value", &fSuspensionUpperLimit);
+	pRoot->FirstChildElement("fSuspensionLowerLimit")->QueryAttribute("value", &fSuspensionLowerLimit);
+	pRoot->FirstChildElement("fSuspensionRaise")->QueryAttribute("value", &fSuspensionRaise);
+	pRoot->FirstChildElement("fSuspensionBiasFront")->QueryAttribute("value", &fSuspensionBiasFront);
+	pRoot->FirstChildElement("fAntiRollBarForce")->QueryAttribute("value", &fAntiRollBarForce);
+	pRoot->FirstChildElement("fAntiRollBarBiasFront")->QueryAttribute("value", &fAntiRollBarBiasFront);
+	pRoot->FirstChildElement("fRollCentreHeightFront")->QueryAttribute("value", &fRollCentreHeightFront);
+	pRoot->FirstChildElement("fRollCentreHeightRear")->QueryAttribute("value", &fRollCentreHeightRear);
+	pRoot->FirstChildElement("fCollisionDamageMult")->QueryAttribute("value", &fCollisionDamageMult);
+	pRoot->FirstChildElement("fWeaponDamageMult")->QueryAttribute("value", &fWeaponDamageMult);
+	pRoot->FirstChildElement("fDeformationDamageMult")->QueryAttribute("value", &fDeformationDamageMult);
+	pRoot->FirstChildElement("fEngineDamageMult")->QueryAttribute("value", &fEngineDamageMult);
+	pRoot->FirstChildElement("fPetrolTankVolume")->QueryAttribute("value", &fPetrolTankVolume);
+	pRoot->FirstChildElement("fOilVolume")->QueryAttribute("value", &fOilVolume);
+	pRoot->FirstChildElement("fSeatOffsetDistX")->QueryAttribute("value", &fSeatOffsetDistX);
+	pRoot->FirstChildElement("fSeatOffsetDistY")->QueryAttribute("value", &fSeatOffsetDistY);
+	pRoot->FirstChildElement("fSeatOffsetDistZ")->QueryAttribute("value", &fSeatOffsetDistZ);
+
+	if (fMass != disableVal)
+		setHandlingValue(vehicle, hOffsets.fMass, fMass);
+
+	if (fInitialDragCoeff != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDragCoeff, fInitialDragCoeff / 10000.0f);
+
+	if (fPercentSubmerged != disableVal)
+		setHandlingValue(vehicle, hOffsets.fPercentSubmerged, fPercentSubmerged);
+
+	if (vecCentreOfMassOffsetX != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, vecCentreOfMassOffsetX);
+
+	if (vecCentreOfMassOffsetY != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y, vecCentreOfMassOffsetY);
+
+	if (vecCentreOfMassOffsetZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z, vecCentreOfMassOffsetZ);
+
+	if (vecInertiaMultiplierX != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X, vecInertiaMultiplierX);
+
+	if (vecInertiaMultiplierY != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y, vecInertiaMultiplierY);
+
+	if (vecInertiaMultiplierZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
+
+	if (fDriveBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront);
+		setHandlingValue(vehicle, hOffsets.fDriveBiasFront_2, fDriveBiasFront * 2.0f);
+	}
+
+	if (nInitialDriveGears != disableVal)
+		setHandlingValueInt(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
+
+	if (fInitialDriveForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
+
+	if (fDriveInertia != disableVal)
+		setHandlingValue(vehicle, hOffsets.fDriveInertia, fDriveInertia);
+
+	if (fClutchChangeRateScaleUpShift != disableVal)
+		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift, fClutchChangeRateScaleUpShift);
+
+	if (fClutchChangeRateScaleDownShift != disableVal)
+		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift, fClutchChangeRateScaleDownShift);
+
+	if (fInitialDriveMaxFlatVel != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel, fInitialDriveMaxFlatVel / 3.6f);
+
+	if (fBrakeForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
+
+	if (fBrakeBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, fBrakeBiasFront);
+		setHandlingValue(vehicle, hOffsets.fBrakeBiasFront_2, fBrakeBiasFront * 2.0f);
+	}
+
+	if (fHandBrakeForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
+
+	if (fSteeringLock != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * (3.14159265359f / 180.0f));
+
+	if (fTractionCurveMax != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
+
+	if (fTractionCurveMin != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
+
+	if (fTractionCurveLateral != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * (3.14159265359f / 180.0f));
+
+	if (fTractionSpringDeltaMax != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax, fTractionSpringDeltaMax);
+
+	if (fLowSpeedTractionLossMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult, fLowSpeedTractionLossMult);
+
+	if (fCamberStiffness != disableVal)
+		setHandlingValue(vehicle, hOffsets.fCamberStiffness, fCamberStiffness);
+
+	if (fTractionBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, fTractionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fTractionBiasFront_2, fTractionBiasFront * 2.0f);
+	}
+
+	if (fTractionLossMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionLossMult, fTractionLossMult);
+
+	if (fSuspensionForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionForce, fSuspensionForce);
+
+	if (fSuspensionCompDamp != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionCompDamp, fSuspensionCompDamp / 10.0f);
+
+	if (fSuspensionReboundDamp != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp, fSuspensionReboundDamp / 10.0f);
+
+	if (fSuspensionUpperLimit != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit, fSuspensionUpperLimit);
+
+	if (fSuspensionLowerLimit != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit, fSuspensionLowerLimit);
+
+	if (fSuspensionRaise != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionRaise, fSuspensionRaise);
+
+	if (fSuspensionBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront, fSuspensionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fSuspensionBiasFront_2, fSuspensionBiasFront * 2.0f);
+	}
+
+	if (fAntiRollBarForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarForce, fAntiRollBarForce);
+
+	if (fAntiRollBarBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront);
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront_2, fAntiRollBarBiasFront * 2.0f);
+	}
+
+	if (fRollCentreHeightFront != disableVal)
+		setHandlingValue(vehicle, hOffsets.fRollCentreHeightFront, fRollCentreHeightFront);
+
+	if (fRollCentreHeightRear != disableVal)
+		setHandlingValue(vehicle, hOffsets.fRollCentreHeightRear, fRollCentreHeightRear);
+
+	if (fCollisionDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fCollisionDamageMult, fCollisionDamageMult);
+
+	if (fWeaponDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fWeaponDamageMult, fWeaponDamageMult);
+
+	if (fDeformationDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fDeformationDamageMult, fDeformationDamageMult);
+
+	if (fEngineDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fEngineDamageMult, fEngineDamageMult);
+
+	if (fPetrolTankVolume != disableVal)
+		setHandlingValue(vehicle, hOffsets.fPetrolTankVolume, fPetrolTankVolume);
+
+	if (fOilVolume != disableVal)
+		setHandlingValue(vehicle, hOffsets.fOilVolume, fOilVolume);
+
+	if (fSeatOffsetDistX != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistX, fSeatOffsetDistX);
+
+	if (fSeatOffsetDistY != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistY, fSeatOffsetDistY);
+
+	if (fSeatOffsetDistZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ, fSeatOffsetDistZ);
+
+	showNotification(const_cast<char *>(handlingText.str().c_str()));
+}
+
+void readINIFile() {
+	INIReader reader(SETTINGSFILE);
+	Logger logger(LOGFILE);
+
+	if (reader.ParseError() < 0) {
+		logger.Write("Can't load RTHandlingEditor.ini");
+		showNotification("RTHandlingEditor: Can't load RTHandlingEditor.ini");
+		return;
+	}
+		
+	float fMass = reader.GetReal("handling","fMass",disableVal);
+	float fInitialDragCoeff = reader.GetReal("handling", "fInitialDragCoeff", disableVal); // * 10000
+	float fPercentSubmerged = reader.GetReal("handling", "fPercentSubmerged", disableVal);
+	float vecCentreOfMassOffsetX = reader.GetReal("handling", "vecCentreOfMassOffsetX", disableVal);
+	float vecCentreOfMassOffsetY = reader.GetReal("handling", "vecCentreOfMassOffsetY", disableVal);
+	float vecCentreOfMassOffsetZ = reader.GetReal("handling", "vecCentreOfMassOffsetZ", disableVal);
+	float vecInertiaMultiplierX = reader.GetReal("handling", "vecInertiaMultiplierX", disableVal);
+	float vecInertiaMultiplierY = reader.GetReal("handling", "vecInertiaMultiplierY", disableVal);
+	float vecInertiaMultiplierZ = reader.GetReal("handling", "vecInertiaMultiplierZ", disableVal);
+	float fDriveBiasFront = reader.GetReal("handling", "fDriveBiasFront", disableVal); // !!!!!
+	int   nInitialDriveGears = reader.GetInteger("handling", "nInitialDriveGears", disableVal);
+	float fInitialDriveForce = reader.GetReal("handling", "fInitialDriveForce", disableVal);
+	float fDriveInertia = reader.GetReal("handling", "fDriveInertia", disableVal);
+	float fClutchChangeRateScaleUpShift = reader.GetReal("handling", "fClutchChangeRateScaleUpShift", disableVal);
+	float fClutchChangeRateScaleDownShift = reader.GetReal("handling", "fClutchChangeRateScaleDownShift", disableVal);
+	float fInitialDriveMaxFlatVel = reader.GetReal("handling", "fInitialDriveMaxFlatVel", disableVal); // kph -> m/s
+	float fBrakeForce = reader.GetReal("handling", "fBrakeForce", disableVal);
+	float fBrakeBiasFront = reader.GetReal("handling", "fBrakeBiasFront", disableVal); // !!!!!
+	float fHandBrakeForce = reader.GetReal("handling", "fHandBrakeForce", disableVal);
+	float fSteeringLock = reader.GetReal("handling", "fSteeringLock", disableVal); // deg -> rad
+	float fTractionCurveMax = reader.GetReal("handling", "fTractionCurveMax", disableVal);
+	float fTractionCurveMin = reader.GetReal("handling", "fTractionCurveMin", disableVal);
+	float fTractionCurveLateral = reader.GetReal("handling", "fTractionCurveLateral", disableVal); // deg -> rad
+	float fTractionSpringDeltaMax = reader.GetReal("handling", "fTractionSpringDeltaMax", disableVal);
+	float fLowSpeedTractionLossMult = reader.GetReal("handling", "fLowSpeedTractionLossMult", disableVal);
+	float fCamberStiffness = reader.GetReal("handling", "fCamberStiffness", disableVal);
+	float fTractionBiasFront = reader.GetReal("handling", "fTractionBiasFront", disableVal); // !!!!!
+	float fTractionLossMult = reader.GetReal("handling", "fTractionLossMult", disableVal);
+	float fSuspensionForce = reader.GetReal("handling", "fSuspensionForce", disableVal);
+	float fSuspensionCompDamp = reader.GetReal("handling", "fSuspensionCompDamp", disableVal); // *10
+	float fSuspensionReboundDamp = reader.GetReal("handling", "fSuspensionReboundDamp", disableVal); // *10
+	float fSuspensionUpperLimit = reader.GetReal("handling", "fSuspensionUpperLimit", disableVal);
+	float fSuspensionLowerLimit = reader.GetReal("handling", "fSuspensionLowerLimit", disableVal);
+	float fSuspensionRaise = reader.GetReal("handling", "fSuspensionRaise", disableVal);
+	float fSuspensionBiasFront = reader.GetReal("handling", "fSuspensionBiasFront", disableVal); // !!!!!
+	float fAntiRollBarForce = reader.GetReal("handling", "fAntiRollBarForce", disableVal);
+	float fAntiRollBarBiasFront = reader.GetReal("handling", "fAntiRollBarBiasFront", disableVal); // !!!!!
+	float fRollCentreHeightFront = reader.GetReal("handling", "fRollCentreHeightFront", disableVal);
+	float fRollCentreHeightRear = reader.GetReal("handling", "fRollCentreHeightRear", disableVal);
+	float fCollisionDamageMult = reader.GetReal("handling", "fCollisionDamageMult", disableVal);
+	float fWeaponDamageMult = reader.GetReal("handling", "fWeaponDamageMult", disableVal);
+	float fDeformationDamageMult = reader.GetReal("handling", "fDeformationDamageMult", disableVal);
+	float fEngineDamageMult = reader.GetReal("handling", "fEngineDamageMult", disableVal);
+	float fPetrolTankVolume = reader.GetReal("handling", "fPetrolTankVolume", disableVal);
+	float fOilVolume = reader.GetReal("handling", "fOilVolume", disableVal);
+	float fSeatOffsetDistX = reader.GetReal("handling", "fSeatOffsetDistX", disableVal);
+	float fSeatOffsetDistY = reader.GetReal("handling", "fSeatOffsetDistY", disableVal);
+	float fSeatOffsetDistZ = reader.GetReal("handling", "fSeatOffsetDistZ", disableVal);
+
+	if (fMass != disableVal)
+		setHandlingValue(vehicle, hOffsets.fMass, fMass);
+
+	if (fInitialDragCoeff != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDragCoeff, fInitialDragCoeff/10000.0f);
+		
+	if (fPercentSubmerged != disableVal)
+		setHandlingValue(vehicle, hOffsets.fPercentSubmerged, fPercentSubmerged);
+
+	if (vecCentreOfMassOffsetX != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, vecCentreOfMassOffsetX);
+
+	if (vecCentreOfMassOffsetY != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y, vecCentreOfMassOffsetY);
+
+	if (vecCentreOfMassOffsetZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z, vecCentreOfMassOffsetZ);
+
+	if (vecInertiaMultiplierX != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X, vecInertiaMultiplierX);
+
+	if (vecInertiaMultiplierY != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y, vecInertiaMultiplierY);
+
+	if (vecInertiaMultiplierZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
+
+	if (fDriveBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront);
+		setHandlingValue(vehicle, hOffsets.fDriveBiasFront_2, fDriveBiasFront * 2.0f);
+	}
+
+	if (nInitialDriveGears != disableVal)
+		setHandlingValueInt(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
+
+	if (fInitialDriveForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
+
+	if (fDriveInertia != disableVal)
+		setHandlingValue(vehicle, hOffsets.fDriveInertia, fDriveInertia);
+
+	if (fClutchChangeRateScaleUpShift != disableVal)
+		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift, fClutchChangeRateScaleUpShift);
+
+	if (fClutchChangeRateScaleDownShift != disableVal)
+		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift, fClutchChangeRateScaleDownShift);
+
+	if (fInitialDriveMaxFlatVel != disableVal)
+		setHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel, fInitialDriveMaxFlatVel / 3.6f);
+
+	if (fBrakeForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
+
+	if (fBrakeBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, fBrakeBiasFront);
+		setHandlingValue(vehicle, hOffsets.fBrakeBiasFront_2, fBrakeBiasFront * 2.0f);
+	}
+
+	if (fHandBrakeForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
+
+	if (fSteeringLock != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * (3.14159265359f / 180.0f));
+
+	if (fTractionCurveMax != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
+
+	if (fTractionCurveMin != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
+
+	if (fTractionCurveLateral != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * (3.14159265359f / 180.0f));
+
+	if (fTractionSpringDeltaMax != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax, fTractionSpringDeltaMax);
+
+	if (fLowSpeedTractionLossMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult, fLowSpeedTractionLossMult);
+
+	if (fCamberStiffness != disableVal)
+		setHandlingValue(vehicle, hOffsets.fCamberStiffness, fCamberStiffness);
+
+	if (fTractionBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, fTractionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fTractionBiasFront_2, fTractionBiasFront * 2.0f);
+	}
+
+	if (fTractionLossMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fTractionLossMult, fTractionLossMult);
+
+	if (fSuspensionForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionForce, fSuspensionForce);
+
+	if (fSuspensionCompDamp != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionCompDamp, fSuspensionCompDamp / 10.0f);
+
+	if (fSuspensionReboundDamp != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp, fSuspensionReboundDamp / 10.0f);
+
+	if (fSuspensionUpperLimit != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit, fSuspensionUpperLimit);
+
+	if (fSuspensionLowerLimit != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit, fSuspensionLowerLimit);
+
+	if (fSuspensionRaise != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSuspensionRaise, fSuspensionRaise);
+
+	if (fSuspensionBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront, fSuspensionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fSuspensionBiasFront_2, fSuspensionBiasFront * 2.0f);
+	}
+
+	if (fAntiRollBarForce != disableVal)
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarForce, fAntiRollBarForce);
+
+	if (fAntiRollBarBiasFront != disableVal) {
+		setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront);
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront_2, fAntiRollBarBiasFront * 2.0f);
+	}
+
+	if (fRollCentreHeightFront != disableVal)
+		setHandlingValue(vehicle, hOffsets.fRollCentreHeightFront, fRollCentreHeightFront);
+
+	if (fRollCentreHeightRear != disableVal)
+		setHandlingValue(vehicle, hOffsets.fRollCentreHeightRear, fRollCentreHeightRear);
+
+	if (fCollisionDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fCollisionDamageMult, fCollisionDamageMult);
+
+	if (fWeaponDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fWeaponDamageMult, fWeaponDamageMult);
+
+	if (fDeformationDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fDeformationDamageMult, fDeformationDamageMult);
+
+	if (fEngineDamageMult != disableVal)
+		setHandlingValue(vehicle, hOffsets.fEngineDamageMult, fEngineDamageMult);
+
+	if (fPetrolTankVolume != disableVal)
+		setHandlingValue(vehicle, hOffsets.fPetrolTankVolume, fPetrolTankVolume);
+
+	if (fOilVolume != disableVal)
+		setHandlingValue(vehicle, hOffsets.fOilVolume, fOilVolume);
+
+	if (fSeatOffsetDistX != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistX, fSeatOffsetDistX);
+
+	if (fSeatOffsetDistY != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistY, fSeatOffsetDistY);
+
+	if (fSeatOffsetDistZ != disableVal)
+		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ, fSeatOffsetDistZ);
+	showNotification("RTHandlingEditor: Loaded RTHandlingEditor.ini");
+}
+
 /*
 * main loop
 */
-
 void update()
 {
 	char kbKeyBuffer[24];
@@ -304,6 +864,9 @@ void update()
 
 	GetPrivateProfileStringA("key", "log", "L", kbKeyBuffer, 24, SETTINGSFILE);
 	int logKey = str2key(kbKeyBuffer);
+
+	GetPrivateProfileStringA("key", "meta", "K", kbKeyBuffer, 24, SETTINGSFILE);
+	int metaKey = str2key(kbKeyBuffer);
 
 	float posX = GetPrivateProfileIntA("util", "infox", 1, SETTINGSFILE)  / 100.0f;
 	float posY = GetPrivateProfileIntA("util", "infoy", 30, SETTINGSFILE) / 100.0f;
@@ -354,279 +917,17 @@ void update()
 	showText(0.2, 0.3, 1.0, ss_fTractionBiasFront.str().c_str());*/
 	//logger.Write(" = " + std::to_string());
 	if (IsKeyJustUp(logKey)) {
-		std::stringstream vehName;
-		vehName << "VEHICLE: " << VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(model);
-		Logger logger(LOGFILE);
-		logger.Write(vehName.str());
-		logger.Write("fMass = " + std::to_string(getHandlingValue(vehicle, hOffsets.fMass)));
-		logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValueMult10000(vehicle, hOffsets.fInitialDragCoeff))); // * 10000
-		logger.Write("fPercentSubmerged = " + std::to_string(getHandlingValue(vehicle, hOffsets.fPercentSubmerged)));
+		readMemorytoLog();
+		showNotification("RTHandlingEditor: Saved to RTHandlingEditor.log");
+	}
 
-		logger.Write("vecCentreOfMassOffsetX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.X)));
-		logger.Write("vecCentreOfMassOffsetY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y)));
-		logger.Write("vecCentreOfMassOffsetZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z)));
-
-		logger.Write("vecInertiaMultiplierX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X)));
-		logger.Write("vecInertiaMultiplierY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y)));
-		logger.Write("vecInertiaMultiplierZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z)));
-
-		logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront))); // 1.0f - (val / 2.0f)
-
-		logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValueInt(vehicle, hOffsets.nInitialDriveGears))); // int
-		logger.Write("fInitialDriveForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveForce)));
-		logger.Write("fDriveInertia = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDriveInertia)));
-		logger.Write("fClutchChangeRateScaleUpShift = " + std::to_string(getHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift)));
-		logger.Write("fClutchChangeRateScaleDownShift = " + std::to_string(getHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift)));
-		logger.Write("fInitialDriveMaxFlatVel = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel)*3.6f)); // m/s -> kph
-		
-		logger.Write("fBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fBrakeForce)));
-		logger.Write("fBrakeBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront))); // 1.0f - (val / 2.0f)
-		logger.Write("fHandBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fHandBrakeForce)));
-		
-		logger.Write("fSteeringLock = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSteeringLock)*(180.0f / 3.14159265359f))); // rad -> deg
-		logger.Write("fTractionCurveMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMax)));
-		logger.Write("fTractionCurveMin = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMin)));
-		logger.Write("fTractionCurveLateral = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveLateral)*(180.0f / 3.14159265359f))); // rad -> deg
-		logger.Write("fTractionSpringDeltaMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax)));
-		logger.Write("fLowSpeedTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult)));
-		logger.Write("fCamberStiffness = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCamberStiffness)));
-		logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront))); // 1.0f - (val / 2.0f)
-		logger.Write("fTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionLossMult)));
-		
-		logger.Write("fSuspensionForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionForce)));
-		logger.Write("fSuspensionCompDamp = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionCompDamp)*10.0f)); // * 10
-		logger.Write("fSuspensionReboundDamp = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp)*10.0f)); // * 10
-		logger.Write("fSuspensionUpperLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit)));
-		logger.Write("fSuspensionLowerLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit)));
-		logger.Write("fSuspensionRaise = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionRaise)));
-		logger.Write("fSuspensionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront))); // 1.0f - (val / 2.0f)
-		logger.Write("fAntiRollBarForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fAntiRollBarForce)));
-		logger.Write("fAntiRollBarBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront))); // 1.0f - (val / 2.0f)
-		logger.Write("fRollCentreHeightFront = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightFront)));
-		logger.Write("fRollCentreHeightRear = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightRear)));
-		logger.Write("fCollisionDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCollisionDamageMult)));
-		logger.Write("fWeaponDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fWeaponDamageMult)));
-		logger.Write("fDeformationDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDeformationDamageMult)));
-		logger.Write("fEngineDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fEngineDamageMult)));
-		logger.Write("fPetrolTankVolume = " + std::to_string(getHandlingValue(vehicle, hOffsets.fPetrolTankVolume)));
-		logger.Write("fOilVolume = " + std::to_string(getHandlingValue(vehicle, hOffsets.fOilVolume)));
-		logger.Write("fSeatOffsetDistX = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistX)));
-		logger.Write("fSeatOffsetDistY = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistY)));
-		logger.Write("fSeatOffsetDistZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ)));
-		logger.Write("------------------------------");
+	if (IsKeyJustUp(metaKey)) {
+		readXMLFile();
 	}
 
 	if (IsKeyJustUp(readKey)) {
-		INIReader reader(SETTINGSFILE);
-		Logger logger(LOGFILE);
+		readINIFile();
 
-		if (reader.ParseError() < 0) {
-			logger.Write("Can't load RTHandlingEditor.ini");
-			return;
-		}
-		
-		float fMass = reader.GetReal("handling","fMass",-1337);
-		float fInitialDragCoeff = reader.GetReal("handling", "fInitialDragCoeff", -1337); // * 10000
-		float fPercentSubmerged = reader.GetReal("handling", "fPercentSubmerged", -1337);
-		float vecCentreOfMassOffsetX = reader.GetReal("handling", "vecCentreOfMassOffsetX", -1337);
-		float vecCentreOfMassOffsetY = reader.GetReal("handling", "vecCentreOfMassOffsetY", -1337);
-		float vecCentreOfMassOffsetZ = reader.GetReal("handling", "vecCentreOfMassOffsetZ", -1337);
-		float vecInertiaMultiplierX = reader.GetReal("handling", "vecInertiaMultiplierX", -1337);
-		float vecInertiaMultiplierY = reader.GetReal("handling", "vecInertiaMultiplierY", -1337);
-		float vecInertiaMultiplierZ = reader.GetReal("handling", "vecInertiaMultiplierZ", -1337);
-		float fDriveBiasFront = reader.GetReal("handling", "fDriveBiasFront", -1337); // !!!!!
-		int   nInitialDriveGears = reader.GetInteger("handling", "nInitialDriveGears", -1337);
-		float fInitialDriveForce = reader.GetReal("handling", "fInitialDriveForce", -1337);
-		float fDriveInertia = reader.GetReal("handling", "fDriveInertia", -1337);
-		float fClutchChangeRateScaleUpShift = reader.GetReal("handling", "fClutchChangeRateScaleUpShift", -1337);
-		float fClutchChangeRateScaleDownShift = reader.GetReal("handling", "fClutchChangeRateScaleDownShift", -1337);
-		float fInitialDriveMaxFlatVel = reader.GetReal("handling", "fInitialDriveMaxFlatVel", -1337)/3.6f; // kph -> m/s
-		float fBrakeForce = reader.GetReal("handling", "fBrakeForce", -1337);
-		float fBrakeBiasFront = reader.GetReal("handling", "fBrakeBiasFront", -1337); // !!!!!
-		float fHandBrakeForce = reader.GetReal("handling", "fHandBrakeForce", -1337);
-		float fSteeringLock = reader.GetReal("handling", "fSteeringLock", -1337) * (3.14159265359f / 180.0f); // deg -> rad
-		float fTractionCurveMax = reader.GetReal("handling", "fTractionCurveMax", -1337);
-		float fTractionCurveMin = reader.GetReal("handling", "fTractionCurveMin", -1337);
-		float fTractionCurveLateral = reader.GetReal("handling", "fTractionCurveLateral", -1337) * (3.14159265359f / 180.0f); // deg -> rad
-		float fTractionSpringDeltaMax = reader.GetReal("handling", "fTractionSpringDeltaMax", -1337);
-		float fLowSpeedTractionLossMult = reader.GetReal("handling", "fLowSpeedTractionLossMult", -1337);
-		float fCamberStiffness = reader.GetReal("handling", "fCamberStiffness", -1337);
-		float fTractionBiasFront = reader.GetReal("handling", "fTractionBiasFront", -1337); // !!!!!
-		float fTractionLossMult = reader.GetReal("handling", "fTractionLossMult", -1337);
-		float fSuspensionForce = reader.GetReal("handling", "fSuspensionForce", -1337);
-		float fSuspensionCompDamp = reader.GetReal("handling", "fSuspensionCompDamp", -1337); // *10
-		float fSuspensionReboundDamp = reader.GetReal("handling", "fSuspensionReboundDamp", -1337); // *10
-		float fSuspensionUpperLimit = reader.GetReal("handling", "fSuspensionUpperLimit", -1337);
-		float fSuspensionLowerLimit = reader.GetReal("handling", "fSuspensionLowerLimit", -1337);
-		float fSuspensionRaise = reader.GetReal("handling", "fSuspensionRaise", -1337);
-		float fSuspensionBiasFront = reader.GetReal("handling", "fSuspensionBiasFront", -1337); // !!!!!
-		float fAntiRollBarForce = reader.GetReal("handling", "fAntiRollBarForce", -1337);
-		float fAntiRollBarBiasFront = reader.GetReal("handling", "fAntiRollBarBiasFront", -1337); // !!!!!
-		float fRollCentreHeightFront = reader.GetReal("handling", "fRollCentreHeightFront", -1337);
-		float fRollCentreHeightRear = reader.GetReal("handling", "fRollCentreHeightRear", -1337);
-		float fCollisionDamageMult = reader.GetReal("handling", "fCollisionDamageMult", -1337);
-		float fWeaponDamageMult = reader.GetReal("handling", "fWeaponDamageMult", -1337);
-		float fDeformationDamageMult = reader.GetReal("handling", "fDeformationDamageMult", -1337);
-		float fEngineDamageMult = reader.GetReal("handling", "fEngineDamageMult", -1337);
-		float fPetrolTankVolume = reader.GetReal("handling", "fPetrolTankVolume", -1337);
-		float fOilVolume = reader.GetReal("handling", "fOilVolume", -1337);
-		float fSeatOffsetDistX = reader.GetReal("handling", "fSeatOffsetDistX", -1337);
-		float fSeatOffsetDistY = reader.GetReal("handling", "fSeatOffsetDistY", -1337);
-		float fSeatOffsetDistZ = reader.GetReal("handling", "fSeatOffsetDistZ", -1337);
-
-		if (fMass != -1337)
-			setHandlingValue(vehicle, hOffsets.fMass, fMass);
-
-		if (fInitialDragCoeff != -1337)
-			setHandlingValue(vehicle, hOffsets.fInitialDragCoeff, fInitialDragCoeff/10000.0f);
-		
-		if (fPercentSubmerged != -1337)
-			setHandlingValue(vehicle, hOffsets.fPercentSubmerged, fPercentSubmerged);
-
-		if (vecCentreOfMassOffsetX != -1337)
-			setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, vecCentreOfMassOffsetX);
-
-		if (vecCentreOfMassOffsetY != -1337)
-			setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y, vecCentreOfMassOffsetY);
-
-		if (vecCentreOfMassOffsetZ != -1337)
-			setHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z, vecCentreOfMassOffsetZ);
-
-		if (vecInertiaMultiplierX != -1337)
-			setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X, vecInertiaMultiplierX);
-
-		if (vecInertiaMultiplierY != -1337)
-			setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y, vecInertiaMultiplierY);
-
-		if (vecInertiaMultiplierZ != -1337)
-			setHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z, vecInertiaMultiplierZ);
-
-		if (fDriveBiasFront != -1337) {
-			setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront);
-			setHandlingValue(vehicle, hOffsets.fDriveBiasFront_2, fDriveBiasFront * 2.0f);
-		}
-
-		if (nInitialDriveGears != -1337)
-			setHandlingValueInt(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
-
-		if (fInitialDriveForce != -1337)
-			setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
-
-		if (fDriveInertia != -1337)
-			setHandlingValue(vehicle, hOffsets.fDriveInertia, fDriveInertia);
-
-		if (fClutchChangeRateScaleUpShift != -1337)
-			setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift, fClutchChangeRateScaleUpShift);
-
-		if (fClutchChangeRateScaleDownShift != -1337)
-			setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift, fClutchChangeRateScaleDownShift);
-
-		if (fInitialDriveMaxFlatVel != -1337 / 3.6f)
-			setHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel, fInitialDriveMaxFlatVel);
-
-		if (fBrakeForce != -1337)
-			setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
-
-		if (fBrakeBiasFront != -1337) {
-			setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront, fBrakeBiasFront);
-			setHandlingValue(vehicle, hOffsets.fBrakeBiasFront_2, fBrakeBiasFront * 2.0f);
-		}
-
-		if (fHandBrakeForce != -1337)
-			setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
-
-		if (fSteeringLock != -1337 * (3.14159265359f / 180.0f))
-			setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock);
-
-		if (fTractionCurveMax != -1337)
-			setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
-
-		if (fTractionCurveMin != -1337)
-			setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
-
-		if (fTractionCurveLateral != -1337 * (3.14159265359f / 180.0f))
-			setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral);
-
-		if (fTractionSpringDeltaMax != -1337)
-			setHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax, fTractionSpringDeltaMax);
-
-		if (fLowSpeedTractionLossMult != -1337)
-			setHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult, fLowSpeedTractionLossMult);
-
-		if (fCamberStiffness != -1337)
-			setHandlingValue(vehicle, hOffsets.fCamberStiffness, fCamberStiffness);
-
-		if (fTractionBiasFront != -1337) {
-			setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront, fTractionBiasFront);
-			setHandlingValue(vehicle, hOffsets.fTractionBiasFront_2, fTractionBiasFront * 2.0f);
-		}
-
-		if (fTractionLossMult != -1337)
-			setHandlingValue(vehicle, hOffsets.fTractionLossMult, fTractionLossMult);
-
-		if (fSuspensionForce != -1337)
-			setHandlingValue(vehicle, hOffsets.fSuspensionForce, fSuspensionForce);
-
-		if (fSuspensionCompDamp != -1337)
-			setHandlingValue(vehicle, hOffsets.fSuspensionCompDamp, fSuspensionCompDamp / 10.0f);
-
-		if (fSuspensionReboundDamp != -1337)
-			setHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp, fSuspensionReboundDamp / 10.0f);
-
-		if (fSuspensionUpperLimit != -1337)
-			setHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit, fSuspensionUpperLimit);
-
-		if (fSuspensionLowerLimit != -1337)
-			setHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit, fSuspensionLowerLimit);
-
-		if (fSuspensionRaise != -1337)
-			setHandlingValue(vehicle, hOffsets.fSuspensionRaise, fSuspensionRaise);
-
-		if (fSuspensionBiasFront != -1337) {
-			setHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront, fSuspensionBiasFront);
-			setHandlingValue(vehicle, hOffsets.fSuspensionBiasFront_2, fSuspensionBiasFront * 2.0f);
-		}
-
-		if (fAntiRollBarForce != -1337)
-			setHandlingValue(vehicle, hOffsets.fAntiRollBarForce, fAntiRollBarForce);
-
-		if (fAntiRollBarBiasFront != -1337) {
-			setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront);
-			setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront_2, fSuspensionLowerLimit * 2.0f);
-		}
-
-		if (fRollCentreHeightFront != -1337)
-			setHandlingValue(vehicle, hOffsets.fRollCentreHeightFront, fRollCentreHeightFront);
-
-		if (fRollCentreHeightRear != -1337)
-			setHandlingValue(vehicle, hOffsets.fRollCentreHeightRear, fRollCentreHeightRear);
-
-		if (fCollisionDamageMult != -1337)
-			setHandlingValue(vehicle, hOffsets.fCollisionDamageMult, fCollisionDamageMult);
-
-		if (fWeaponDamageMult != -1337)
-			setHandlingValue(vehicle, hOffsets.fWeaponDamageMult, fWeaponDamageMult);
-
-		if (fDeformationDamageMult != -1337)
-			setHandlingValue(vehicle, hOffsets.fDeformationDamageMult, fDeformationDamageMult);
-
-		if (fEngineDamageMult != -1337)
-			setHandlingValue(vehicle, hOffsets.fEngineDamageMult, fEngineDamageMult);
-
-		if (fPetrolTankVolume != -1337)
-			setHandlingValue(vehicle, hOffsets.fPetrolTankVolume, fPetrolTankVolume);
-
-		if (fOilVolume != -1337)
-			setHandlingValue(vehicle, hOffsets.fOilVolume, fOilVolume);
-
-		if (fSeatOffsetDistX != -1337)
-			setHandlingValue(vehicle, hOffsets.fSeatOffsetDistX, fSeatOffsetDistX);
-
-		if (fSeatOffsetDistY != -1337)
-			setHandlingValue(vehicle, hOffsets.fSeatOffsetDistY, fSeatOffsetDistY);
-
-		if (fSeatOffsetDistZ != -1337)
-			setHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ, fSeatOffsetDistZ);
 	}
 }
 
