@@ -13,18 +13,28 @@ This .asi plugin will allow realtime editing of handling.meta values in-memory. 
 
 The offsets for the values have only been tested in b791_2
 
+
 ## Installation
 * Drop RTHandlingEditor.asi in the main GTA V folder
 * Drop RTHandlingEditor.ini in the main GTA V folder
+* (Optional) Drop RTHandlingEditor.meta in the main GTA V folder
 
-## Usage
-* Press the `read` hotkey to read `RTHandlingEditor.ini` values into memory
-* Press the `log` hotkey to write memory values into `RTHandlingEditor.log`
-* Use `-1337` in the `[handling]` section to ignore the value
+## Usage in-game
+* Press the `read` hotkey during gameplay to read `RTHandlingEditor.ini` values into memory
+* Press the `log` hotkey during gameplay to write memory values into `RTHandlingEditor.log`
+
+## Usage .ini and .meta
+* Use `-1337` in the `[handling]` section to ignore a value in `RTHandlingEditor.ini`
+* Replace everything in `RTHandlingEditor.meta` with your handling entry, between ``
+* An example with Rockstar's original Sultan entry is included. Replace at will
 
 ## Limitations
-* Some values do not apply while in-game and need restarting still. For example, nInitialDriveGears.
+* Some values do not apply instantly. The game will need to reload the vehicle to apply these properly. Some examples:
+  * vecCentreOfMassOffset
+  * nInitialDriveGears
+  * fDriveBiasFront
 * Some values using radians internally have small rounding errors
+
 
 ------------------------------
 
