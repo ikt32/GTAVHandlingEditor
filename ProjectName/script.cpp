@@ -38,111 +38,81 @@ struct vecOffset {
 };
 
 const struct HandlingOffset {
-	
-	int fMass = 0xC; // VERIFIED
-	
-	// *10000.0f!
-	int fInitialDragCoeff = 0x10;  // VERIFIED
-	
-	vecOffset vecCentreOfMass = { // VERIFIED
-		0x20, 0x24, 0x28
-	};
-	vecOffset vecInertiaMultiplier = { // VERIFIED
-		0x30, 0x34, 0x38
-	};
-	int fPercentSubmerged = 0x40; // VERIFIED
-
-	// 2*meta
-	int fDriveBiasFront = 0x48; // No? 0x48?
-	
-	// 2*(1.0-meta)
-	int fDriveBiasRear = 0x4C;
-	
-	uint8_t nInitialDriveGears = 0x50; // VERIFIED
-	int fDriveInertia = 0x54; // VERIFIED
-	int fClutchChangeRateScaleUpShift = 0x58; // VERIFIED
-	int fClutchChangeRateScaleDownShift = 0x5C; // VERIFIED
-	int fInitialDriveForce = 0x60; // VERIFIED
-	
-   //int fInitialDriveMaxFlatVel = 0x64; // meta/3 // doesn't seem to read changes
-	int fInitialDriveMaxFlatVel = 0x68; // meta/3.6 (kph -> m/s)
-	
-	// NORMAL/VERIFIED
-	int fBrakeForce = 0x6C;
-	
-	// 2*meta
-	int fBrakeBiasFront = 0x74;
-
-	// 2*(1.0-meta)
-	int fBrakeBiasRear = 0x78;
-
-
-	int fHandBrakeForce = 0x7C; // VERIFIED
-
-	int fSteeringLock = 0x80; // (meta*pi)/180 (degrees -> radians), for inner wheel
-	
-	int fTractionCurveMax = 0x88; // VERIFIED
-	//int m_fAcceleration = 0x8C; // ???
-
-	int fTractionCurveMin = 0x90; // VERIFIED
-
-	//int m_fGrip = 0x9C; // lateral grip?
-
-	int fTractionCurveLateral = 0x98; // (meta*pi)/180 (degrees -> radians) 
-
-	int fTractionSpringDeltaMax = 0xA0; // VERIFIED
-	int fLowSpeedTractionLossMult = 0xA8; // VERIFIED
-	int fCamberStiffness = 0xAC; // VERIFIED
-
-	// meta*2
-	int fTractionBiasFront = 0xB0;
-
-	// 1.0f - (value / 2.0f)
-	int fTractionBiasRear = 0xB4;
-
-	int fTractionLossMult = 0xB8;	// VERIFIED
-	int fSuspensionForce = 0xBC; // VERIFIED
-	int fSuspensionCompDamp = 0xC0; // VERIFIED
-	int fSuspensionReboundDamp = 0xC4; // VERIFIED
-	int fSuspensionUpperLimit = 0xC8; // VERIFIED
-	int fSuspensionLowerLimit = 0xCC; // VERIFIED
-	int fSuspensionRaise = 0xD0; // VERIFIED
-
-	// meta*2
-	int fSuspensionBiasFront = 0xD4; // VERIFIED
-
-	// 1.0-(meta/2)
-	int fSuspensionBiasRear = 0xD8; // VERIFIED
-
-	int fAntiRollBarForce = 0xDC; // VERIFIED
-	
-	// meta*2
-	int fAntiRollBarBiasFront = 0xE0;
-	
-	// 1.0-(meta/2)
-	int fAntiRollBarBiasRear = 0xE4;
-
-
-	int fRollCentreHeightFront = 0xE8; // VERIFIED
-	int fRollCentreHeightRear = 0xEC; // VERIFIED
-
-	int fCollisionDamageMult = 0xF0; // VERIFIED
-	int fWeaponDamageMult = 0xF4; // VERIFIED
-	int fDeformationDamageMult = 0xF8; // VERIFIED
-	int fEngineDamageMult = 0xFC; // VERIFIED
-	
-	int fPetrolTankVolume = 0x100; // VERIFIED
-	int fOilVolume = 0x104; // VERIFIED
-	
-	int fSeatOffsetDistX = 0x10C; // VERIFIED
-	int fSeatOffsetDistY = 0x110; // VERIFIED
-	int fSeatOffsetDistZ = 0x114; // VERIFIED
-
-	int nMonetaryValue = 0x118; // VERIFIED
-	int dwStrModelFlags = 0x11C; // VERIFIED
-	int dwStrHandlingFlags = 0x120; // VERIFIED
-	int dwStrDamageFlags = 0x124; // VERIFIED
-	//int dwAIHandlingHash = 0x134; // VERIFIED ???
+	DWORD dwHandlingNameHash =	0x0008;
+	int fMass =					0x000C;
+	int fInitialDragCoeff =		0x0010;
+	//							0x0014
+	//							0x0018
+	//							0x001C
+	vecOffset vecCentreOfMass = {
+								0x0020,
+								0x0024,
+								0x0028 };
+	//							0x002C
+	vecOffset vecInertiaMultiplier = {
+								0x0030,
+								0x0034,
+								0x0038 };
+	//							0x003C
+	int fPercentSubmerged =		0x0040;
+	int fSubmergedRatio =		0x0044;
+	int fDriveBiasFront =		0x0048;
+	int fDriveBiasRear =		0x004C;
+	uint8_t nInitialDriveGears = 0x0050;
+	int fDriveInertia =			0x0054;
+	int fClutchChangeRateScaleUpShift = 0x0058;
+	int fClutchChangeRateScaleDownShift = 0x005C;
+	int fInitialDriveForce =	0x0060;
+    int fDriveMaxFlatVel =		0x0064;
+	int fInitialDriveMaxFlatVel = 0x0068;
+	int fBrakeForce =			0x006C;
+	//							0x0070
+	int fBrakeBiasFront =		0x0074;
+	int fBrakeBiasRear =		0x0078;
+	int fHandBrakeForce =		0x007C; 
+	int fSteeringLock =			0x0080;
+	int fSteeringLockRatio =	0x0084;
+	int fTractionCurveMax =		0x0088; 
+	int fTractionCurveMaxRatio = 0x008C;
+	int fTractionCurveMin =		0x0090; 
+	int fTractionCurveMinRatio = 0x0094;
+	int fTractionCurveLateral = 0x0098;
+	int fTractionCurveLateralRatio = 0x009C;
+	int fTractionSpringDeltaMax = 0x00A0; 
+	int fTractionSpringDeltaMaxRatio = 0x00A4;
+	int fLowSpeedTractionLossMult = 0x00A8; 
+	int fCamberStiffness =		0x00AC; 
+	int fTractionBiasFront =	0x00B0;
+	int fTractionBiasRear =		0x00B4;
+	int fTractionLossMult =		0x00B8;	
+	int fSuspensionForce =		0x00BC; 
+	int fSuspensionCompDamp =	0x00C0; 
+	int fSuspensionReboundDamp = 0x00C4; 
+	int fSuspensionUpperLimit = 0x00C8; 
+	int fSuspensionLowerLimit = 0x00CC; 
+	int fSuspensionRaise =		0x00D0; 
+	int fSuspensionBiasFront =	0x00D4; 
+	int fSuspensionBiasRear =	0x00D8; 
+	int fAntiRollBarForce =		0x00DC; 
+	int fAntiRollBarBiasFront = 0x00E0;
+	int fAntiRollBarBiasRear =	0x00E4;
+	int fRollCentreHeightFront = 0x00E8; 
+	int fRollCentreHeightRear = 0x00EC; 
+	int fCollisionDamageMult =	0x00F0; 
+	int fWeaponDamageMult =		0x00F4; 
+	int fDeformationDamageMult = 0x00F8; 
+	int fEngineDamageMult =		0x00FC; 
+	int fPetrolTankVolume =		0x0100; 
+	int fOilVolume =			0x0104; 
+	//							0x0108
+	int fSeatOffsetDistX =		0x010C; 
+	int fSeatOffsetDistY =		0x0110; 
+	int fSeatOffsetDistZ =		0x0114; 
+	int nMonetaryValue =		0x0118; 
+	DWORD dwStrModelFlags =		0x011C; 
+	DWORD dwStrHandlingFlags =	0x0120;
+	DWORD dwStrDamageFlags =	0x0124;
+	DWORD dwAIHandlingHash =	0x0134;
 } hOffsets = {};
 
 
@@ -247,13 +217,13 @@ void setHandlingValue(Vehicle veh, int valueOffset, float val) {
 	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
 }
 
-void setHandlingValueMult10000(Vehicle veh, int valueOffset, float val) {
+void setHandlingValueDWORD(Vehicle veh, int valueOffset, DWORD val) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val / 10000.0f;
+	*reinterpret_cast<DWORD *>(handlingPtr + valueOffset) = val;
 }
 
-void setHandlingValueInt(Vehicle veh, int valueOffset, uint8_t val) {
+void setHandlingValueUint8(Vehicle veh, int valueOffset, uint8_t val) {
 	const uint64_t address = mem.GetAddressOfEntity(veh);
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	*reinterpret_cast<uint8_t *>(handlingPtr + valueOffset) = val;
@@ -296,15 +266,64 @@ void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, flo
 }
 
 
-void setHandling(float fMass, float fInitialDragCoeff, float fPercentSubmerged, float vecCentreOfMassOffsetX, float vecCentreOfMassOffsetY, float vecCentreOfMassOffsetZ, float vecInertiaMultiplierX, float vecInertiaMultiplierY, float vecInertiaMultiplierZ, float fDriveBiasFront, int nInitialDriveGears, float fInitialDriveForce, float fDriveInertia, float fClutchChangeRateScaleUpShift, float fClutchChangeRateScaleDownShift, float fInitialDriveMaxFlatVel, float fBrakeForce, float fBrakeBiasFront, float fHandBrakeForce, float fSteeringLock, float fTractionCurveMax, float fTractionCurveMin, float fTractionCurveLateral, float fTractionSpringDeltaMax, float fLowSpeedTractionLossMult, float fCamberStiffness, float fTractionBiasFront, float fTractionLossMult, float fSuspensionForce, float fSuspensionCompDamp, float fSuspensionReboundDamp, float fSuspensionUpperLimit, float fSuspensionLowerLimit, float fSuspensionRaise, float fSuspensionBiasFront, float fAntiRollBarForce, float fAntiRollBarBiasFront, float fRollCentreHeightFront, float fRollCentreHeightRear, float fCollisionDamageMult, float fWeaponDamageMult, float fDeformationDamageMult, float fEngineDamageMult, float fPetrolTankVolume, float fOilVolume, float fSeatOffsetDistX, float fSeatOffsetDistY, float fSeatOffsetDistZ) {
+void setHandling(float fMass,
+                 float fInitialDragCoeff,
+                 float fPercentSubmerged,
+                 float vecCentreOfMassOffsetX,
+                 float vecCentreOfMassOffsetY,
+                 float vecCentreOfMassOffsetZ,
+                 float vecInertiaMultiplierX,
+                 float vecInertiaMultiplierY,
+                 float vecInertiaMultiplierZ,
+                 float fDriveBiasFront,
+                 int nInitialDriveGears,
+                 float fInitialDriveForce,
+                 float fDriveInertia,
+                 float fClutchChangeRateScaleUpShift,
+                 float fClutchChangeRateScaleDownShift,
+                 float fInitialDriveMaxFlatVel,
+                 float fBrakeForce,
+                 float fBrakeBiasFront,
+                 float fHandBrakeForce,
+                 float fSteeringLock,
+                 float fTractionCurveMax,
+                 float fTractionCurveMin,
+                 float fTractionCurveLateral,
+                 float fTractionSpringDeltaMax,
+                 float fLowSpeedTractionLossMult,
+                 float fCamberStiffness,
+                 float fTractionBiasFront,
+                 float fTractionLossMult,
+                 float fSuspensionForce,
+                 float fSuspensionCompDamp,
+                 float fSuspensionReboundDamp,
+                 float fSuspensionUpperLimit,
+                 float fSuspensionLowerLimit,
+                 float fSuspensionRaise,
+                 float fSuspensionBiasFront,
+                 float fAntiRollBarForce,
+                 float fAntiRollBarBiasFront,
+                 float fRollCentreHeightFront,
+                 float fRollCentreHeightRear,
+                 float fCollisionDamageMult,
+                 float fWeaponDamageMult,
+                 float fDeformationDamageMult,
+                 float fEngineDamageMult,
+                 float fPetrolTankVolume,
+                 float fOilVolume,
+                 float fSeatOffsetDistX,
+                 float fSeatOffsetDistY,
+                 float fSeatOffsetDistZ) {
 	if (fMass != disableVal)
 		setHandlingValue(vehicle, hOffsets.fMass, fMass);
 
 	if (fInitialDragCoeff != disableVal)
 		setHandlingValue(vehicle, hOffsets.fInitialDragCoeff, fInitialDragCoeff / 10000.0f);
 
-	if (fPercentSubmerged != disableVal)
+	if (fPercentSubmerged != disableVal) {
 		setHandlingValue(vehicle, hOffsets.fPercentSubmerged, fPercentSubmerged);
+		setHandlingValue(vehicle, hOffsets.fSubmergedRatio, 100.0f / fPercentSubmerged);
+	}
 
 	if (vecCentreOfMassOffsetX != disableVal)
 		setHandlingValue(vehicle, hOffsets.vecCentreOfMass.X, vecCentreOfMassOffsetX);
@@ -340,7 +359,7 @@ void setHandling(float fMass, float fInitialDragCoeff, float fPercentSubmerged, 
 	}
 
 	if (nInitialDriveGears != disableVal)
-		setHandlingValueInt(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
+		setHandlingValueUint8(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
 
 	if (fInitialDriveForce != disableVal)
 		setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
@@ -354,8 +373,10 @@ void setHandling(float fMass, float fInitialDragCoeff, float fPercentSubmerged, 
 	if (fClutchChangeRateScaleDownShift != disableVal)
 		setHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift, fClutchChangeRateScaleDownShift);
 
-	if (fInitialDriveMaxFlatVel != disableVal)
+	if (fInitialDriveMaxFlatVel != disableVal) {
 		setHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel, fInitialDriveMaxFlatVel / 3.6f);
+		setHandlingValue(vehicle, hOffsets.fDriveMaxFlatVel, fInitialDriveMaxFlatVel / 3.0f);
+	}
 
 	if (fBrakeForce != disableVal)
 		setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
@@ -368,17 +389,29 @@ void setHandling(float fMass, float fInitialDragCoeff, float fPercentSubmerged, 
 	if (fHandBrakeForce != disableVal)
 		setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
 
-	if (fSteeringLock != disableVal)
-		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * (3.14159265359f / 180.0f));
+	if (fSteeringLock != disableVal) {
+		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * 0.017453292);
+		setHandlingValue(vehicle, hOffsets.fSteeringLockRatio, 1.0f / (fSteeringLock * 0.017453292));
+	}
 
-	if (fTractionCurveMax != disableVal)
+	if (fTractionCurveMax != disableVal) {
 		setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
+		if (fTractionCurveMax == 0.0f)
+			setHandlingValue(vehicle, hOffsets.fTractionCurveMaxRatio, 100000000.000000);
+		else 
+			setHandlingValue(vehicle, hOffsets.fTractionCurveMaxRatio, 1.0f/ fTractionCurveMax);
+	}
 
-	if (fTractionCurveMin != disableVal)
+	if (fTractionCurveMin != disableVal) {
 		setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
+		if (fTractionCurveMin == 0.0f)
+			setHandlingValue(vehicle, hOffsets.fTractionCurveMinRatio, 100000000.000000);
+		else
+			setHandlingValue(vehicle, hOffsets.fTractionCurveMinRatio, 1.0f / fTractionCurveMin);
+	}
 
 	if (fTractionCurveLateral != disableVal)
-		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * (3.14159265359f / 180.0f));
+		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * 0.017453292);
 
 	if (fTractionSpringDeltaMax != disableVal)
 		setHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax, fTractionSpringDeltaMax);
