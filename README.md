@@ -21,7 +21,9 @@ The offsets for the values have only been tested in b791_2
 
 ## Usage in-game
 * Press the `read` hotkey during gameplay to read `RTHandlingEditor.ini` values into memory
+* Press the `meta` hotkey during gameplay to read `RTHandlingEditor.meta` values into memory
 * Press the `log` hotkey during gameplay to write memory values into `RTHandlingEditor.log`
+
 
 ## Usage .ini and .meta
 * Use `-1337` in the `[handling]` section to ignore a value in `RTHandlingEditor.ini`
