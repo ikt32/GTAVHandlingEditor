@@ -12,12 +12,11 @@
     <ClCompile Include="..\tinyxml2\tinyxml2.cpp">
       <Filter>tinyxml2</Filter>
     </ClCompile>
+    <ClCompile Include="keyboard.cpp" />
+    <ClCompile Include="NativeMemory.cpp" />
+    <ClCompile Include="VehicleData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\enums.h" />
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\main.h" />
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\natives.h" />
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\types.h" />
     <ClInclude Include="script.h" />
     <ClInclude Include="..\inih\ini.h">
       <Filter>inih</Filter>
@@ -28,6 +27,21 @@
     <ClInclude Include="..\tinyxml2\tinyxml2.h">
       <Filter>tinyxml2</Filter>
     </ClInclude>
+    <ClInclude Include="keyboard.h" />
+    <ClInclude Include="NativeMemory.hpp" />
+    <ClInclude Include="VehicleData.h" />
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\natives.h">
+      <Filter>scripthookv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\enums.h">
+      <Filter>scripthookv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\types.h">
+      <Filter>scripthookv</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ScriptHookV_SDK\inc\main.h">
+      <Filter>scripthookv</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inih">
@@ -35,6 +49,9 @@
     </Filter>
     <Filter Include="tinyxml2">
       <UniqueIdentifier>{de410f6f-326e-4c9b-8558-64aadf4a42c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scripthookv">
+      <UniqueIdentifier>{a7d3c671-b757-46b1-8bf5-0fb30ce6dfb8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
