@@ -29,7 +29,7 @@ VehicleData vehData;
 int prevNotification = 0;
 
 int handlingOffset = 0x830;
-int disableVal = -1337;
+float disableVal = -1337.0f;
 
 struct vecOffset {
 	int X;
@@ -75,7 +75,7 @@ const struct HandlingOffset {
 	int fTractionCurveMax = 0x0088;
 	int fTractionCurveMaxRatio = 0x008C;
 	int fTractionCurveMin = 0x0090;
-	int fTractionCurveMinRatio = 0x0094;
+	int fTractionCurveRatio = 0x0094;
 	int fTractionCurveLateral = 0x0098;
 	int fTractionCurveLateralRatio = 0x009C;
 	int fTractionSpringDeltaMax = 0x00A0;
@@ -390,29 +390,39 @@ void setHandling(float fMass,
 		setHandlingValue(vehicle, hOffsets.fHandBrakeForce, fHandBrakeForce);
 
 	if (fSteeringLock != disableVal) {
-		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * 0.017453292);
-		setHandlingValue(vehicle, hOffsets.fSteeringLockRatio, 1.0f / (fSteeringLock * 0.017453292));
+		setHandlingValue(vehicle, hOffsets.fSteeringLock, fSteeringLock * 0.017453292f);
+		setHandlingValue(vehicle, hOffsets.fSteeringLockRatio, 1.0f / (fSteeringLock * 0.017453292f));
 	}
 
 	if (fTractionCurveMax != disableVal) {
 		setHandlingValue(vehicle, hOffsets.fTractionCurveMax, fTractionCurveMax);
 		if (fTractionCurveMax == 0.0f)
-			setHandlingValue(vehicle, hOffsets.fTractionCurveMaxRatio, 100000000.000000);
+			setHandlingValue(vehicle, hOffsets.fTractionCurveMaxRatio, 100000000.000000f);
 		else 
 			setHandlingValue(vehicle, hOffsets.fTractionCurveMaxRatio, 1.0f/ fTractionCurveMax);
 	}
 
 	if (fTractionCurveMin != disableVal) {
 		setHandlingValue(vehicle, hOffsets.fTractionCurveMin, fTractionCurveMin);
-		if (fTractionCurveMin == 0.0f)
-			setHandlingValue(vehicle, hOffsets.fTractionCurveMinRatio, 100000000.000000); //wtf
-		else
-			setHandlingValue(vehicle, hOffsets.fTractionCurveMinRatio, 1.0f / fTractionCurveMin);
 	}
 
-	if (fTractionCurveLateral != disableVal) {
-		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * 0.017453292);
-		setHandlingValue(vehicle, hOffsets.fTractionCurveLateralRatio, 1.0f/(fTractionCurveLateral * 0.017453292));
+	{
+		float temp_fTractionCurveMax = getHandlingValue(vehicle, hOffsets.fTractionCurveMax);
+		float temp_ftractionCurveMin = getHandlingValue(vehicle, hOffsets.fTractionCurveMin);
+		if (temp_fTractionCurveMax <= temp_ftractionCurveMin) {
+			setHandlingValue(vehicle, hOffsets.fTractionCurveRatio, 100000000.000000f);
+		}
+		else {
+			setHandlingValue(vehicle, hOffsets.fTractionCurveRatio,
+				1.0f / (temp_fTractionCurveMax - temp_ftractionCurveMin));
+		}
+	}
+
+	
+
+	if (fTractionCurveLateral != disableVal) { 
+		setHandlingValue(vehicle, hOffsets.fTractionCurveLateral, fTractionCurveLateral * 0.017453292f);
+		setHandlingValue(vehicle, hOffsets.fTractionCurveLateralRatio, 1.0f/(fTractionCurveLateral * 0.017453292f));
 	}
 
 	if (fTractionSpringDeltaMax != disableVal) {
@@ -582,7 +592,7 @@ void readXMLFile() {
 	float vecInertiaMultiplierY = disableVal;
 	float vecInertiaMultiplierZ = disableVal;
 	float fDriveBiasFront = disableVal;
-	int   nInitialDriveGears = disableVal;
+	int   nInitialDriveGears = static_cast<int>(disableVal);
 	float fInitialDriveForce = disableVal;
 	float fDriveInertia = disableVal;
 	float fClutchChangeRateScaleUpShift = disableVal;
@@ -760,7 +770,7 @@ void readINIFile() {
 	float vecInertiaMultiplierY = reader.GetReal("handling", "vecInertiaMultiplierY", disableVal);
 	float vecInertiaMultiplierZ = reader.GetReal("handling", "vecInertiaMultiplierZ", disableVal);
 	float fDriveBiasFront = reader.GetReal("handling", "fDriveBiasFront", disableVal); // !!!!!
-	int   nInitialDriveGears = reader.GetInteger("handling", "nInitialDriveGears", disableVal);
+	int   nInitialDriveGears = (int)reader.GetInteger("handling", "nInitialDriveGears", (long)disableVal);
 	float fInitialDriveForce = reader.GetReal("handling", "fInitialDriveForce", disableVal);
 	float fDriveInertia = reader.GetReal("handling", "fDriveInertia", disableVal);
 	float fClutchChangeRateScaleUpShift = reader.GetReal("handling", "fClutchChangeRateScaleUpShift", disableVal);
