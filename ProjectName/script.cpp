@@ -571,6 +571,20 @@ void readMemorytoLog() {
 	logger.Write("fSeatOffsetDistY = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSeatOffsetDistY)));
 	logger.Write("fSeatOffsetDistZ = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSeatOffsetDistZ)));
 	logger.Write("nMonetaryValue = " + std::to_string(getHandlingValue<int>(vehicle, hOffsets.nMonetaryValue)));
+	
+	// Oh bother
+	std::stringstream ssModelFlags;
+	ssModelFlags << std::hex << getHandlingValue<DWORD>(vehicle, hOffsets.dwStrModelFlags);
+	logger.Write("strModelFlags = " + ssModelFlags.str());
+
+	std::stringstream ssHandlingFlags;
+	ssHandlingFlags << std::hex << getHandlingValue<DWORD>(vehicle, hOffsets.dwStrHandlingFlags);
+	logger.Write("strHandlingFlags = " + ssHandlingFlags.str());
+
+	std::stringstream ssDamageFlags;
+	ssDamageFlags << std::hex << getHandlingValue<DWORD>(vehicle, hOffsets.dwStrDamageFlags);
+	logger.Write("strDamageFlags = " + ssDamageFlags.str());
+	
 	logger.Write("------------------------------");
 }
 
