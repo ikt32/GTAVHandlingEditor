@@ -759,7 +759,10 @@ void readINIFile() {
 		showNotification("RTHandlingEditor: Can't load RTHandlingEditor.ini");
 		return;
 	}
-		
+	
+#pragma warning( push )
+#pragma warning( disable: 4244 )
+
 	float fMass = reader.GetReal("handling","fMass",disableVal);
 	float fInitialDragCoeff = reader.GetReal("handling", "fInitialDragCoeff", disableVal); // * 10000
 	float fPercentSubmerged = reader.GetReal("handling", "fPercentSubmerged", disableVal);
@@ -808,6 +811,8 @@ void readINIFile() {
 	float fSeatOffsetDistX = reader.GetReal("handling", "fSeatOffsetDistX", disableVal);
 	float fSeatOffsetDistY = reader.GetReal("handling", "fSeatOffsetDistY", disableVal);
 	float fSeatOffsetDistZ = reader.GetReal("handling", "fSeatOffsetDistZ", disableVal);
+
+#pragma warning ( pop )
 
 	setHandling(
 		fMass,
