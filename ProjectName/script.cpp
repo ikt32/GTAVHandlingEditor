@@ -170,66 +170,6 @@ void showText(float x, float y, float scale, const char* text) {
 	UI::_DRAW_TEXT(x, y);
 }
 
-
-//// 1.0f - (value / 2.0f)
-//float getHandlingValueInvHalf(Vehicle veh, int valueOffset) {
-//	const uint64_t address = mem.GetAddressOfEntity(veh);
-//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-//	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
-//	return 1.0f - (value / 2.0f);
-//}
-
-//// no change between handling.meta and memory
-//float getHandlingValue(Vehicle veh, int valueOffset) {
-//	const uint64_t address = mem.GetAddressOfEntity(veh);
-//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-//	return *reinterpret_cast<float *>(handlingPtr + valueOffset);
-//	//return 1.0f - (value / 2.0f);
-//}
-//
-//uint8_t getHandlingValueUint8(Vehicle veh, int valueOffset) {
-//	const uint64_t address = mem.GetAddressOfEntity(veh);
-//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-//	return *reinterpret_cast<uint8_t *>(handlingPtr + valueOffset);
-//}
-//
-//int getHandlingValueInt(Vehicle veh, int valueOffset) {
-//	const uint64_t address = mem.GetAddressOfEntity(veh);
-//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-//	return *reinterpret_cast<int *>(handlingPtr + valueOffset);
-//}
-
-/*
- * Setters
- */
-
-void setHandlingValueInvHalf(Vehicle veh, int valueOffset, float val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	float invHalf = 2.0f*(1.0f - (val));
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<float *>(handlingPtr + valueOffset) = invHalf;
-}
-
-void setHandlingValue(Vehicle veh, int valueOffset, float val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<float *>(handlingPtr + valueOffset) = val;
-}
-
-void setHandlingValueDWORD(Vehicle veh, int valueOffset, DWORD val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<DWORD *>(handlingPtr + valueOffset) = val;
-}
-
-void setHandlingValueUint8(Vehicle veh, int valueOffset, uint8_t val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	*reinterpret_cast<uint8_t *>(handlingPtr + valueOffset) = val;
-}
-
-
-
 void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, float yPos, float size) {
 	/*std::stringstream ssVRawY;
 	ssVRawY << "velY = " << velocities.y;
@@ -352,13 +292,13 @@ void setHandling(float fMass,
 			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, 0.0f);
 		}
 		else {
-			setHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasRear, fDriveBiasFront);
+			setHandlingValue(vehicle, hOffsets.fDriveBiasRear, 2.0f*(1.0f - (fDriveBiasFront)));
 			setHandlingValue(vehicle, hOffsets.fDriveBiasFront, fDriveBiasFront * 2.0f);
 		}
 	}
 
 	if (nInitialDriveGears != disableVal)
-		setHandlingValueUint8(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
+		setHandlingValue(vehicle, hOffsets.nInitialDriveGears, nInitialDriveGears);
 
 	if (fInitialDriveForce != disableVal)
 		setHandlingValue(vehicle, hOffsets.fInitialDriveForce, fInitialDriveForce);
@@ -381,7 +321,7 @@ void setHandling(float fMass,
 		setHandlingValue(vehicle, hOffsets.fBrakeForce, fBrakeForce);
 
 	if (fBrakeBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasRear, fBrakeBiasFront);
+		setHandlingValue(vehicle, hOffsets.fBrakeBiasRear, 2.0f*(1.0f - (fBrakeBiasFront)));
 		setHandlingValue(vehicle, hOffsets.fBrakeBiasFront, fBrakeBiasFront * 2.0f);
 	}
 
@@ -437,7 +377,7 @@ void setHandling(float fMass,
 		setHandlingValue(vehicle, hOffsets.fCamberStiffness, fCamberStiffness);
 
 	if (fTractionBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasRear, fTractionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fTractionBiasRear, 2.0f*(1.0f - (fTractionBiasFront)));
 		setHandlingValue(vehicle, hOffsets.fTractionBiasFront, fTractionBiasFront * 2.0f);
 	}
 
@@ -463,7 +403,7 @@ void setHandling(float fMass,
 		setHandlingValue(vehicle, hOffsets.fSuspensionRaise, fSuspensionRaise);
 
 	if (fSuspensionBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasRear, fSuspensionBiasFront);
+		setHandlingValue(vehicle, hOffsets.fSuspensionBiasRear, 2.0f*(1.0f - (fSuspensionBiasFront)));
 		setHandlingValue(vehicle, hOffsets.fSuspensionBiasFront, fSuspensionBiasFront * 2.0f);
 	}
 
@@ -471,7 +411,7 @@ void setHandling(float fMass,
 		setHandlingValue(vehicle, hOffsets.fAntiRollBarForce, fAntiRollBarForce);
 
 	if (fAntiRollBarBiasFront != disableVal) {
-		setHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasRear, fAntiRollBarBiasFront);
+		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasRear, 2.0f*(1.0f - (fAntiRollBarBiasFront)));
 		setHandlingValue(vehicle, hOffsets.fAntiRollBarBiasFront, fAntiRollBarBiasFront * 2.0f);
 	}
 
