@@ -170,35 +170,34 @@ void showText(float x, float y, float scale, const char* text) {
 	UI::_DRAW_TEXT(x, y);
 }
 
-// 2.0f * value
-float getHandlingValueHalf(Vehicle veh, int valueOffset) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
-	return 2*value;
-}
 
-// 1.0f - (value / 2.0f)
-float getHandlingValueInvHalf(Vehicle veh, int valueOffset) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
-	return 1.0f - (value / 2.0f);
-}
+//// 1.0f - (value / 2.0f)
+//float getHandlingValueInvHalf(Vehicle veh, int valueOffset) {
+//	const uint64_t address = mem.GetAddressOfEntity(veh);
+//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+//	float value = *reinterpret_cast<float *>(handlingPtr + valueOffset);
+//	return 1.0f - (value / 2.0f);
+//}
 
-// no change between handling.meta and memory
-float getHandlingValue(Vehicle veh, int valueOffset) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	return *reinterpret_cast<float *>(handlingPtr + valueOffset);
-	//return 1.0f - (value / 2.0f);
-}
-
-uint8_t getHandlingValueInt(Vehicle veh, int valueOffset) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
-	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
-	return *reinterpret_cast<uint8_t *>(handlingPtr + valueOffset);
-}
+//// no change between handling.meta and memory
+//float getHandlingValue(Vehicle veh, int valueOffset) {
+//	const uint64_t address = mem.GetAddressOfEntity(veh);
+//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+//	return *reinterpret_cast<float *>(handlingPtr + valueOffset);
+//	//return 1.0f - (value / 2.0f);
+//}
+//
+//uint8_t getHandlingValueUint8(Vehicle veh, int valueOffset) {
+//	const uint64_t address = mem.GetAddressOfEntity(veh);
+//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+//	return *reinterpret_cast<uint8_t *>(handlingPtr + valueOffset);
+//}
+//
+//int getHandlingValueInt(Vehicle veh, int valueOffset) {
+//	const uint64_t address = mem.GetAddressOfEntity(veh);
+//	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+//	return *reinterpret_cast<int *>(handlingPtr + valueOffset);
+//}
 
 /*
  * Setters
@@ -407,8 +406,8 @@ void setHandling(float fMass,
 	}
 
 	{
-		float temp_fTractionCurveMax = getHandlingValue(vehicle, hOffsets.fTractionCurveMax);
-		float temp_ftractionCurveMin = getHandlingValue(vehicle, hOffsets.fTractionCurveMin);
+		float temp_fTractionCurveMax = getHandlingValue<float>(vehicle, hOffsets.fTractionCurveMax);
+		float temp_ftractionCurveMin = getHandlingValue<float>(vehicle, hOffsets.fTractionCurveMin);
 		if (temp_fTractionCurveMax <= temp_ftractionCurveMin) {
 			setHandlingValue(vehicle, hOffsets.fTractionCurveRatio, 100000000.000000f);
 		}
@@ -516,61 +515,63 @@ void readMemorytoLog() {
 	vehName << "VEHICLE: " << VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(model);
 	Logger logger(LOGFILE);
 	logger.Write(vehName.str());
-	logger.Write("fMass = " + std::to_string(getHandlingValue(vehicle, hOffsets.fMass)));
-	logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDragCoeff)*10000.0f)); // * 10000
-	logger.Write("fPercentSubmerged = " + std::to_string(getHandlingValue(vehicle, hOffsets.fPercentSubmerged)));
+	logger.Write("fMass = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fMass)));
+	logger.Write("fInitialDragCoeff = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fInitialDragCoeff)*10000.0f)); // * 10000
+	logger.Write("fPercentSubmerged = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fPercentSubmerged)));
 
-	logger.Write("vecCentreOfMassOffsetX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.X)));
-	logger.Write("vecCentreOfMassOffsetY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Y)));
-	logger.Write("vecCentreOfMassOffsetZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecCentreOfMass.Z)));
+	logger.Write("vecCentreOfMassOffsetX = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.vecCentreOfMass.X)));
+	logger.Write("vecCentreOfMassOffsetY = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.vecCentreOfMass.Y)));
+	logger.Write("vecCentreOfMassOffsetZ = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.vecCentreOfMass.Z)));
 
-	logger.Write("vecInertiaMultiplierX = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.X)));
-	logger.Write("vecInertiaMultiplierY = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Y)));
-	logger.Write("vecInertiaMultiplierZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.vecInertiaMultiplier.Z)));
+	logger.Write("vecInertiaMultiplierX = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.vecInertiaMultiplier.X)));
+	logger.Write("vecInertiaMultiplierY = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.vecInertiaMultiplier.Y)));
+	logger.Write("vecInertiaMultiplierZ = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.vecInertiaMultiplier.Z)));
 
-	logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fDriveBiasFront))); // 1.0f - (val / 2.0f)
+	logger.Write("fDriveBiasFront = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fDriveBiasFront)/2.0f)); // 1.0f - (val / 2.0f)
 
-	logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValueInt(vehicle, hOffsets.nInitialDriveGears))); // int
-	logger.Write("fInitialDriveForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveForce)));
-	logger.Write("fDriveInertia = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDriveInertia)));
-	logger.Write("fClutchChangeRateScaleUpShift = " + std::to_string(getHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleUpShift)));
-	logger.Write("fClutchChangeRateScaleDownShift = " + std::to_string(getHandlingValue(vehicle, hOffsets.fClutchChangeRateScaleDownShift)));
-	logger.Write("fInitialDriveMaxFlatVel = " + std::to_string(getHandlingValue(vehicle, hOffsets.fInitialDriveMaxFlatVel)*3.6f)); // m/s -> kph
+	logger.Write("nInitialDriveGears = " + std::to_string(getHandlingValue<int8_t>(vehicle, hOffsets.nInitialDriveGears))); // int
+	logger.Write("fInitialDriveForce = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fInitialDriveForce)));
+	logger.Write("fDriveInertia = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fDriveInertia)));
+	logger.Write("fClutchChangeRateScaleUpShift = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fClutchChangeRateScaleUpShift)));
+	logger.Write("fClutchChangeRateScaleDownShift = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fClutchChangeRateScaleDownShift)));
+	logger.Write("fInitialDriveMaxFlatVel = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fInitialDriveMaxFlatVel)*3.6f)); // m/s -> kph
 
-	logger.Write("fBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fBrakeForce)));
-	logger.Write("fBrakeBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fBrakeBiasFront))); // 1.0f - (val / 2.0f)
-	logger.Write("fHandBrakeForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fHandBrakeForce)));
+	logger.Write("fBrakeForce = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fBrakeForce)));
+	logger.Write("fBrakeBiasFront = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fBrakeBiasFront) / 2.0f)); // 1.0f - (val / 2.0f)
+	logger.Write("fHandBrakeForce = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fHandBrakeForce)));
 
-	logger.Write("fSteeringLock = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSteeringLock)*(180.0f / 3.14159265359f))); // rad -> deg
-	logger.Write("fTractionCurveMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMax)));
-	logger.Write("fTractionCurveMin = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveMin)));
-	logger.Write("fTractionCurveLateral = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionCurveLateral)*(180.0f / 3.14159265359f))); // rad -> deg
-	logger.Write("fTractionSpringDeltaMax = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionSpringDeltaMax)));
-	logger.Write("fLowSpeedTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fLowSpeedTractionLossMult)));
-	logger.Write("fCamberStiffness = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCamberStiffness)));
-	logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fTractionBiasFront))); // 1.0f - (val / 2.0f)
-	logger.Write("fTractionLossMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fTractionLossMult)));
+	logger.Write("fSteeringLock = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSteeringLock)*(180.0f / 3.14159265359f))); // rad -> deg
+	logger.Write("fTractionCurveMax = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fTractionCurveMax)));
+	logger.Write("fTractionCurveMin = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fTractionCurveMin)));
+	logger.Write("fTractionCurveLateral = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fTractionCurveLateral)*(180.0f / 3.14159265359f))); // rad -> deg
+	logger.Write("fTractionSpringDeltaMax = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fTractionSpringDeltaMax)));
+	logger.Write("fLowSpeedTractionLossMult = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fLowSpeedTractionLossMult)));
+	logger.Write("fCamberStiffness = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fCamberStiffness)));
+	logger.Write("fTractionBiasFront = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fTractionBiasFront) / 2.0f)); // 1.0f - (val / 2.0f)
+	logger.Write("fTractionLossMult = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fTractionLossMult)));
 
-	logger.Write("fSuspensionForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionForce)));
-	logger.Write("fSuspensionCompDamp = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionCompDamp)*10.0f)); // * 10
-	logger.Write("fSuspensionReboundDamp = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionReboundDamp)*10.0f)); // * 10
-	logger.Write("fSuspensionUpperLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionUpperLimit)));
-	logger.Write("fSuspensionLowerLimit = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionLowerLimit)));
-	logger.Write("fSuspensionRaise = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSuspensionRaise)));
-	logger.Write("fSuspensionBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fSuspensionBiasFront))); // 1.0f - (val / 2.0f)
-	logger.Write("fAntiRollBarForce = " + std::to_string(getHandlingValue(vehicle, hOffsets.fAntiRollBarForce)));
-	logger.Write("fAntiRollBarBiasFront = " + std::to_string(getHandlingValueInvHalf(vehicle, hOffsets.fAntiRollBarBiasFront))); // 1.0f - (val / 2.0f)
-	logger.Write("fRollCentreHeightFront = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightFront)));
-	logger.Write("fRollCentreHeightRear = " + std::to_string(getHandlingValue(vehicle, hOffsets.fRollCentreHeightRear)));
-	logger.Write("fCollisionDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fCollisionDamageMult)));
-	logger.Write("fWeaponDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fWeaponDamageMult)));
-	logger.Write("fDeformationDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fDeformationDamageMult)));
-	logger.Write("fEngineDamageMult = " + std::to_string(getHandlingValue(vehicle, hOffsets.fEngineDamageMult)));
-	logger.Write("fPetrolTankVolume = " + std::to_string(getHandlingValue(vehicle, hOffsets.fPetrolTankVolume)));
-	logger.Write("fOilVolume = " + std::to_string(getHandlingValue(vehicle, hOffsets.fOilVolume)));
-	logger.Write("fSeatOffsetDistX = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistX)));
-	logger.Write("fSeatOffsetDistY = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistY)));
-	logger.Write("fSeatOffsetDistZ = " + std::to_string(getHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ)));
+	logger.Write("fSuspensionForce = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSuspensionForce)));
+	logger.Write("fSuspensionCompDamp = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSuspensionCompDamp)*10.0f)); // * 10
+	logger.Write("fSuspensionReboundDamp = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSuspensionReboundDamp)*10.0f)); // * 10
+	logger.Write("fSuspensionUpperLimit = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSuspensionUpperLimit)));
+	logger.Write("fSuspensionLowerLimit = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSuspensionLowerLimit)));
+	logger.Write("fSuspensionRaise = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSuspensionRaise)));
+	logger.Write("fSuspensionBiasFront = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSuspensionBiasFront) / 2.0f)); // 1.0f - (val / 2.0f)
+	logger.Write("fAntiRollBarForce = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fAntiRollBarForce)));
+	logger.Write("fAntiRollBarBiasFront = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fAntiRollBarBiasFront) / 2.0f)); // 1.0f - (val / 2.0f)
+	logger.Write("fRollCentreHeightFront = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fRollCentreHeightFront)));
+	logger.Write("fRollCentreHeightRear = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fRollCentreHeightRear)));
+	logger.Write("fCollisionDamageMult = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fCollisionDamageMult)));
+	logger.Write("fWeaponDamageMult = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fWeaponDamageMult)));
+	logger.Write("fDeformationDamageMult = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fDeformationDamageMult)));
+	logger.Write("fEngineDamageMult = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fEngineDamageMult)));
+	logger.Write("fPetrolTankVolume = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fPetrolTankVolume)));
+	logger.Write("fOilVolume = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fOilVolume)));
+	logger.Write("fSeatOffsetDistX = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSeatOffsetDistX)));
+	logger.Write("fSeatOffsetDistY = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSeatOffsetDistY)));
+	logger.Write("fSeatOffsetDistZ = " + std::to_string(getHandlingValue<float>(vehicle, hOffsets.fSeatOffsetDistZ)));
+	logger.Write("nMonetaryValue = " + std::to_string(getHandlingValue<int>(vehicle, hOffsets.nMonetaryValue)));
+	logger.Write("strModelFlags = " + std::to_string(getHandlingValue<DWORD>(vehicle, hOffsets.dwStrModelFlags)));
 	logger.Write("------------------------------");
 }
 

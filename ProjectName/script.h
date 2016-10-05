@@ -13,3 +13,10 @@ http://dev-c.com
 #include "..\..\ScriptHookV_SDK\inc\main.h"
 
 void ScriptMain();
+
+template <typename T>
+T getHandlingValue(Vehicle veh, const int valueOffset) {
+	const uint64_t address = mem.GetAddressOfEntity(veh);
+	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
+	return *reinterpret_cast<T *>(handlingPtr + valueOffset);
+}
