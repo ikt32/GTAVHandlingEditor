@@ -254,7 +254,11 @@ void setHandling(float fMass,
                  float fOilVolume,
                  float fSeatOffsetDistX,
                  float fSeatOffsetDistY,
-                 float fSeatOffsetDistZ) {
+                 float fSeatOffsetDistZ,
+				 int nMonetaryValue,
+				 int strModelFlags,
+				 int strHandlingFlags,
+				 int strDamageFlags ) {
 	if (fMass != disableVal)
 		setHandlingValue(vehicle, hOffsets.fMass, fMass);
 
@@ -449,6 +453,19 @@ void setHandling(float fMass,
 
 	if (fSeatOffsetDistZ != disableVal)
 		setHandlingValue(vehicle, hOffsets.fSeatOffsetDistZ, fSeatOffsetDistZ);
+
+	if (nMonetaryValue	  != disableVal)
+		setHandlingValue(vehicle, hOffsets.nMonetaryValue, nMonetaryValue);
+
+	if (strModelFlags	  != disableVal)
+		setHandlingValue(vehicle, hOffsets.dwStrModelFlags, strModelFlags);
+
+	if (strHandlingFlags  != disableVal)
+		setHandlingValue(vehicle, hOffsets.dwStrHandlingFlags, strHandlingFlags);
+
+	if (strDamageFlags 	  != disableVal)
+		setHandlingValue(vehicle, hOffsets.dwStrDamageFlags, strDamageFlags);
+
 }
 
 
@@ -587,10 +604,9 @@ void readXMLFile() {
 	float fSeatOffsetDistY = disableVal;
 	float fSeatOffsetDistZ = disableVal;
 	int nMonetaryValue = disableVal;
-	DWORD strModelFlags = disableVal;	
-	DWORD strHandlingFlags = disableVal;
-	DWORD strDamageflags = disableVal;
-	DWORD dwAIHandlingHash = disableVal;
+	int strModelFlags = disableVal;	
+	int strHandlingFlags = disableVal;
+	int strDamageFlags = disableVal;
 
 	if (err != XML_SUCCESS) {
 		showNotification("RTHandlingEditor: Can't load RTHandlingEditor.meta");
@@ -657,6 +673,22 @@ void readXMLFile() {
 	pRoot->FirstChildElement("fSeatOffsetDistX")->QueryAttribute("value", &fSeatOffsetDistX);
 	pRoot->FirstChildElement("fSeatOffsetDistY")->QueryAttribute("value", &fSeatOffsetDistY);
 	pRoot->FirstChildElement("fSeatOffsetDistZ")->QueryAttribute("value", &fSeatOffsetDistZ);
+	pRoot->FirstChildElement("nMonetaryValue")->QueryAttribute("value", &nMonetaryValue);
+
+	pElement = pRoot->FirstChildElement("strModelFlags");
+	if (pElement && pElement->GetText() != "-1337") {
+		strModelFlags = std::stoi(pElement->GetText(), nullptr, 16);
+	}
+
+	pElement = pRoot->FirstChildElement("strHandlingFlags");
+	if (pElement && pElement->GetText() != "-1337") {
+		strHandlingFlags = std::stoi(pElement->GetText(), nullptr, 16);
+	}
+
+	pElement = pRoot->FirstChildElement("strDamageFlags");
+	if (pElement && pElement->GetText() != "-1337") {
+		strDamageFlags = std::stoi(pElement->GetText(), nullptr, 16);
+	}
 
 	setHandling(
 		fMass,
@@ -706,7 +738,11 @@ void readXMLFile() {
 		fOilVolume,
 		fSeatOffsetDistX,
 		fSeatOffsetDistY,
-		fSeatOffsetDistZ);
+		fSeatOffsetDistZ,
+		nMonetaryValue,
+		strModelFlags,
+		strHandlingFlags,
+		strDamageFlags);
 
 	showNotification(const_cast<char *>(handlingText.str().c_str()));
 }
@@ -772,6 +808,21 @@ void readINIFile() {
 	float fSeatOffsetDistX = reader.GetReal("handling", "fSeatOffsetDistX", disableVal);
 	float fSeatOffsetDistY = reader.GetReal("handling", "fSeatOffsetDistY", disableVal);
 	float fSeatOffsetDistZ = reader.GetReal("handling", "fSeatOffsetDistZ", disableVal);
+	int nMonetaryValue = (int)reader.GetInteger("handling", "nMonetaryValue", (long)disableVal);
+
+	int strModelFlags = -1337;
+	if (reader.Get("handling", "strModelFlags", "-1337") != "-1337")
+		strModelFlags = std::stoi(reader.Get("handling", "strModelFlags", "-1337"), nullptr, 16);
+	
+	
+	int strHandlingFlags = -1337;
+	if (reader.Get("handling", "strHandlingFlags", "-1337") != "-1337")
+		strHandlingFlags = std::stoi(reader.Get("handling", "strHandlingFlags", "-1337"), nullptr, 16);
+	
+	
+	int strDamageFlags = -1337;
+	if (reader.Get("handling", "strDamageFlags", "-1337") != "-1337")
+		std::stoi(reader.Get("handling", "strDamageFlags", "-1337"), nullptr, 16);
 
 #pragma warning ( pop )
 
@@ -823,7 +874,11 @@ void readINIFile() {
 		fOilVolume,
 		fSeatOffsetDistX,
 		fSeatOffsetDistY,
-		fSeatOffsetDistZ);
+		fSeatOffsetDistZ,
+		nMonetaryValue,
+		strModelFlags,
+		strHandlingFlags,
+		strDamageFlags);
 	showNotification("RTHandlingEditor: Loaded RTHandlingEditor.ini");
 }
 
