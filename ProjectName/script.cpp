@@ -28,7 +28,9 @@ MemoryAccess mem;
 VehicleData vehData;
 int prevNotification = 0;
 
-int handlingOffset = 0x830;
+int gameVersion = getGameVersion();
+int handlingOffset = (gameVersion > 25 ? 0x850 : 0x830);
+
 float disableVal = -1337.0f;
 
 struct vecOffset {
