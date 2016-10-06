@@ -586,7 +586,10 @@ void readXMLFile() {
 	float fSeatOffsetDistZ = disableVal;
 	int nMonetaryValue = disableVal;
 	DWORD strModelFlags = disableVal;	
-	
+	DWORD strHandlingFlags = disableVal;
+	DWORD strDamageflags = disableVal;
+	DWORD dwAIHandlingHash = disableVal;
+
 	if (err != XML_SUCCESS) {
 		showNotification("RTHandlingEditor: Can't load RTHandlingEditor.meta");
 		return;
