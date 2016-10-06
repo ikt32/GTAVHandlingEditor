@@ -584,7 +584,9 @@ void readXMLFile() {
 	float fSeatOffsetDistX = disableVal;
 	float fSeatOffsetDistY = disableVal;
 	float fSeatOffsetDistZ = disableVal;
-
+	int nMonetaryValue = disableVal;
+	DWORD strModelFlags = disableVal;	
+	
 	if (err != XML_SUCCESS) {
 		showNotification("RTHandlingEditor: Can't load RTHandlingEditor.meta");
 		return;
