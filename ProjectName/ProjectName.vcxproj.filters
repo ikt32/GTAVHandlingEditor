@@ -13,8 +13,12 @@
       <Filter>tinyxml2</Filter>
     </ClCompile>
     <ClCompile Include="keyboard.cpp" />
-    <ClCompile Include="NativeMemory.cpp" />
-    <ClCompile Include="VehicleData.cpp" />
+    <ClCompile Include="NativeMemory.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
+    <ClCompile Include="VehicleData.cpp">
+      <Filter>external</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -28,8 +32,6 @@
       <Filter>tinyxml2</Filter>
     </ClInclude>
     <ClInclude Include="keyboard.h" />
-    <ClInclude Include="NativeMemory.hpp" />
-    <ClInclude Include="VehicleData.h" />
     <ClInclude Include="..\..\ScriptHookV_SDK\inc\natives.h">
       <Filter>scripthookv</Filter>
     </ClInclude>
@@ -42,6 +44,12 @@
     <ClInclude Include="..\..\ScriptHookV_SDK\inc\main.h">
       <Filter>scripthookv</Filter>
     </ClInclude>
+    <ClInclude Include="NativeMemory.hpp">
+      <Filter>external</Filter>
+    </ClInclude>
+    <ClInclude Include="VehicleData.h">
+      <Filter>external</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inih">
@@ -52,6 +60,9 @@
     </Filter>
     <Filter Include="scripthookv">
       <UniqueIdentifier>{a7d3c671-b757-46b1-8bf5-0fb30ce6dfb8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="external">
+      <UniqueIdentifier>{508c77b7-4061-44b9-983e-3bc77ada7765}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
