@@ -29,7 +29,7 @@ VehicleData vehData;
 int prevNotification = 0;
 
 int gameVersion = getGameVersion();
-int handlingOffset = (gameVersion > 25 ? 0x850 : 0x830);
+int handlingOffset = (gameVersion > 25 ? (gameVersion > 27 ? 0x878 : 0x850) : 0x830);
 
 float disableVal = -1337.0f;
 
