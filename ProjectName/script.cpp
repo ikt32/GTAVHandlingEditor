@@ -26,10 +26,10 @@ Vehicle vehicle;
 Hash model;
 MemoryAccess mem;
 VehicleData vehData;
-int prevNotification = 0;
 
-int gameVersion = getGameVersion();
-int handlingOffset = (gameVersion > 25 ? (gameVersion > 27 ? 0x878 : 0x850) : 0x830);
+uint64_t handlingOffset;
+
+int prevNotification = 0;
 
 float disableVal = -1337.0f;
 
@@ -167,9 +167,9 @@ void showText(float x, float y, float scale, const char* text) {
 	UI::SET_TEXT_CENTRE(0);
 	UI::SET_TEXT_DROPSHADOW(0, 0, 0, 0, 0);
 	UI::SET_TEXT_EDGE(1, 0, 0, 0, 205);
-	UI::_SET_TEXT_ENTRY("STRING");
+	UI::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
 	UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(const_cast<char *>(text));
-	UI::_DRAW_TEXT(x, y);
+	UI::END_TEXT_COMMAND_DISPLAY_TEXT(x, y);
 }
 
 void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, float yPos, float size) {
@@ -960,8 +960,18 @@ void update()
 	}
 }
 
-void main()
-{
+uint64_t getHandlingOffset() {
+	int gameVersion = getGameVersion();
+	auto offset = gameVersion >= 24 ? 0x830 : 0;
+	offset = gameVersion >= 26 ? 0x850 : offset;
+	offset = gameVersion >= 28 ? 0x878 : offset;
+	offset = gameVersion >= 34 ? 0x888 : offset;
+	offset = gameVersion >= 36 ? 0x8A8 : offset;
+	return offset;
+}
+
+void main() {
+	handlingOffset = getHandlingOffset();
 	while (true)
 	{
 		update();
@@ -969,8 +979,7 @@ void main()
 	}
 }
 
-void ScriptMain()
-{
+void ScriptMain() {
 	srand(GetTickCount());
 	main();
 }
