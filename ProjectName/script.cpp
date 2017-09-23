@@ -961,12 +961,13 @@ void update()
 }
 
 uint64_t getHandlingOffset() {
-	auto addr = MemoryAccess::FindPattern("\x48\x8b\x87\x00\x00\x00\x00\xf3\x0f\x10\xc8", "xxx????xxxx");
+	auto addr = MemoryAccess::FindPattern("\x3C\x03\x0F\x85\x00\x00\x00\x00\x48\x8B\x41\x20\x48\x8B\x88", 
+		                                  "xxxx????xxxxxxx");
 
-	uint64_t offset = *(int*)(addr + 3);
+	uint64_t offset = *(int*)(addr + 0x16);
 
-	//Logger logger(LOGFILE);
-	//logger.Write("Offset @ " + std::to_string(offset));
+	Logger logger(LOGFILE);
+	logger.Write("Offset @ " + std::to_string(offset));
 	return offset;
 }
 
