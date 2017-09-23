@@ -961,12 +961,12 @@ void update()
 }
 
 uint64_t getHandlingOffset() {
-	int gameVersion = getGameVersion();
-	auto offset = gameVersion >= 24 ? 0x830 : 0;
-	offset = gameVersion >= 26 ? 0x850 : offset;
-	offset = gameVersion >= 28 ? 0x878 : offset;
-	offset = gameVersion >= 34 ? 0x888 : offset;
-	offset = gameVersion >= 36 ? 0x8A8 : offset;
+	auto addr = MemoryAccess::FindPattern("\x48\x8b\x87\x00\x00\x00\x00\xf3\x0f\x10\xc8", "xxx????xxxx");
+
+	uint64_t offset = *(int*)(addr + 3);
+
+	//Logger logger(LOGFILE);
+	//logger.Write("Offset @ " + std::to_string(offset));
 	return offset;
 }
 
