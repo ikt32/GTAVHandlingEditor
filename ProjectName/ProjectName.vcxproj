@@ -128,7 +128,7 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
     </ClCompile>
@@ -148,6 +148,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="NativeMemory.cpp" />
     <ClCompile Include="script.cpp" />
+    <ClCompile Include="Util\Logger.cpp" />
     <ClCompile Include="VehicleData.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -161,6 +162,7 @@
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="NativeMemory.hpp" />
     <ClInclude Include="script.h" />
+    <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="VehicleData.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

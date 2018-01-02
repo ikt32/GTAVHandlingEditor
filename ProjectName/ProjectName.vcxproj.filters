@@ -19,6 +19,7 @@
     <ClCompile Include="VehicleData.cpp">
       <Filter>external</Filter>
     </ClCompile>
+    <ClCompile Include="Util\Logger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -50,6 +51,7 @@
     <ClInclude Include="VehicleData.h">
       <Filter>external</Filter>
     </ClInclude>
+    <ClInclude Include="Util\Logger.hpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="inih">

@@ -16,14 +16,14 @@ void ScriptMain();
 
 template <typename T>
 T getHandlingValue(Vehicle veh, const int valueOffset) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
+	const uint64_t address = mem::GetAddressOfEntity(veh);
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	return *reinterpret_cast<T *>(handlingPtr + valueOffset);
 }
 
 template <typename T>
 void setHandlingValue(Vehicle veh, int valueOffset, T val) {
-	const uint64_t address = mem.GetAddressOfEntity(veh);
+	const uint64_t address = mem::GetAddressOfEntity(veh);
 	uint64_t handlingPtr = *reinterpret_cast<uint64_t *>(address + handlingOffset);
 	*reinterpret_cast<T *>(handlingPtr + valueOffset) = val;
 }
