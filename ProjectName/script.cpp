@@ -43,18 +43,20 @@ const struct HandlingOffset {
 	DWORD dwHandlingNameHash = 0x0008;
 	int fMass = 0x000C;
 	int fInitialDragCoeff = 0x0010;
-	// 0x0014
+	int fDownforceModifier = 0x0014;
 	// 0x0018
 	// 0x001C
 	vecOffset vecCentreOfMass = {
 		0x0020,
 		0x0024,
-		0x0028};
+		0x0028
+	};
 	// 0x002C
 	vecOffset vecInertiaMultiplier = {
 		0x0030,
 		0x0034,
-		0x0038};
+		0x0038
+	};
 	// 0x003C
 	int fPercentSubmerged = 0x0040;
 	int fSubmergedRatio = 0x0044;
@@ -106,15 +108,52 @@ const struct HandlingOffset {
 	int fEngineDamageMult = 0x00FC;
 	int fPetrolTankVolume = 0x0100;
 	int fOilVolume = 0x0104;
-	// 0x0108
+	// 0x0108                           // 0.5f?
 	int fSeatOffsetDistX = 0x010C;
 	int fSeatOffsetDistY = 0x0110;
 	int fSeatOffsetDistZ = 0x0114;
 	int nMonetaryValue = 0x0118;
-	DWORD dwStrModelFlags = 0x011C;
-	DWORD dwStrHandlingFlags = 0x0120;
-	DWORD dwStrDamageFlags = 0x0124;
-	DWORD dwAIHandlingHash = 0x0134;
+	// 0x011C // Hex  , 0x3FA00000 ?
+	// 0x0120 // Float, 70.0f?
+	DWORD dwStrModelFlags = 0x0124;
+	DWORD dwStrHandlingFlags = 0x0128;
+	DWORD dwStrDamageFlags = 0x012C;
+	// 0x0130 // Some hash?
+	// 0x0134 // some hash? joaat "0"
+	// 0x0138 // joaat("0") ??? wtf
+	DWORD dwAIHandlingHash = 0x013C;
+	// 0x0140 // Float 42.45703506 @ Deviant or 0x4229D401
+
+	// 0x0150 // CBaseSubHandlingData* ptr?
+	// 0x0154 // some ptr
+
+	// 0x0330 // some ptr?
+	// ccarhandlingdata area
+	// 0x0338 // fBackEndPopUpCarImpulseMult
+	// 0x033C // fBackEndPopUpBuildingImpulseMult
+	// 0x0340 // fBackEndPopUpMaxDeltaSpeed
+	// 0x0344 // fToeFront
+	// 0x0348 // fToeRear
+	// 0x034C // fCamberFront
+	// 0x0350 // fCamberRear
+	// 0x0354 // fCastor
+	// 0x0358 // fEngineResistance
+	// 0x035C // 
+	// 0x0360 // fJumpForceScale
+	// 0x0364 //
+	// 0x0368 // 
+	// 0x036C // strAdvancedFlags
+
+	// 0x0660 // some ptr
+	// 0x0668 // uWeaponHash array
+
+	// 0x0698 // hex (0x1F @ Issi4)
+	// 0x069C // hex (0x0A @ Issi4)
+	// 0x06A0 // hex
+	// 0x06A4 // hex
+	// 0x06A8 // hex
+	// 0x06AC // hex
+
 } hOffsets = {};
 
 void showNotification(char* message) {
@@ -175,53 +214,53 @@ void showPhysicsValues(Vector3 velocities, Vector3 accelValsAvg, float xPos, flo
 
 
 void setHandling(float fMass,
-                 float fInitialDragCoeff,
-                 float fPercentSubmerged,
-                 float vecCentreOfMassOffsetX,
-                 float vecCentreOfMassOffsetY,
-                 float vecCentreOfMassOffsetZ,
-                 float vecInertiaMultiplierX,
-                 float vecInertiaMultiplierY,
-                 float vecInertiaMultiplierZ,
-                 float fDriveBiasFront,
-                 int nInitialDriveGears,
-                 float fInitialDriveForce,
-                 float fDriveInertia,
-                 float fClutchChangeRateScaleUpShift,
-                 float fClutchChangeRateScaleDownShift,
-                 float fInitialDriveMaxFlatVel,
-                 float fBrakeForce,
-                 float fBrakeBiasFront,
-                 float fHandBrakeForce,
-                 float fSteeringLock,
-                 float fTractionCurveMax,
-                 float fTractionCurveMin,
-                 float fTractionCurveLateral,
-                 float fTractionSpringDeltaMax,
-                 float fLowSpeedTractionLossMult,
-                 float fCamberStiffness,
-                 float fTractionBiasFront,
-                 float fTractionLossMult,
-                 float fSuspensionForce,
-                 float fSuspensionCompDamp,
-                 float fSuspensionReboundDamp,
-                 float fSuspensionUpperLimit,
-                 float fSuspensionLowerLimit,
-                 float fSuspensionRaise,
-                 float fSuspensionBiasFront,
-                 float fAntiRollBarForce,
-                 float fAntiRollBarBiasFront,
-                 float fRollCentreHeightFront,
-                 float fRollCentreHeightRear,
-                 float fCollisionDamageMult,
-                 float fWeaponDamageMult,
-                 float fDeformationDamageMult,
-                 float fEngineDamageMult,
-                 float fPetrolTankVolume,
-                 float fOilVolume,
-                 float fSeatOffsetDistX,
-                 float fSeatOffsetDistY,
-                 float fSeatOffsetDistZ,
+				 float fInitialDragCoeff,
+				 float fPercentSubmerged,
+				 float vecCentreOfMassOffsetX,
+				 float vecCentreOfMassOffsetY,
+				 float vecCentreOfMassOffsetZ,
+				 float vecInertiaMultiplierX,
+				 float vecInertiaMultiplierY,
+				 float vecInertiaMultiplierZ,
+				 float fDriveBiasFront,
+				 int nInitialDriveGears,
+				 float fInitialDriveForce,
+				 float fDriveInertia,
+				 float fClutchChangeRateScaleUpShift,
+				 float fClutchChangeRateScaleDownShift,
+				 float fInitialDriveMaxFlatVel,
+				 float fBrakeForce,
+				 float fBrakeBiasFront,
+				 float fHandBrakeForce,
+				 float fSteeringLock,
+				 float fTractionCurveMax,
+				 float fTractionCurveMin,
+				 float fTractionCurveLateral,
+				 float fTractionSpringDeltaMax,
+				 float fLowSpeedTractionLossMult,
+				 float fCamberStiffness,
+				 float fTractionBiasFront,
+				 float fTractionLossMult,
+				 float fSuspensionForce,
+				 float fSuspensionCompDamp,
+				 float fSuspensionReboundDamp,
+				 float fSuspensionUpperLimit,
+				 float fSuspensionLowerLimit,
+				 float fSuspensionRaise,
+				 float fSuspensionBiasFront,
+				 float fAntiRollBarForce,
+				 float fAntiRollBarBiasFront,
+				 float fRollCentreHeightFront,
+				 float fRollCentreHeightRear,
+				 float fCollisionDamageMult,
+				 float fWeaponDamageMult,
+				 float fDeformationDamageMult,
+				 float fEngineDamageMult,
+				 float fPetrolTankVolume,
+				 float fOilVolume,
+				 float fSeatOffsetDistX,
+				 float fSeatOffsetDistY,
+				 float fSeatOffsetDistZ,
 				 int nMonetaryValue,
 				 int strModelFlags,
 				 int strHandlingFlags,
@@ -433,6 +472,17 @@ void setHandling(float fMass,
 	if (strDamageFlags 	  != disableVal)
 		setHandlingValue(vehicle, hOffsets.dwStrDamageFlags, strDamageFlags);
 
+    logger.Write(INFO, "[Used values for setHandlingValue]");
+	logger.Write(INFO, "strModelFlags offset: 0x%X", hOffsets.dwStrModelFlags);
+    logger.Write(INFO, "strModelFlags set to: 0x%X", strModelFlags);
+	logger.Write(INFO, "dwStrHandlingFlags offset: 0x%X", hOffsets.dwStrHandlingFlags);
+    logger.Write(INFO, "dwStrHandlingFlags set to: 0x%X", strHandlingFlags);
+	logger.Write(INFO, "dwStrDamageFlags offset: 0x%X", hOffsets.dwStrDamageFlags);
+    logger.Write(INFO, "dwStrDamageFlags set to: 0x%X", strDamageFlags);
+    logger.Write(INFO, "[Read back]");
+    logger.Write(INFO, "strModelFlags = 0x%X", getHandlingValue<DWORD>(vehicle, hOffsets.dwStrModelFlags));
+    logger.Write(INFO, "strHandlingFlags = 0x%X", getHandlingValue<DWORD>(vehicle, hOffsets.dwStrHandlingFlags));
+    logger.Write(INFO, "strDamageFlags = 0x%X", getHandlingValue<DWORD>(vehicle, hOffsets.dwStrDamageFlags));
 }
 
 
@@ -713,144 +763,9 @@ void readXMLFile() {
 	showNotification(const_cast<char *>(handlingText.str().c_str()));
 }
 
-void readINIFile() {
-	INIReader reader(SETTINGSFILE);
-	if (reader.ParseError() < 0) {
-		logger.Write(ERROR, "Can't load RTHandlingEditor.ini");
-		showNotification("RTHandlingEditor: Can't load RTHandlingEditor.ini");
-		return;
-	}
-	
-#pragma warning( push )
-#pragma warning( disable: 4244 )
-
-	float fMass = reader.GetReal("handling","fMass",disableVal);
-	float fInitialDragCoeff = reader.GetReal("handling", "fInitialDragCoeff", disableVal); // * 10000
-	float fPercentSubmerged = reader.GetReal("handling", "fPercentSubmerged", disableVal);
-	float vecCentreOfMassOffsetX = reader.GetReal("handling", "vecCentreOfMassOffsetX", disableVal);
-	float vecCentreOfMassOffsetY = reader.GetReal("handling", "vecCentreOfMassOffsetY", disableVal);
-	float vecCentreOfMassOffsetZ = reader.GetReal("handling", "vecCentreOfMassOffsetZ", disableVal);
-	float vecInertiaMultiplierX = reader.GetReal("handling", "vecInertiaMultiplierX", disableVal);
-	float vecInertiaMultiplierY = reader.GetReal("handling", "vecInertiaMultiplierY", disableVal);
-	float vecInertiaMultiplierZ = reader.GetReal("handling", "vecInertiaMultiplierZ", disableVal);
-	float fDriveBiasFront = reader.GetReal("handling", "fDriveBiasFront", disableVal); // !!!!!
-	int   nInitialDriveGears = (int)reader.GetInteger("handling", "nInitialDriveGears", (long)disableVal);
-	float fInitialDriveForce = reader.GetReal("handling", "fInitialDriveForce", disableVal);
-	float fDriveInertia = reader.GetReal("handling", "fDriveInertia", disableVal);
-	float fClutchChangeRateScaleUpShift = reader.GetReal("handling", "fClutchChangeRateScaleUpShift", disableVal);
-	float fClutchChangeRateScaleDownShift = reader.GetReal("handling", "fClutchChangeRateScaleDownShift", disableVal);
-	float fInitialDriveMaxFlatVel = reader.GetReal("handling", "fInitialDriveMaxFlatVel", disableVal); // kph -> m/s
-	float fBrakeForce = reader.GetReal("handling", "fBrakeForce", disableVal);
-	float fBrakeBiasFront = reader.GetReal("handling", "fBrakeBiasFront", disableVal); // !!!!!
-	float fHandBrakeForce = reader.GetReal("handling", "fHandBrakeForce", disableVal);
-	float fSteeringLock = reader.GetReal("handling", "fSteeringLock", disableVal); // deg -> rad
-	float fTractionCurveMax = reader.GetReal("handling", "fTractionCurveMax", disableVal);
-	float fTractionCurveMin = reader.GetReal("handling", "fTractionCurveMin", disableVal);
-	float fTractionCurveLateral = reader.GetReal("handling", "fTractionCurveLateral", disableVal); // deg -> rad
-	float fTractionSpringDeltaMax = reader.GetReal("handling", "fTractionSpringDeltaMax", disableVal);
-	float fLowSpeedTractionLossMult = reader.GetReal("handling", "fLowSpeedTractionLossMult", disableVal);
-	float fCamberStiffness = reader.GetReal("handling", "fCamberStiffness", disableVal);
-	float fTractionBiasFront = reader.GetReal("handling", "fTractionBiasFront", disableVal); // !!!!!
-	float fTractionLossMult = reader.GetReal("handling", "fTractionLossMult", disableVal);
-	float fSuspensionForce = reader.GetReal("handling", "fSuspensionForce", disableVal);
-	float fSuspensionCompDamp = reader.GetReal("handling", "fSuspensionCompDamp", disableVal); // *10
-	float fSuspensionReboundDamp = reader.GetReal("handling", "fSuspensionReboundDamp", disableVal); // *10
-	float fSuspensionUpperLimit = reader.GetReal("handling", "fSuspensionUpperLimit", disableVal);
-	float fSuspensionLowerLimit = reader.GetReal("handling", "fSuspensionLowerLimit", disableVal);
-	float fSuspensionRaise = reader.GetReal("handling", "fSuspensionRaise", disableVal);
-	float fSuspensionBiasFront = reader.GetReal("handling", "fSuspensionBiasFront", disableVal); // !!!!!
-	float fAntiRollBarForce = reader.GetReal("handling", "fAntiRollBarForce", disableVal);
-	float fAntiRollBarBiasFront = reader.GetReal("handling", "fAntiRollBarBiasFront", disableVal); // !!!!!
-	float fRollCentreHeightFront = reader.GetReal("handling", "fRollCentreHeightFront", disableVal);
-	float fRollCentreHeightRear = reader.GetReal("handling", "fRollCentreHeightRear", disableVal);
-	float fCollisionDamageMult = reader.GetReal("handling", "fCollisionDamageMult", disableVal);
-	float fWeaponDamageMult = reader.GetReal("handling", "fWeaponDamageMult", disableVal);
-	float fDeformationDamageMult = reader.GetReal("handling", "fDeformationDamageMult", disableVal);
-	float fEngineDamageMult = reader.GetReal("handling", "fEngineDamageMult", disableVal);
-	float fPetrolTankVolume = reader.GetReal("handling", "fPetrolTankVolume", disableVal);
-	float fOilVolume = reader.GetReal("handling", "fOilVolume", disableVal);
-	float fSeatOffsetDistX = reader.GetReal("handling", "fSeatOffsetDistX", disableVal);
-	float fSeatOffsetDistY = reader.GetReal("handling", "fSeatOffsetDistY", disableVal);
-	float fSeatOffsetDistZ = reader.GetReal("handling", "fSeatOffsetDistZ", disableVal);
-	int nMonetaryValue = (int)reader.GetInteger("handling", "nMonetaryValue", (long)disableVal);
-
-	int strModelFlags = -1337;
-	if (reader.Get("handling", "strModelFlags", "-1337") != "-1337")
-		strModelFlags = std::stoi(reader.Get("handling", "strModelFlags", "-1337"), nullptr, 16);
-	
-	
-	int strHandlingFlags = -1337;
-	if (reader.Get("handling", "strHandlingFlags", "-1337") != "-1337")
-		strHandlingFlags = std::stoi(reader.Get("handling", "strHandlingFlags", "-1337"), nullptr, 16);
-	
-	
-	int strDamageFlags = -1337;
-	if (reader.Get("handling", "strDamageFlags", "-1337") != "-1337")
-		std::stoi(reader.Get("handling", "strDamageFlags", "-1337"), nullptr, 16);
-
-#pragma warning ( pop )
-
-	setHandling(
-		fMass,
-		fInitialDragCoeff,
-		fPercentSubmerged,
-		vecCentreOfMassOffsetX,
-		vecCentreOfMassOffsetY,
-		vecCentreOfMassOffsetZ,
-		vecInertiaMultiplierX,
-		vecInertiaMultiplierY,
-		vecInertiaMultiplierZ,
-		fDriveBiasFront,
-		nInitialDriveGears,
-		fInitialDriveForce,
-		fDriveInertia,
-		fClutchChangeRateScaleUpShift,
-		fClutchChangeRateScaleDownShift,
-		fInitialDriveMaxFlatVel,
-		fBrakeForce,
-		fBrakeBiasFront,
-		fHandBrakeForce,
-		fSteeringLock,
-		fTractionCurveMax,
-		fTractionCurveMin,
-		fTractionCurveLateral,
-		fTractionSpringDeltaMax,
-		fLowSpeedTractionLossMult,
-		fCamberStiffness,
-		fTractionBiasFront,
-		fTractionLossMult,
-		fSuspensionForce,
-		fSuspensionCompDamp,
-		fSuspensionReboundDamp,
-		fSuspensionUpperLimit,
-		fSuspensionLowerLimit,
-		fSuspensionRaise,
-		fSuspensionBiasFront,
-		fAntiRollBarForce,
-		fAntiRollBarBiasFront,
-		fRollCentreHeightFront,
-		fRollCentreHeightRear,
-		fCollisionDamageMult,
-		fWeaponDamageMult,
-		fDeformationDamageMult,
-		fEngineDamageMult,
-		fPetrolTankVolume,
-		fOilVolume,
-		fSeatOffsetDistX,
-		fSeatOffsetDistY,
-		fSeatOffsetDistZ,
-		nMonetaryValue,
-		strModelFlags,
-		strHandlingFlags,
-		strDamageFlags);
-	showNotification("RTHandlingEditor: Loaded RTHandlingEditor.ini");
-}
-
-/*
-* main loop
-*/
 void update()
 {
+	// Update settings
 	char kbKeyBuffer[24];
 	GetPrivateProfileStringA("key", "read", "O", kbKeyBuffer, 24, SETTINGSFILE);
 	int readKey = str2key(kbKeyBuffer);
@@ -865,14 +780,13 @@ void update()
 	float posY = GetPrivateProfileIntA("util", "infoy", 30, SETTINGSFILE) / 100.0f;
 	float size = GetPrivateProfileIntA("util", "infosz", 100, SETTINGSFILE) / 100.0f;
 	
+	// Update player
 	player = PLAYER::PLAYER_ID();
 	playerPed = PLAYER::PLAYER_PED_ID();
 
-	// check if player ped exists and control is on (e.g. not in a cutscene)
 	if (!ENTITY::DOES_ENTITY_EXIST(playerPed) || !PLAYER::IS_PLAYER_CONTROL_ON(player))
 		return;
 
-	// check for player ped death and player arrest
 	if (ENTITY::IS_ENTITY_DEAD(playerPed) || PLAYER::IS_PLAYER_BEING_ARRESTED(player, TRUE))
 		return;
 
@@ -887,49 +801,24 @@ void update()
 	Vector3 accelVals = vehData.getAccelerationVectors(velocities);
 	Vector3 accelValsAvg = vehData.getAccelerationVectorsAverage();
 
-	/*std::stringstream ssAccelRawY;
-	ssAccelRawY << "rawAY = " << accelVals.y;
-	showText(0.01f, 0.300f, 0.4f, ssAccelRawY.str().c_str());
-
-	std::stringstream ssAccelRawX;
-	ssAccelRawX << "rawAX = " << accelVals.x;
-	showText(0.01f, 0.325f, 0.4f, ssAccelRawX.str().c_str());*/
-
 	showPhysicsValues(velocities, accelValsAvg, posX, posY, size);
 
-
-
-
-		
-	/*std::stringstream ss_fBrakeBiasFront;
-	ss_fBrakeBiasFront << "fBrakeBiasFront = " << get_fBrakeBiasFront(vehicle);
-	showText(0.2, 0.2, 1.0, ss_fBrakeBiasFront.str().c_str());
-
-	std::stringstream ss_fTractionBiasFront;
-	ss_fTractionBiasFront << "fTractionBiasFront = " << get_fTractionBiasFront(vehicle);
-	showText(0.2, 0.3, 1.0, ss_fTractionBiasFront.str().c_str());*/
-	//logger.Write(" = " + std::to_string());
 	if (IsKeyJustUp(logKey)) {
-		readMemorytoLog();
+		readMemorytoLog(); // TODO: Build XML
 		showNotification("RTHandlingEditor: Saved to RTHandlingEditor.log");
 	}
 
 	if (IsKeyJustUp(metaKey)) {
-		readXMLFile();
-	}
-
-	if (IsKeyJustUp(readKey)) {
-		readINIFile();
-
+		readXMLFile(); // TODO: Parse XML
 	}
 }
 
 uint64_t getHandlingOffset() {
 
 	auto addr = mem::FindPattern("\x3C\x03\x0F\x85\x00\x00\x00\x00\x48\x8B\x41\x20\x48\x8B\x88", 
-		                                  "xxxx????xxxxxxx");
+										  "xxxx????xxxxxxx");
 
-    if (addr == 0) return 0;
+	if (addr == 0) return 0;
 
 	uint64_t offset = *(int*)(addr + 0x16);
 
@@ -938,13 +827,13 @@ uint64_t getHandlingOffset() {
 }
 
 void main() {
-    logger.SetFile(LOGFILE);
-    logger.SetMinLevel(LogLevel::DEBUG);
-    mem::init();
-    handlingOffset = getHandlingOffset();
-    if (handlingOffset == 0) {
-        logger.Write(ERROR, "Could't find handling offset");
-    }
+	logger.SetFile(LOGFILE);
+	logger.SetMinLevel(LogLevel::DEBUG);
+	mem::init();
+	handlingOffset = getHandlingOffset();
+	if (handlingOffset == 0) {
+		logger.Write(ERROR, "Could't find handling offset");
+	}
 	while (true)
 	{
 		update();
