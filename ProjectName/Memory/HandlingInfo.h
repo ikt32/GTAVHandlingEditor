@@ -75,25 +75,30 @@ namespace RTH {
         float N00001A75;						//0x0108
         Vector3 vecSeatOffsetDist;				//0x010C
         __int32 nMonetaryValue;					//0x0118
+        char padXXX[0x08];
         DWORD strModelFlags;					//0x011C
         DWORD strHandlingFlags;					//0x0120
         DWORD strDamageFlags;					//0x0124
+        char padXXXX[0x0C];
         DWORD AIHandling;						//0x0128
-        char pad_0x012C[0x34];					//0x012C
-        float N00001A80;						//0x0160
-        float N00001AB9;						//0x0164
-        float N00001A81;						//0x0168
-        float N00001ABB;						//0x016C
-        char pad_0x0170[0x8];					//0x0170
-        char pad_0x0178[0x4];
-        char pad_0x017C[0x4];
-        char pad_0x0180[0x4];
-        //float fBackEndPopUpCarImpulseMult;		//0x0178
-        //float fBackEndPopUpBuildingImpulseMult; //0x017C
-        //float fBackEndPopUpMaxDeltaSpeed;		//0x0180
-        char pad_0x0184[0x3C];					//0x0184
+        //char pad_0x012C[0x34];					//0x012C
+        //float N00001A80;						//0x0160
+        //float N00001AB9;						//0x0164
+        //float N00001A81;						//0x0168
+        //float N00001ABB;						//0x016C
+        //char pad_0x0170[0x8];					//0x0170
+        //char pad_0x0178[0x4];
+        //char pad_0x017C[0x4];
+        //char pad_0x0180[0x4];
+        ////float fBackEndPopUpCarImpulseMult;		//0x0178
+        ////float fBackEndPopUpBuildingImpulseMult; //0x017C
+        ////float fBackEndPopUpMaxDeltaSpeed;		//0x0180
+        //char pad_0x0184[0x3C];					//0x0184
 
     }; //Size=0x01C0
+    static_assert(offsetof(CHandlingData, strModelFlags) == 0x124, "wrong offset");
+    static_assert(offsetof(CHandlingData, AIHandling) == 0x13C, "wrong offset");
+
 
 const struct HandlingOffsets {
     uint32_t dwHandlingNameHash = 0x0008;
