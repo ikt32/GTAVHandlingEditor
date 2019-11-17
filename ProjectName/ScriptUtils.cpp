@@ -36,7 +36,6 @@ Vehicle Utils::SpawnVehicle(Hash hash, Vector3 coords, float heading, Vector3 ve
     ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&veh);
 
     ENTITY::SET_ENTITY_VELOCITY(veh, velocity.x, velocity.y, velocity.z);
-    //ENTITY::SET_ENTITY_HEADING(veh, heading);
 
     return veh;
 }
@@ -51,6 +50,9 @@ Vehicle Utils::RespawnVehicle(Vehicle oldVehicle, Ped ped) {
     VEHICLE::DELETE_VEHICLE(&oldVehicle);
 
     Vehicle newVehicle = SpawnVehicle(model, coords, heading, velocity, {}, 1000);
+    ENTITY::SET_ENTITY_AS_MISSION_ENTITY(newVehicle, true, false);
     PED::SET_PED_INTO_VEHICLE(ped, newVehicle, -1);
+    ENTITY::SET_ENTITY_AS_MISSION_ENTITY(newVehicle, false, true);
+    ENTITY::SET_ENTITY_AS_NO_LONGER_NEEDED(&newVehicle);
     return newVehicle;
 }
