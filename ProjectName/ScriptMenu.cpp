@@ -11,6 +11,24 @@
 
 extern VehicleExtensions g_ext;
 
+// TODO: MOVE
+constexpr unsigned long joaat(const char* s) {
+    unsigned long hash = 0;
+    for (; *s != '\0'; ++s) {
+        auto c = *s;
+        if (c >= 0x41 && c <= 0x5A) {
+            c += 0x20;
+        }
+        hash += c;
+        hash += hash << 10;
+        hash ^= hash >> 6;
+    }
+    hash += hash << 3;
+    hash ^= hash >> 11;
+    hash += hash << 15;
+    return hash;
+}
+
 float g_stepSz = 0.005f;
 
 namespace {
@@ -46,6 +64,10 @@ void UpdateMainMenu() {
     // 1. Save current as .meta/.xml
     // 2. Load .meta/.xml to current vehicle
     // Pipe dream: Multiple meta/xml editing
+    
+    menu.MenuOption("Load - TODO", "LoadMenu");
+
+    menu.Option("Save - TODO");
 }
 
 template <typename T>
@@ -86,7 +108,15 @@ void UpdateEditMenu() {
     //    - ???
     // 3. Precision handling
     menu.FloatOption("fMass", currentHandling->fMass, 0.0f, 1000000000.0f, 5.0f);
+
+    {
+        float fInitialDragCoeff = currentHandling->fInitialDragCoeff * 10000.0f;
+        if (menu.FloatOption("fInitialDragCoeff", fInitialDragCoeff, 0.0f, 1000.0f, 0.05f)) {
+            currentHandling->fInitialDragCoeff = fInitialDragCoeff / 10000.0f;
+        }
+    }
     menu.FloatOption("fDownforceModifier", currentHandling->fDownforceModifier, 0.0f, 1000.0f);
+    menu.FloatOption("fPercentSubmerged", currentHandling->fPercentSubmerged, -1000.0f, 1000.0f, 0.01f);
 
     menu.FloatOption("vecCentreOfMassOffset.x", currentHandling->vecCentreOfMassOffset.x, -1000.0f, 1000.0f);
     menu.FloatOption("vecCentreOfMassOffset.y", currentHandling->vecCentreOfMassOffset.y, -1000.0f, 1000.0f);
@@ -95,8 +125,6 @@ void UpdateEditMenu() {
     menu.FloatOption("vecInteriaMultiplier.x", currentHandling->vecInteriaMultiplier.x, -1000.0f, 1000.0f);
     menu.FloatOption("vecInteriaMultiplier.y", currentHandling->vecInteriaMultiplier.y, -1000.0f, 1000.0f);
     menu.FloatOption("vecInteriaMultiplier.z", currentHandling->vecInteriaMultiplier.z, -1000.0f, 1000.0f);
-
-    menu.FloatOption("fPercentSubmerged", currentHandling->fPercentSubmerged, -1000.0f, 1000.0f, 0.01f);
 
     {
         float fDriveBiasFront = currentHandling->fDriveBiasFront;
@@ -128,14 +156,15 @@ void UpdateEditMenu() {
     //menu.FloatOption("fAcceleration", currentHandling->fAcceleration, -1000.0f, 1000.0f, 0.01f);
 
     menu.IntOption("nInitialDriveGears", currentHandling->nInitialDriveGears, 1, 7, 1);
+    menu.FloatOption("fInitialDriveForce", currentHandling->fInitialDriveForce, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fDriveIntertia", currentHandling->fDriveIntertia, -1000.0f, 1000.0f, 0.01f);
+
     menu.FloatOption("fClutchChangeRateScaleUpShift", currentHandling->fClutchChangeRateScaleUpShift, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fClutchChangeRateScaleDownShift", currentHandling->fClutchChangeRateScaleDownShift, -1000.0f, 1000.0f, 0.01f);
-    menu.FloatOption("fInitialDriveForce", currentHandling->fInitialDriveForce, -1000.0f, 1000.0f, 0.01f);
 
     {
-        float fInitialDriveMaxFlatVel = currentHandling->fDriveMaxFlatVel_ * 3.6f;
-        if (menu.FloatOption("fInitialDriveMaxFlatVel", fInitialDriveMaxFlatVel, -1000.0f, 1000.0f, 0.01f)) {
+        float fInitialDriveMaxFlatVel = currentHandling->fInitialDriveMaxFlatVel_ * 3.6f;
+        if (menu.FloatOption("fInitialDriveMaxFlatVel", fInitialDriveMaxFlatVel, 0.0f, 1000.0f, 0.5f)) {
             currentHandling->fInitialDriveMaxFlatVel_ = fInitialDriveMaxFlatVel / 3.6f;
             currentHandling->fDriveMaxFlatVel_ = fInitialDriveMaxFlatVel / 3.0f;
         }
@@ -156,7 +185,7 @@ void UpdateEditMenu() {
     {
         // rad 2 deg
         float fSteeringLock = currentHandling->fSteeringLock_ / 0.017453292f;
-        if (menu.FloatOption("fSteeringLock", fSteeringLock, -1000.0f, 1000.0f, 0.01f)) {
+        if (menu.FloatOption("fSteeringLock", fSteeringLock, 0.0f, 90.0f, 0.10f)) {
             currentHandling->fSteeringLock_ = fSteeringLock * 0.017453292f;
             currentHandling->fSteeringLockRatio_ = 1.0f / (fSteeringLock * 0.017453292f);
         }
@@ -164,7 +193,7 @@ void UpdateEditMenu() {
 
     {
         float fTractionCurveMax = currentHandling->fTractionCurveMax;
-        if (menu.FloatOption("fTractionCurveMax", fTractionCurveMax, -1000.0f, 1000.0f, 0.01f)) {
+        if (menu.FloatOption("fTractionCurveMax", fTractionCurveMax, 0.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionCurveMax = fTractionCurveMax;
             currentHandling->fTractionCurveMaxRatio_ = 1.0f / fTractionCurveMax;
         }
@@ -172,7 +201,7 @@ void UpdateEditMenu() {
 
     {
         float fTractionCurveMin = currentHandling->fTractionCurveMin;
-        if (menu.FloatOption("fTractionCurveMin", fTractionCurveMin, -1000.0f, 1000.0f, 0.01f)) {
+        if (menu.FloatOption("fTractionCurveMin", fTractionCurveMin, 0.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionCurveMin = fTractionCurveMin;
             currentHandling->fTractionCurveMinRatio_ = 1.0f / fTractionCurveMin;
         }
@@ -247,44 +276,89 @@ void UpdateEditMenu() {
 
     menu.FloatOption("fRollCentreHeightFront", currentHandling->fRollCentreHeightFront, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fRollCentreHeightRear", currentHandling->fRollCentreHeightRear, -1000.0f, 1000.0f, 0.01f);
+
     menu.FloatOption("fCollisionDamageMult", currentHandling->fCollisionDamageMult, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fWeaponDamageMult", currentHandling->fWeaponDamageMult, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fDeformationDamageMult", currentHandling->fDeformationDamageMult, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fEngineDamageMult", currentHandling->fEngineDamageMult, -1000.0f, 1000.0f, 0.01f);
+
     menu.FloatOption("fPetrolTankVolume", currentHandling->fPetrolTankVolume, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fOilVolume", currentHandling->fOilVolume, -1000.0f, 1000.0f, 0.01f);
+
     menu.FloatOption("vecSeatOffsetDistX", currentHandling->vecSeatOffsetDist.x, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("vecSeatOffsetDistY", currentHandling->vecSeatOffsetDist.y, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("vecSeatOffsetDistZ", currentHandling->vecSeatOffsetDist.z, -1000.0f, 1000.0f, 0.01f);
+
     menu.IntOption("nMonetaryValue", currentHandling->nMonetaryValue, 0, 1000000, 1);
 
     {
-        std::string strModelFlags = fmt::format("{:x}", currentHandling->strModelFlags);
+        std::string strModelFlags = fmt::format("{:X}", currentHandling->strModelFlags);
         if (menu.Option(fmt::format("strModelFlags: {}", strModelFlags))) {
             
         }
     }
 
     {
-        std::string strHandlingFlags = fmt::format("{:x}", currentHandling->strHandlingFlags);
-        if (menu.Option(fmt::format("strModelFlags: {}", strHandlingFlags))) {
+        std::string strHandlingFlags = fmt::format("{:X}", currentHandling->strHandlingFlags);
+        if (menu.Option(fmt::format("strHandlingFlags: {}", strHandlingFlags))) {
 
         }
     }
 
     {
-        std::string strDamageFlags = fmt::format("{:x}", currentHandling->strDamageFlags);
+        std::string strDamageFlags = fmt::format("{:X}", currentHandling->strDamageFlags);
         if (menu.Option(fmt::format("strDamageFlags: {}", strDamageFlags))) {
 
         }
     }
 
     {
-        std::string AIHandling = fmt::format("{}", currentHandling->AIHandling);
-        if (menu.Option(fmt::format("AIHandling: {}", AIHandling))) {
-
+        std::string AIHandling;
+        switch (currentHandling->AIHandling) {
+            case joaat("AVERAGE"):
+                AIHandling = "AVERAGE";
+                break;
+            case joaat("SPORTS_CAR"):
+                AIHandling = "SPORTS_CAR";
+                break;
+            case joaat("TRUCK"):
+                AIHandling = "TRUCK";
+                break;
+            case joaat("CRAP"):
+                AIHandling = "CRAP";
+                break;
+            default:
+                AIHandling = fmt::format("{:X}", currentHandling->AIHandling);
+        }
+        if (menu.Option(fmt::format("AIHandling: {}", AIHandling), 
+            {
+                fmt::format("AVERAGE: {:X}", joaat("AVERAGE")),
+                fmt::format("SPORTS_CAR: {:X}", joaat("SPORTS_CAR")),
+                fmt::format("TRUCK: {:X}", joaat("TRUCK")),
+                fmt::format("CRAP: {:X}", joaat("CRAP")),
+            })) {
         }
     }
+}
+
+void UpdateLoadMenu() {
+    menu.Title("Load Handling");
+
+    Ped playerPed = PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX());
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
+
+    if (!ENTITY::DOES_ENTITY_EXIST(vehicle)) {
+        menu.Subtitle("Not in a vehicle");
+        menu.Option("Not in a vehicle");
+        return;
+    }
+
+    std::string vehicleNameLabel = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
+    std::string vehicleName = UI::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
+    menu.Subtitle(fmt::format("{}", vehicleName));
+
+    menu.Option("TODO", 
+        { "Will probably feature loading any of multiple partial handling.meta files from the CHandlingData element down." });
 }
 
 void UpdateMenu() {
@@ -295,6 +369,9 @@ void UpdateMenu() {
 
     // MainMenu -> EditHandlingMenu
     if (menu.CurrentMenu("EditMenu")) { UpdateEditMenu(); }
+
+    // MainMenu -> LoadHandlingMenu
+    if (menu.CurrentMenu("LoadMenu")) { UpdateLoadMenu(); }
 
     menu.EndMenu();
 }
