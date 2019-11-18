@@ -127,21 +127,35 @@ void UpdateEditMenu() {
     menu.FloatOption("vecInteriaMultiplier.z", currentHandling->vecInteriaMultiplier.z, -1000.0f, 1000.0f);
 
     {
+        // FWD      F1.0 R0.0 XML_F 1.0
+        // 60/40    F1.2 R0.8 XML_F 0.6
+        // 50/50    F1.0 R1.0 XML_F 0.5
+        // 40/60    F0.8 R1.2 XML_F 0.4
+        // RWD      F0.0 R1.0 XML_F 0.0
         float fDriveBiasFront = currentHandling->fDriveBiasFront;
+        float fDriveBiasRear = currentHandling->fAcceleration;
+
         float fDriveBiasFrontNorm;
 
-        if (fDriveBiasFront > 0.0f && fDriveBiasFront < 1.0f) {
-            fDriveBiasFrontNorm = fDriveBiasFront / 2.0f;
+        // Full FWD
+        if (fDriveBiasFront == 1.0f && fDriveBiasRear == 0.0f) {
+            fDriveBiasFrontNorm = 1.0f;
+        }
+        // Full RWD
+        else if (fDriveBiasFront == 0.0f && fDriveBiasRear == 1.0f) {
+            fDriveBiasFrontNorm = 0.0f;
         }
         else {
-            fDriveBiasFrontNorm = fDriveBiasFront;
+            fDriveBiasFrontNorm = fDriveBiasFront / 2.0f;
         }
 
         if (menu.FloatOption("fDriveBiasFront", fDriveBiasFrontNorm, 0.0f, 1.0f, 0.01f)) {
+            // Full FWD
             if (IsNear(fDriveBiasFrontNorm, 1.0f, 0.005f)) {
                 currentHandling->fDriveBiasFront = 1.0f;
                 currentHandling->fAcceleration = 0.0f;
             }
+            // Full RWD
             else if (IsNear(fDriveBiasFrontNorm, 0.0f, 0.005f)) {
                 currentHandling->fDriveBiasFront = 0.0f;
                 currentHandling->fAcceleration = 1.0f;
