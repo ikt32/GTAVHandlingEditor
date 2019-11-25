@@ -4,3 +4,6 @@
 [submodule "thirdparty/fmt"]
 	path = thirdparty/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "thirdparty/simpleini"]
+	path = thirdparty/simpleini
+	url = https://github.com/brofield/simpleini
