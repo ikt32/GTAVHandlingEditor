@@ -49,6 +49,10 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="ScriptUtils.cpp" />
+    <ClCompile Include="HandlingItem.cpp" />
+    <ClCompile Include="Util\StrUtil.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -125,6 +129,13 @@
       <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="ScriptUtils.h" />
+    <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h">
+      <Filter>thirdparty\simpleini</Filter>
+    </ClInclude>
+    <ClInclude Include="HandlingItem.h" />
+    <ClInclude Include="Util\StrUtil.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">
@@ -147,6 +158,9 @@
     </Filter>
     <Filter Include="Utility">
       <UniqueIdentifier>{802c97bf-4081-47fc-94ab-cc8899a8558a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\simpleini">
+      <UniqueIdentifier>{40514aba-5228-4536-8d1e-488f7d411f53}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

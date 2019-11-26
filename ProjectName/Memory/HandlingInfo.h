@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace RTH {
+namespace RTHE {
     struct Vector3 {
         float x;
         float y;
@@ -11,7 +11,6 @@ namespace RTH {
     class CHandlingData {
     public:
         virtual void Function0();				//
-
         char pad_0x0008[0x4];					//0x0008
         float fMass;							//0x000C
         float fInitialDragCoeff;				//0x0010
@@ -20,14 +19,14 @@ namespace RTH {
         float N000019E5;						//0x001C
         Vector3 vecCentreOfMassOffset;			//0x0020
         float N000019E9;						//0x002C
-        Vector3 vecInteriaMultiplier;			//0x0030
+        Vector3 vecInertiaMultiplier;			//0x0030
         char pad_0x003C[0x4];					//0x003C
         float fPercentSubmerged;				//0x0040
-        float N000019EF;						//0x0044
+        float fSubmergedRatio_;          //0x0044
         float fDriveBiasFront;					//0x0048
-        float fAcceleration;					//0x004C // ?????
+        float fDriveBiasRear;					//0x004C // fDriveBiasRear
         __int32 nInitialDriveGears;				//0x0050
-        float fDriveIntertia;					//0x0054
+        float fDriveInertia;					//0x0054
         float fClutchChangeRateScaleUpShift;	//0x0058
         float fClutchChangeRateScaleDownShift;	//0x005C
         float fInitialDriveForce;				//0x0060
@@ -43,13 +42,13 @@ namespace RTH {
         float fTractionCurveMax;				//0x0088
         float fTractionCurveMaxRatio_;			//0x008C
         float fTractionCurveMin;				//0x0090
-        float fTractionCurveMinRatio_;			//0x0094
+        float fTractionCurveRatio_;             //0x0094
         float fTractionCurveLateral_;			//0x0098
         float fTractionCurveLateralRatio_;		//0x009C
         float fTractionSpringDeltaMax;			//0x00A0
         float fTractionSpringDeltaMaxRatio_;	//0x00A4
         float fLowSpeedTractionLossMult;		//0x00A8
-        float fCamberStiffnesss;				//0x00AC
+        float fCamberStiffness;                 //0x00AC
         float fTractionBiasFront_;				//0x00B0
         float fTractionBiasRear;				//0x00B4
         float fTractionLossMult;				//0x00B8
@@ -75,7 +74,7 @@ namespace RTH {
         float N00001A75;						//0x0108
         Vector3 vecSeatOffsetDist;				//0x010C
         __int32 nMonetaryValue;					//0x0118
-        char padXXX[0x08];
+        char padXXX[0x08];                      
         DWORD strModelFlags;					//0x011C
         DWORD strHandlingFlags;					//0x0120
         DWORD strDamageFlags;					//0x0124
@@ -94,7 +93,6 @@ namespace RTH {
         ////float fBackEndPopUpBuildingImpulseMult; //0x017C
         ////float fBackEndPopUpMaxDeltaSpeed;		//0x0180
         //char pad_0x0184[0x3C];					//0x0184
-
     }; //Size=0x01C0
     static_assert(offsetof(CHandlingData, strModelFlags) == 0x124, "wrong offset");
     static_assert(offsetof(CHandlingData, AIHandling) == 0x13C, "wrong offset");

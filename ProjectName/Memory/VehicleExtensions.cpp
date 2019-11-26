@@ -465,31 +465,31 @@ uint8_t VehicleExtensions::GetNumWheels(Vehicle handle) {
 float VehicleExtensions::GetDriveBiasFront(Vehicle handle) {
     auto address = GetHandlingPtr(handle);
     if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTH::Offsets.fDriveBiasFront);
+    return *reinterpret_cast<float *>(address + RTHE::Offsets.fDriveBiasFront);
 }
 
 float VehicleExtensions::GetDriveBiasRear(Vehicle handle) {
     auto address = GetHandlingPtr(handle);
     if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTH::Offsets.fDriveBiasRear);
+    return *reinterpret_cast<float *>(address + RTHE::Offsets.fDriveBiasRear);
 }
 
 float VehicleExtensions::GetPetrolTankVolume(Vehicle handle) {
     auto address = GetHandlingPtr(handle);
     if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTH::Offsets.fPetrolTankVolume);
+    return *reinterpret_cast<float *>(address + RTHE::Offsets.fPetrolTankVolume);
 }
 
 float VehicleExtensions::GetOilVolume(Vehicle handle) {
     auto address = GetHandlingPtr(handle);
     if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTH::Offsets.fOilVolume);
+    return *reinterpret_cast<float *>(address + RTHE::Offsets.fOilVolume);
 }
 
 float VehicleExtensions::GetMaxSteeringAngle(Vehicle handle) {
     auto address = GetHandlingPtr(handle);
     if (address == 0) return 0.0f;
-    return *reinterpret_cast<float*>(address + RTH::Offsets.fSteeringLock);
+    return *reinterpret_cast<float*>(address + RTHE::Offsets.fSteeringLock);
 }
 
 Hash VehicleExtensions::GetAIHandling(Vehicle handle) {

@@ -8,8 +8,12 @@
 #include "Memory/HandlingInfo.h"
 #include "Memory/VehicleExtensions.hpp"
 #include "ScriptUtils.h"
+#include "HandlingItem.h"
 
 extern VehicleExtensions g_ext;
+extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
+
+void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataItem);
 
 // TODO: MOVE
 constexpr unsigned long joaat(const char* s) {
@@ -33,10 +37,6 @@ float g_stepSz = 0.005f;
 
 namespace {
 NativeMenu::Menu menu;
-}
-
-namespace Offsets {
-    extern uint64_t Handling;
 }
 
 NativeMenu::Menu& GetMenu() {
@@ -65,7 +65,7 @@ void UpdateMainMenu() {
     // 2. Load .meta/.xml to current vehicle
     // Pipe dream: Multiple meta/xml editing
     
-    menu.MenuOption("Load - TODO", "LoadMenu");
+    menu.MenuOption("Load handling", "LoadMenu");
 
     menu.Option("Save - TODO");
 }
@@ -91,10 +91,10 @@ void UpdateEditMenu() {
     std::string vehicleName = UI::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
     menu.Subtitle(fmt::format("{}", vehicleName));
 
-    RTH::CHandlingData* currentHandling = nullptr;
+    RTHE::CHandlingData* currentHandling = nullptr;
 
     uint64_t addr = g_ext.GetHandlingPtr(vehicle);
-    currentHandling = reinterpret_cast<RTH::CHandlingData*>(addr);
+    currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
 
     if (currentHandling == nullptr) {
         menu.Option("Could not find handling pointer!");
@@ -111,20 +111,23 @@ void UpdateEditMenu() {
 
     {
         float fInitialDragCoeff = currentHandling->fInitialDragCoeff * 10000.0f;
-        if (menu.FloatOption("fInitialDragCoeff", fInitialDragCoeff, 0.0f, 1000.0f, 0.05f)) {
+        if (menu.FloatOption("fInitialDragCoeff", fInitialDragCoeff, 0.0f, 100.0f, 0.05f)) {
             currentHandling->fInitialDragCoeff = fInitialDragCoeff / 10000.0f;
         }
     }
-    menu.FloatOption("fDownforceModifier", currentHandling->fDownforceModifier, 0.0f, 1000.0f);
-    menu.FloatOption("fPercentSubmerged", currentHandling->fPercentSubmerged, -1000.0f, 1000.0f, 0.01f);
+    menu.FloatOption("fDownforceModifier", currentHandling->fDownforceModifier, 0.0f, 1000.0f, 0.5f);
 
-    menu.FloatOption("vecCentreOfMassOffset.x", currentHandling->vecCentreOfMassOffset.x, -1000.0f, 1000.0f);
-    menu.FloatOption("vecCentreOfMassOffset.y", currentHandling->vecCentreOfMassOffset.y, -1000.0f, 1000.0f);
-    menu.FloatOption("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -1000.0f, 1000.0f);
+    if (menu.FloatOption("fPercentSubmerged", currentHandling->fPercentSubmerged, 0.0f, 100.0f, 1.0f)) {
+        currentHandling->fSubmergedRatio_ = 100.0f / currentHandling->fPercentSubmerged;
+    }
 
-    menu.FloatOption("vecInteriaMultiplier.x", currentHandling->vecInteriaMultiplier.x, -1000.0f, 1000.0f);
-    menu.FloatOption("vecInteriaMultiplier.y", currentHandling->vecInteriaMultiplier.y, -1000.0f, 1000.0f);
-    menu.FloatOption("vecInteriaMultiplier.z", currentHandling->vecInteriaMultiplier.z, -1000.0f, 1000.0f);
+    menu.FloatOption("vecCentreOfMassOffset.x", currentHandling->vecCentreOfMassOffset.x, -100.0f, 100.0f);
+    menu.FloatOption("vecCentreOfMassOffset.y", currentHandling->vecCentreOfMassOffset.y, -100.0f, 100.0f);
+    menu.FloatOption("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -100.0f, 100.0f);
+
+    menu.FloatOption("vecInteriaMultiplier.x", currentHandling->vecInertiaMultiplier.x, -100.0f, 100.0f);
+    menu.FloatOption("vecInteriaMultiplier.y", currentHandling->vecInertiaMultiplier.y, -100.0f, 100.0f);
+    menu.FloatOption("vecInteriaMultiplier.z", currentHandling->vecInertiaMultiplier.z, -100.0f, 100.0f);
 
     {
         // FWD      F1.0 R0.0 XML_F 1.0
@@ -133,7 +136,7 @@ void UpdateEditMenu() {
         // 40/60    F0.8 R1.2 XML_F 0.4
         // RWD      F0.0 R1.0 XML_F 0.0
         float fDriveBiasFront = currentHandling->fDriveBiasFront;
-        float fDriveBiasRear = currentHandling->fAcceleration;
+        float fDriveBiasRear = currentHandling->fDriveBiasRear;
 
         float fDriveBiasFrontNorm;
 
@@ -153,16 +156,16 @@ void UpdateEditMenu() {
             // Full FWD
             if (IsNear(fDriveBiasFrontNorm, 1.0f, 0.005f)) {
                 currentHandling->fDriveBiasFront = 1.0f;
-                currentHandling->fAcceleration = 0.0f;
+                currentHandling->fDriveBiasRear = 0.0f;
             }
             // Full RWD
             else if (IsNear(fDriveBiasFrontNorm, 0.0f, 0.005f)) {
                 currentHandling->fDriveBiasFront = 0.0f;
-                currentHandling->fAcceleration = 1.0f;
+                currentHandling->fDriveBiasRear = 1.0f;
             }
             else {
                 currentHandling->fDriveBiasFront = fDriveBiasFrontNorm * 2.0f;
-                currentHandling->fAcceleration = 2.0f * (1.0f - (fDriveBiasFrontNorm));
+                currentHandling->fDriveBiasRear = 2.0f * (1.0f - (fDriveBiasFrontNorm));
             }
         }
     }
@@ -171,7 +174,7 @@ void UpdateEditMenu() {
 
     menu.IntOption("nInitialDriveGears", currentHandling->nInitialDriveGears, 1, 7, 1);
     menu.FloatOption("fInitialDriveForce", currentHandling->fInitialDriveForce, -1000.0f, 1000.0f, 0.01f);
-    menu.FloatOption("fDriveIntertia", currentHandling->fDriveIntertia, -1000.0f, 1000.0f, 0.01f);
+    menu.FloatOption("fDriveIntertia", currentHandling->fDriveInertia, -1000.0f, 1000.0f, 0.01f);
 
     menu.FloatOption("fClutchChangeRateScaleUpShift", currentHandling->fClutchChangeRateScaleUpShift, -1000.0f, 1000.0f, 0.01f);
     menu.FloatOption("fClutchChangeRateScaleDownShift", currentHandling->fClutchChangeRateScaleDownShift, -1000.0f, 1000.0f, 0.01f);
@@ -205,11 +208,13 @@ void UpdateEditMenu() {
         }
     }
 
+    bool tcModified = false;
     {
         float fTractionCurveMax = currentHandling->fTractionCurveMax;
         if (menu.FloatOption("fTractionCurveMax", fTractionCurveMax, 0.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionCurveMax = fTractionCurveMax;
             currentHandling->fTractionCurveMaxRatio_ = 1.0f / fTractionCurveMax;
+            tcModified = true;
         }
     }
 
@@ -217,8 +222,12 @@ void UpdateEditMenu() {
         float fTractionCurveMin = currentHandling->fTractionCurveMin;
         if (menu.FloatOption("fTractionCurveMin", fTractionCurveMin, 0.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionCurveMin = fTractionCurveMin;
-            currentHandling->fTractionCurveMinRatio_ = 1.0f / fTractionCurveMin;
+            tcModified = true;
         }
+    }
+
+    if (tcModified) {
+        currentHandling->fTractionCurveRatio_ = 1.0f / (currentHandling->fTractionCurveMax - currentHandling->fTractionCurveMin);
     }
 
     {
@@ -239,11 +248,11 @@ void UpdateEditMenu() {
     }
 
     menu.FloatOption("fLowSpeedTractionLossMult", currentHandling->fLowSpeedTractionLossMult, -1000.0f, 1000.0f, 0.01f);
-    menu.FloatOption("fCamberStiffnesss", currentHandling->fCamberStiffnesss, -1000.0f, 1000.0f, 0.01f);
+    menu.FloatOption("fCamberStiffnesss", currentHandling->fCamberStiffness, -1000.0f, 1000.0f, 0.01f);
 
     { // todo: ???
         float fTractionBiasFront = currentHandling->fTractionBiasFront_ / 2.0f;
-        if (menu.FloatOption("fTractionBiasFront", fTractionBiasFront, -1000.0f, 1000.0f, 0.01f)) {
+        if (menu.FloatOption("fTractionBiasFront", fTractionBiasFront, 0.0f, 1.0f, 0.01f)) {
             currentHandling->fTractionBiasFront_ = 2.0f * fTractionBiasFront;
             currentHandling->fTractionBiasRear = 2.0f * (1.0f - (fTractionBiasFront));
         }
@@ -355,6 +364,8 @@ void UpdateEditMenu() {
     }
 }
 
+bool onlyCurrent = true;
+
 void UpdateLoadMenu() {
     menu.Title("Load Handling");
 
@@ -371,8 +382,13 @@ void UpdateLoadMenu() {
     std::string vehicleName = UI::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
     menu.Subtitle(fmt::format("{}", vehicleName));
 
-    menu.Option("TODO", 
-        { "Will probably feature loading any of multiple partial handling.meta files from the CHandlingData element down." });
+    // TODO: Filter option
+
+    for (const auto& handlingDataItem : g_handlingDataItems) {
+        if (menu.Option(handlingDataItem.handlingName)) {
+            setHandling(vehicle, handlingDataItem);
+        }
+    }
 }
 
 void UpdateMenu() {
