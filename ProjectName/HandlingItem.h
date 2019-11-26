@@ -64,7 +64,7 @@ struct CHandlingDataItem {
 CHandlingDataItem ParseXMLItem(const std::string& sourceFile);
 
 // Returns false on failure
-bool SaveXMLItem(const CHandlingDataItem& handlingData, const std::string& targetFile);
+bool SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::string& targetFile);
 }
 
 // Reference

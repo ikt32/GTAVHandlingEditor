@@ -9,29 +9,13 @@
 #include "Memory/VehicleExtensions.hpp"
 #include "ScriptUtils.h"
 #include "HandlingItem.h"
+#include "Util/StrUtil.h"
 
 extern VehicleExtensions g_ext;
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
 
 void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataItem);
-
-// TODO: MOVE
-constexpr unsigned long joaat(const char* s) {
-    unsigned long hash = 0;
-    for (; *s != '\0'; ++s) {
-        auto c = *s;
-        if (c >= 0x41 && c <= 0x5A) {
-            c += 0x20;
-        }
-        hash += c;
-        hash += hash << 10;
-        hash ^= hash >> 6;
-    }
-    hash += hash << 3;
-    hash ^= hash >> 11;
-    hash += hash << 15;
-    return hash;
-}
+void PromptSave(Vehicle vehicle);
 
 float g_stepSz = 0.005f;
 
@@ -67,7 +51,9 @@ void UpdateMainMenu() {
     
     menu.MenuOption("Load handling", "LoadMenu");
 
-    menu.Option("Save - TODO");
+    if (menu.Option("Save")) {
+        PromptSave(vehicle);
+    }
 }
 
 template <typename T>
@@ -338,16 +324,16 @@ void UpdateEditMenu() {
     {
         std::string AIHandling;
         switch (currentHandling->AIHandling) {
-            case joaat("AVERAGE"):
+            case StrUtil::joaat("AVERAGE"):
                 AIHandling = "AVERAGE";
                 break;
-            case joaat("SPORTS_CAR"):
+            case StrUtil::joaat("SPORTS_CAR"):
                 AIHandling = "SPORTS_CAR";
                 break;
-            case joaat("TRUCK"):
+            case StrUtil::joaat("TRUCK"):
                 AIHandling = "TRUCK";
                 break;
-            case joaat("CRAP"):
+            case StrUtil::joaat("CRAP"):
                 AIHandling = "CRAP";
                 break;
             default:
@@ -355,10 +341,10 @@ void UpdateEditMenu() {
         }
         if (menu.Option(fmt::format("AIHandling: {}", AIHandling), 
             {
-                fmt::format("AVERAGE: {:X}", joaat("AVERAGE")),
-                fmt::format("SPORTS_CAR: {:X}", joaat("SPORTS_CAR")),
-                fmt::format("TRUCK: {:X}", joaat("TRUCK")),
-                fmt::format("CRAP: {:X}", joaat("CRAP")),
+                fmt::format("AVERAGE: {:X}", StrUtil::joaat("AVERAGE")),
+                fmt::format("SPORTS_CAR: {:X}", StrUtil::joaat("SPORTS_CAR")),
+                fmt::format("TRUCK: {:X}", StrUtil::joaat("TRUCK")),
+                fmt::format("CRAP: {:X}", StrUtil::joaat("CRAP")),
             })) {
         }
     }
