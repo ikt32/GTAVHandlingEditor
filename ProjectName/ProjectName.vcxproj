@@ -102,13 +102,16 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalOptions>..\..\ScriptHookV_SDK\lib\ScriptHookV.lib %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <PostBuildEvent>
+      <Command>PostBuild.bat $(ProjectDir)$(OutDir) "D:\Games\Steam\steamapps\common\Grand Theft Auto V" $(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -131,39 +134,78 @@
       <PreprocessorDefinitions>NOGDI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalOptions>..\..\ScriptHookV_SDK\lib\ScriptHookV.lib %(AdditionalOptions)</AdditionalOptions>
       <GenerateDebugInformation>No</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
+    <PostBuildEvent>
+      <Command>PostBuild.bat $(ProjectDir)$(OutDir) "D:\Games\Steam\steamapps\common\Grand Theft Auto V" $(TargetFileName)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\inih\cpp\INIReader.cpp" />
-    <ClCompile Include="..\inih\ini.c" />
-    <ClCompile Include="..\tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menu.cpp" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menucontrols.cpp" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menukeyboard.cpp" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menumemutils.cpp" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
+    <ClCompile Include="..\thirdparty\tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="HandlingItem.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="NativeMemory.cpp" />
+    <ClCompile Include="Memory\NativeMemory.cpp" />
+    <ClCompile Include="Memory\VehicleExtensions.cpp" />
     <ClCompile Include="script.cpp" />
+    <ClCompile Include="ScriptMenu.cpp" />
+    <ClCompile Include="ScriptUtils.cpp" />
+    <ClCompile Include="Util\FileVersion.cpp" />
     <ClCompile Include="Util\Logger.cpp" />
+    <ClCompile Include="Util\MathExt.cpp" />
+    <ClCompile Include="Util\Paths.cpp" />
+    <ClCompile Include="Util\StrUtil.cpp" />
     <ClCompile Include="VehicleData.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\enums.h" />
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\main.h" />
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\natives.h" />
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\types.h" />
-    <ClInclude Include="..\inih\cpp\INIReader.h" />
-    <ClInclude Include="..\inih\ini.h" />
-    <ClInclude Include="..\tinyxml2\tinyxml2.h" />
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menu.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menucontrols.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menukeyboard.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menumemutils.hpp" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\Scaleform.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h" />
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h" />
+    <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h" />
+    <ClInclude Include="..\thirdparty\tinyxml2\tinyxml2.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="HandlingItem.h" />
     <ClInclude Include="keyboard.h" />
-    <ClInclude Include="NativeMemory.hpp" />
+    <ClInclude Include="Memory\HandlingInfo.h" />
+    <ClInclude Include="Memory\NativeMemory.hpp" />
+    <ClInclude Include="Memory\VehicleExtensions.hpp" />
+    <ClInclude Include="Memory\Versions.h" />
     <ClInclude Include="script.h" />
+    <ClInclude Include="ScriptUtils.h" />
+    <ClInclude Include="Util\FileVersion.h" />
     <ClInclude Include="Util\Logger.hpp" />
+    <ClInclude Include="Util\MathExt.h" />
+    <ClInclude Include="Util\Paths.h" />
+    <ClInclude Include="Util\StrUtil.h" />
     <ClInclude Include="VehicleData.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

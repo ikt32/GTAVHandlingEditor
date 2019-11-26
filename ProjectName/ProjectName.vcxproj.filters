@@ -3,68 +3,169 @@
   <ItemGroup>
     <ClCompile Include="main.cpp" />
     <ClCompile Include="script.cpp" />
-    <ClCompile Include="..\inih\ini.c">
-      <Filter>inih</Filter>
-    </ClCompile>
-    <ClCompile Include="..\inih\cpp\INIReader.cpp">
-      <Filter>inih</Filter>
-    </ClCompile>
-    <ClCompile Include="..\tinyxml2\tinyxml2.cpp">
-      <Filter>tinyxml2</Filter>
-    </ClCompile>
     <ClCompile Include="keyboard.cpp" />
-    <ClCompile Include="NativeMemory.cpp">
-      <Filter>external</Filter>
+    <ClCompile Include="VehicleData.cpp" />
+    <ClCompile Include="..\thirdparty\tinyxml2\tinyxml2.cpp">
+      <Filter>thirdparty\tinyxml2</Filter>
     </ClCompile>
-    <ClCompile Include="VehicleData.cpp">
-      <Filter>external</Filter>
+    <ClCompile Include="ScriptMenu.cpp" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menu.cpp">
+      <Filter>GTAVMenuBase</Filter>
     </ClCompile>
-    <ClCompile Include="Util\Logger.cpp" />
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menucontrols.cpp">
+      <Filter>GTAVMenuBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menukeyboard.cpp">
+      <Filter>GTAVMenuBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menumemutils.cpp">
+      <Filter>GTAVMenuBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menusettings.cpp">
+      <Filter>GTAVMenuBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp">
+      <Filter>GTAVMenuBase</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\fmt\src\format.cc">
+      <Filter>thirdparty\fmt</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\VehicleExtensions.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\NativeMemory.cpp">
+      <Filter>Memory</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Logger.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\MathExt.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\FileVersion.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="Util\Paths.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
+    <ClCompile Include="ScriptUtils.cpp" />
+    <ClCompile Include="HandlingItem.cpp" />
+    <ClCompile Include="Util\StrUtil.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
-    <ClInclude Include="..\inih\ini.h">
-      <Filter>inih</Filter>
-    </ClInclude>
-    <ClInclude Include="..\inih\cpp\INIReader.h">
-      <Filter>inih</Filter>
-    </ClInclude>
-    <ClInclude Include="..\tinyxml2\tinyxml2.h">
-      <Filter>tinyxml2</Filter>
-    </ClInclude>
     <ClInclude Include="keyboard.h" />
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\natives.h">
-      <Filter>scripthookv</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h">
+      <Filter>ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\enums.h">
-      <Filter>scripthookv</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h">
+      <Filter>ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\types.h">
-      <Filter>scripthookv</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h">
+      <Filter>ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\ScriptHookV_SDK\inc\main.h">
-      <Filter>scripthookv</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h">
+      <Filter>ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="NativeMemory.hpp">
-      <Filter>external</Filter>
+    <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h">
+      <Filter>ScriptHookV</Filter>
     </ClInclude>
-    <ClInclude Include="VehicleData.h">
-      <Filter>external</Filter>
+    <ClInclude Include="VehicleData.h" />
+    <ClInclude Include="..\thirdparty\tinyxml2\tinyxml2.h">
+      <Filter>thirdparty\tinyxml2</Filter>
     </ClInclude>
-    <ClInclude Include="Util\Logger.hpp" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menu.h">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menucontrols.h">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menukeyboard.h">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menumemutils.hpp">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVMenuBase\Scaleform.h">
+      <Filter>GTAVMenuBase</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h">
+      <Filter>thirdparty\fmt</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\VehicleExtensions.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\HandlingInfo.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\NativeMemory.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Logger.hpp">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\MathExt.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Versions.h">
+      <Filter>Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\FileVersion.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\Paths.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptUtils.h" />
+    <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h">
+      <Filter>thirdparty\simpleini</Filter>
+    </ClInclude>
+    <ClInclude Include="HandlingItem.h" />
+    <ClInclude Include="Util\StrUtil.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="inih">
-      <UniqueIdentifier>{a0640629-34fe-4476-9302-111b2b4c0223}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="tinyxml2">
-      <UniqueIdentifier>{de410f6f-326e-4c9b-8558-64aadf4a42c6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="scripthookv">
+    <Filter Include="ScriptHookV">
       <UniqueIdentifier>{a7d3c671-b757-46b1-8bf5-0fb30ce6dfb8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="external">
-      <UniqueIdentifier>{508c77b7-4061-44b9-983e-3bc77ada7765}</UniqueIdentifier>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{59333e37-297d-4e9b-b8d3-031786c2c8ea}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\tinyxml2">
+      <UniqueIdentifier>{de410f6f-326e-4c9b-8558-64aadf4a42c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\fmt">
+      <UniqueIdentifier>{c67850ed-3239-4b57-bbca-18d52914ef07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GTAVMenuBase">
+      <UniqueIdentifier>{a1dd36ca-d96e-4dd8-a941-3535396e5958}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Memory">
+      <UniqueIdentifier>{815cc22a-2513-452e-816b-9a3fecc7e215}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utility">
+      <UniqueIdentifier>{802c97bf-4081-47fc-94ab-cc8899a8558a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\simpleini">
+      <UniqueIdentifier>{40514aba-5228-4536-8d1e-488f7d411f53}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib">
+      <Filter>ScriptHookV</Filter>
+    </Library>
   </ItemGroup>
 </Project>

@@ -1,49 +1,44 @@
-GTA V Real Time Handling Editor
-===========
+# GTA V Real Time Handling Editor
 
-This .asi plugin will allow realtime editing of handling.meta values in-memory. Editing this way will eliminate the need to restart the game every time something has been edited, for testing purposes.
+Using this script, you can edit the handling of vehicles in real-time.
 
 ## Features
-* Realtime handling editing
-* Correct front/rear bias setting
+
+* In-game menu where you can edit handling entries in real-time
+* Loads XML/Meta files, starting from the `<Item />` level
+* Saves XML files of whatever vehicle you're editing
+* TODO: Handling dev tools:
+  * G-Force meter with lateral and longitudinal axes
+  * Acceleration timers
 
 ## Requirements
-* Grand Theft Auto V
+
+* Grand Theft Auto V b1604+
 * ScriptHookV
 
-The offsets for the values have only been tested in b791_2
-
-
 ## Installation
-* Drop RTHandlingEditor.asi in the main GTA V folder
-* Drop RTHandlingEditor.ini in the main GTA V folder
-* (Optional) Drop RTHandlingEditor.meta in the main GTA V folder
+
+Extract `RTHandlingEditor.asi` and the folder `HandlingEditor` into the main GTA V folder.
+TODO: ini/folder names subject to change, until v2.0.0 release.
 
 ## Usage in-game
-* Press the `read` hotkey during gameplay to read `RTHandlingEditor.ini` values into memory
-* Press the `meta` hotkey during gameplay to read `RTHandlingEditor.meta` values into memory
-* Press the `log` hotkey during gameplay to write memory values into `RTHandlingEditor.log`
 
-
-## Usage .ini and .meta
-* Use `-1337` in the `[handling]` section to ignore a value in `RTHandlingEditor.ini`
-* Replace everything in `RTHandlingEditor.meta` with your handling entry, between ``
-* An example with Rockstar's original Sultan entry is included. Replace at will
+Use the `rthe` cheat to open the menu. From there, follow the on-screen instructions.
 
 ## Limitations
+
 * Some values do not apply instantly. The game will need to reload the vehicle to apply these properly. Some examples:
   * vecCentreOfMassOffset
   * nInitialDriveGears
   * fDriveBiasFront
 * Some values using radians internally have small rounding errors
 
-
 ------------------------------
 
 ## Building
 
-### Requirements
+### Requirements <!-- Building -->
+
 * [ScriptHookV SDK by Alexander Blade](http://www.dev-c.com/gtav/scripthookv/)
 
-Download the [ScriptHookV SDK](http://www.dev-c.com/gtav/scripthookv/) and extract it's contents to ScriptHookV_SDK. 
-Clone this repository to the same folder ScriptHookV_SDK was extracted so you have ScriptHookV_SDK and GTAVManualTransmission in the same folder. If you get build errors about missing functions, update your [natives.h](http://www.dev-c.com/nativedb/natives.h).
+Clone this repository recursively, to pull in all the submodules.
