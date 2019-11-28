@@ -4,6 +4,9 @@
 #include "fmt/format.h"
 #include "Memory/HandlingInfo.h"
 #include "Util/StrUtil.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 std::string GetXMLError(const tinyxml2::XMLDocument& doc) {
     if (doc.Error()) {
