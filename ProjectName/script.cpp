@@ -348,24 +348,68 @@ void showNotification(const std::string& message) {
     showNotification(message, &prevNotif);
 }
 
+void showText(float x, float y, float scale, const std::string& text) {
+    UI::SET_TEXT_FONT(0);
+    UI::SET_TEXT_SCALE(scale, scale);
+    UI::SET_TEXT_COLOUR(255, 255, 255, 255);
+    UI::SET_TEXT_WRAP(0.0, 1.0);
+    UI::SET_TEXT_CENTRE(0);
+    UI::SET_TEXT_OUTLINE();
+    UI::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
+    UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
+    UI::END_TEXT_COMMAND_DISPLAY_TEXT(x, y);
+}
+
+namespace UI {
+    void Notify(const std::string& message, bool removePrevious) {
+        int* notifHandleAddr = nullptr;
+        if (removePrevious) {
+            notifHandleAddr = &prevNotif;
+        }
+        showNotification(fmt::format("{}\n{}", Constants::NotificationPrefix, message), notifHandleAddr);
+    }
+
+    void Notify(const std::string& message) {
+        Notify(message, true);
+    }
+}
+
 void PromptSave(Vehicle vehicle) {
-    showNotification("Enter handling name");
-    WAIT(0);
+    UI::Notify("Enter handling name");
     GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
-    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) WAIT(0);
+    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+        WAIT(0);
+    }
     if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
-        showNotification("Cancelled save");
+        UI::Notify("Cancelled save");
         return;
     }
 
     std::string handlingName = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
     if (handlingName.empty()) {
-        showNotification("No handlingName entered");
+        UI::Notify("Cancelled save - No handling name entered");
+        return;
+    }
+
+    UI::Notify("Enter file name");
+    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+        showText(0.45f, 0.40f, 1.0f, "Enter file name...");
+        WAIT(0);
+    }
+    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+        UI::Notify("Cancelled save");
+        return;
+    }
+
+    std::string fileName = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    if (fileName.empty()) {
+        UI::Notify("Cancelled save - No file name entered");
         return;
     }
 
     uint32_t saveFileSuffix = 0;
-    std::string outFile = handlingName;
+    std::string outFile = fileName;
 
     const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
     const std::string handlingsPath = absoluteModPath + "\\HandlingFiles";
@@ -376,7 +420,7 @@ void PromptSave(Vehicle vehicle) {
         for (auto& p : std::filesystem::directory_iterator(handlingsPath)) {
             if (StrUtil::toLower(p.path().stem().string()) == StrUtil::toLower(outFile)) {
                 duplicate = true;
-                outFile = fmt::format("{}_{:02d}", handlingName.c_str(), saveFileSuffix++);
+                outFile = fmt::format("{}_{:02d}", fileName.c_str(), saveFileSuffix++);
             }
         }
     } while (duplicate);
@@ -386,7 +430,7 @@ void PromptSave(Vehicle vehicle) {
     outFile = fmt::format("{}/{}.xml", handlingsPath, outFile);
     std::replace(outFile.begin(), outFile.end(), '\\', '/');
     RTHE::SaveXMLItem(h, outFile);
-    showNotification(fmt::format("Saved as {}", outFile));
+    UI::Notify(fmt::format("Saved as {}", outFile));
 }
 
 void Update() {
