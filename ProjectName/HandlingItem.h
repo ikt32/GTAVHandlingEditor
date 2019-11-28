@@ -3,6 +3,10 @@
 
 namespace RTHE {
 struct CHandlingDataItem {
+    struct MetaData {
+        std::string fileName;
+        std::string description;
+    } metaData;
     std::string handlingName;
     float fMass;
     float fInitialDragCoeff;

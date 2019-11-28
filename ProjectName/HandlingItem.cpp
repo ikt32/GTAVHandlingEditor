@@ -86,6 +86,13 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
         return {};
     }
 
+    // Parse additional info
+    tinyxml2::XMLNode* rtheNode = doc.FirstChildElement("RTHE");
+    handlingDataItem.metaData.fileName = fs::path(sourceFile).filename().string();
+    if (rtheNode) {
+        handlingDataItem.metaData.description = GetElementStr(rtheNode, "description");
+    }
+
     logger.Write(DEBUG, "[Parse] Reading handling [%s]", handlingDataItem.handlingName.c_str());
 
     GetAttribute(pRoot, "fMass", "value", handlingDataItem.fMass);

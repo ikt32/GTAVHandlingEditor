@@ -43,11 +43,6 @@ void UpdateMainMenu() {
             Utils::RespawnVehicle(vehicle, playerPed);
         }
     }
-
-    // TODO:
-    // 1. Save current as .meta/.xml
-    // 2. Load .meta/.xml to current vehicle
-    // Pipe dream: Multiple meta/xml editing
     
     menu.MenuOption("Load handling", "LoadMenu");
 
@@ -371,8 +366,21 @@ void UpdateLoadMenu() {
     // TODO: Filter option
 
     for (const auto& handlingDataItem : g_handlingDataItems) {
-        if (menu.Option(handlingDataItem.handlingName)) {
+        bool selected = false;
+        if (menu.OptionPlus(handlingDataItem.handlingName, {}, &selected)) {
             setHandling(vehicle, handlingDataItem);
+        }
+        if (selected) {
+            float maxKph = handlingDataItem.fInitialDriveMaxFlatVel / 0.75f;
+            float maxMph = maxKph / 1.609344f;
+            std::vector<std::string> extra{
+                fmt::format("File: {}", handlingDataItem.metaData.fileName),
+                fmt::format("Description: {}", handlingDataItem.metaData.description),
+                fmt::format("Top speed: {:.2f} kph / {:.2f} mph", maxKph, maxMph),
+                fmt::format("Drive bias (front): {:.2f}", handlingDataItem.fDriveBiasFront),
+                fmt::format("Traction: max {:.2f}, min {:.2f}", handlingDataItem.fTractionCurveMax, handlingDataItem.fTractionCurveMin),
+            };
+            menu.OptionPlusPlus(extra, "Handling overview");
         }
     }
 }
