@@ -26,6 +26,7 @@
 #include <filesystem>
 #include "Util/StrUtil.h"
 #include "fmt/format.h"
+#include "Util/UI.h"
 
 namespace fs = std::filesystem;
 
@@ -329,51 +330,6 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
     return handlingDataItem;
 }
 
-void showNotification(const std::string& message, int* prevNotification) {
-    if (prevNotification != nullptr && *prevNotification != 0) {
-        UI::_REMOVE_NOTIFICATION(*prevNotification);
-    }
-    UI::_SET_NOTIFICATION_TEXT_ENTRY("STRING");
-
-    UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME((char*)message.c_str());
-
-    int id = UI::_DRAW_NOTIFICATION(false, false);
-    if (prevNotification != nullptr) {
-        *prevNotification = id;
-    }
-}
-
-int prevNotif;
-void showNotification(const std::string& message) {
-    showNotification(message, &prevNotif);
-}
-
-void showText(float x, float y, float scale, const std::string& text) {
-    UI::SET_TEXT_FONT(0);
-    UI::SET_TEXT_SCALE(scale, scale);
-    UI::SET_TEXT_COLOUR(255, 255, 255, 255);
-    UI::SET_TEXT_WRAP(0.0, 1.0);
-    UI::SET_TEXT_CENTRE(0);
-    UI::SET_TEXT_OUTLINE();
-    UI::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
-    UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
-    UI::END_TEXT_COMMAND_DISPLAY_TEXT(x, y);
-}
-
-namespace UI {
-    void Notify(const std::string& message, bool removePrevious) {
-        int* notifHandleAddr = nullptr;
-        if (removePrevious) {
-            notifHandleAddr = &prevNotif;
-        }
-        showNotification(fmt::format("{}\n{}", Constants::NotificationPrefix, message), notifHandleAddr);
-    }
-
-    void Notify(const std::string& message) {
-        Notify(message, true);
-    }
-}
-
 void PromptSave(Vehicle vehicle) {
     UI::Notify("Enter handling name");
     GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
@@ -394,7 +350,6 @@ void PromptSave(Vehicle vehicle) {
     UI::Notify("Enter file name");
     GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
     while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
-        showText(0.45f, 0.40f, 1.0f, "Enter file name...");
         WAIT(0);
     }
     if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {

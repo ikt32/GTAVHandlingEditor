@@ -10,6 +10,7 @@
 #include "ScriptUtils.h"
 #include "HandlingItem.h"
 #include "Util/StrUtil.h"
+#include "Util/UI.h"
 
 extern VehicleExtensions g_ext;
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
@@ -369,6 +370,7 @@ void UpdateLoadMenu() {
         bool selected = false;
         if (menu.OptionPlus(handlingDataItem.handlingName, {}, &selected)) {
             setHandling(vehicle, handlingDataItem);
+            UI::Notify(fmt::format("Applied {} handling", handlingDataItem.handlingName));
         }
         if (selected) {
             float maxKph = handlingDataItem.fInitialDriveMaxFlatVel / 0.75f;

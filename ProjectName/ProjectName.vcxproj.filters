@@ -53,6 +53,9 @@
     <ClCompile Include="Util\StrUtil.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="Util\UI.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -134,6 +137,9 @@
     </ClInclude>
     <ClInclude Include="HandlingItem.h" />
     <ClInclude Include="Util\StrUtil.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
+    <ClInclude Include="Util\UI.h">
       <Filter>Utility</Filter>
     </ClInclude>
   </ItemGroup>
