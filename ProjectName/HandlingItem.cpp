@@ -99,6 +99,7 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
 
     GetAttribute(itemNode, "fMass", "value", handlingDataItem.fMass);
     GetAttribute(itemNode, "fInitialDragCoeff", "value", handlingDataItem.fInitialDragCoeff);
+    GetAttribute(itemNode, "fDownforceModifier", "value", handlingDataItem.fDownforceModifier);
     GetAttribute(itemNode, "fPercentSubmerged", "value", handlingDataItem.fPercentSubmerged);
     GetAttribute(itemNode, "vecCentreOfMassOffset", "x", handlingDataItem.vecCentreOfMassOffsetX);
     GetAttribute(itemNode, "vecCentreOfMassOffset", "y", handlingDataItem.vecCentreOfMassOffsetY);

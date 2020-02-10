@@ -47,6 +47,7 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
     currentHandling->fMass = handlingDataItem.fMass;
     currentHandling->fInitialDragCoeff = handlingDataItem.fInitialDragCoeff / 10000.0f;
+    currentHandling->fDownforceModifier = handlingDataItem.fDownforceModifier;
 
     currentHandling->fPercentSubmerged = handlingDataItem.fPercentSubmerged;
     currentHandling->fSubmergedRatio_ = 100.0f / handlingDataItem.fPercentSubmerged;
@@ -211,6 +212,7 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     handlingDataItem.fMass = currentHandling->fMass;
     handlingDataItem.fInitialDragCoeff = currentHandling->fInitialDragCoeff * 10000.0f;
+    handlingDataItem.fDownforceModifier = currentHandling->fDownforceModifier;
 
     handlingDataItem.fPercentSubmerged = currentHandling->fPercentSubmerged;
     handlingDataItem.fPercentSubmerged = 100.0f / currentHandling->fSubmergedRatio_;
