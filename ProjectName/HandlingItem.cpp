@@ -224,6 +224,8 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     InsertElement(itemNode, "handlingName", handlingDataItem.handlingName.c_str());
     InsertElement(itemNode, "fMass", handlingDataItem.fMass);
     InsertElement(itemNode, "fInitialDragCoeff", handlingDataItem.fInitialDragCoeff);
+    if (handlingDataItem.fDownforceModifier != 0.0f)
+        InsertElement(itemNode, "fDownforceModifier", handlingDataItem.fDownforceModifier);
     InsertElement(itemNode, "fPercentSubmerged", handlingDataItem.fPercentSubmerged);
     InsertElement(itemNode, "vecCentreOfMassOffset", {
         handlingDataItem.vecCentreOfMassOffsetX,
