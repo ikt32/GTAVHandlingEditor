@@ -11,6 +11,7 @@
 #include "HandlingItem.h"
 #include "Util/StrUtil.h"
 #include "Util/UI.h"
+#include "Constants.h"
 
 extern VehicleExtensions g_ext;
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
@@ -28,7 +29,7 @@ NativeMenu::Menu& GetMenu() {
 
 void UpdateMainMenu() {
     menu.Title("Handling Editor");
-    menu.Subtitle("v2.0.0 - beta");
+    menu.Subtitle(Constants::DisplayVersion);
 
     menu.MenuOption("Edit current handling", "EditMenu");
 
