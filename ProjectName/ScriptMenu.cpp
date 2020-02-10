@@ -18,8 +18,6 @@ extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
 void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataItem);
 void PromptSave(Vehicle vehicle);
 
-float g_stepSz = 0.005f;
-
 namespace {
 NativeMenu::Menu menu;
 }
@@ -30,11 +28,9 @@ NativeMenu::Menu& GetMenu() {
 
 void UpdateMainMenu() {
     menu.Title("Handling Editor");
-    menu.Subtitle("v2.0.0");
+    menu.Subtitle("v2.0.0 - beta");
 
     menu.MenuOption("Edit current handling", "EditMenu");
-
-    menu.FloatOption("Step size", g_stepSz, 0.0001f, 1.0f, 0.00005f);
 
     Ped playerPed = PLAYER::PLAYER_PED_ID();
     Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
