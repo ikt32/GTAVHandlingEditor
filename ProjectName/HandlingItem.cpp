@@ -4,6 +4,9 @@
 #include "fmt/format.h"
 #include "Memory/HandlingInfo.h"
 #include "Util/StrUtil.h"
+#include <filesystem>
+
+namespace fs = std::filesystem;
 
 std::string GetXMLError(const tinyxml2::XMLDocument& doc) {
     if (doc.Error()) {
@@ -60,7 +63,6 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
 
     tinyxml2::XMLDocument doc{};
     tinyxml2::XMLError err = tinyxml2::XMLError::XML_SUCCESS;
-    tinyxml2::XMLNode* pRoot = nullptr;
 
     logger.Write(DEBUG, "[Parse] Reading handling file [%s]", sourceFile.c_str());
 
@@ -72,75 +74,82 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
         return {};
     }
 
-    pRoot = doc.FirstChild();
-    if (!pRoot) {
+    tinyxml2::XMLNode* itemNode = doc.FirstChildElement("Item");
+    if (!itemNode) {
         logger.Write(ERROR, "[Parse] Error during reading file [%s]", sourceFile.c_str());
         logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
         return {};
     }
 
-    handlingDataItem.handlingName = GetElementStr(pRoot, "handlingName");
+    handlingDataItem.handlingName = GetElementStr(itemNode, "handlingName");
 
     if (handlingDataItem.handlingName.empty()) {
         // GetElementStr should already have logged
         return {};
     }
 
+    // Parse additional info
+    tinyxml2::XMLNode* rtheNode = doc.FirstChildElement("RTHE");
+    handlingDataItem.metaData.fileName = fs::path(sourceFile).filename().string();
+    if (rtheNode) {
+        handlingDataItem.metaData.description = GetElementStr(rtheNode, "description");
+    }
+
     logger.Write(DEBUG, "[Parse] Reading handling [%s]", handlingDataItem.handlingName.c_str());
 
-    GetAttribute(pRoot, "fMass", "value", handlingDataItem.fMass);
-    GetAttribute(pRoot, "fInitialDragCoeff", "value", handlingDataItem.fInitialDragCoeff);
-    GetAttribute(pRoot, "fPercentSubmerged", "value", handlingDataItem.fPercentSubmerged);
-    GetAttribute(pRoot, "vecCentreOfMassOffset", "x", handlingDataItem.vecCentreOfMassOffsetX);
-    GetAttribute(pRoot, "vecCentreOfMassOffset", "y", handlingDataItem.vecCentreOfMassOffsetY);
-    GetAttribute(pRoot, "vecCentreOfMassOffset", "z", handlingDataItem.vecCentreOfMassOffsetZ);
-    GetAttribute(pRoot, "vecInertiaMultiplier", "x", handlingDataItem.vecInertiaMultiplierX);
-    GetAttribute(pRoot, "vecInertiaMultiplier", "y", handlingDataItem.vecInertiaMultiplierY);
-    GetAttribute(pRoot, "vecInertiaMultiplier", "z", handlingDataItem.vecInertiaMultiplierZ);
-    GetAttribute(pRoot, "fDriveBiasFront", "value", handlingDataItem.fDriveBiasFront);
-    GetAttribute(pRoot, "nInitialDriveGears", "value", handlingDataItem.nInitialDriveGears);
-    GetAttribute(pRoot, "fInitialDriveForce", "value", handlingDataItem.fInitialDriveForce);
-    GetAttribute(pRoot, "fDriveInertia", "value", handlingDataItem.fDriveInertia);
-    GetAttribute(pRoot, "fClutchChangeRateScaleUpShift", "value", handlingDataItem.fClutchChangeRateScaleUpShift);
-    GetAttribute(pRoot, "fClutchChangeRateScaleDownShift", "value", handlingDataItem.fClutchChangeRateScaleDownShift);
-    GetAttribute(pRoot, "fInitialDriveMaxFlatVel", "value", handlingDataItem.fInitialDriveMaxFlatVel);
-    GetAttribute(pRoot, "fBrakeForce", "value", handlingDataItem.fBrakeForce);
-    GetAttribute(pRoot, "fBrakeBiasFront", "value", handlingDataItem.fBrakeBiasFront);
-    GetAttribute(pRoot, "fHandBrakeForce", "value", handlingDataItem.fHandBrakeForce);
-    GetAttribute(pRoot, "fSteeringLock", "value", handlingDataItem.fSteeringLock);
-    GetAttribute(pRoot, "fTractionCurveMax", "value", handlingDataItem.fTractionCurveMax);
-    GetAttribute(pRoot, "fTractionCurveMin", "value", handlingDataItem.fTractionCurveMin);
-    GetAttribute(pRoot, "fTractionCurveLateral", "value", handlingDataItem.fTractionCurveLateral);
-    GetAttribute(pRoot, "fTractionSpringDeltaMax", "value", handlingDataItem.fTractionSpringDeltaMax);
-    GetAttribute(pRoot, "fLowSpeedTractionLossMult", "value", handlingDataItem.fLowSpeedTractionLossMult);
-    GetAttribute(pRoot, "fCamberStiffnesss", "value", handlingDataItem.fCamberStiffness); // TODO: fCamberStiffnesss???
-    GetAttribute(pRoot, "fTractionBiasFront", "value", handlingDataItem.fTractionBiasFront);
-    GetAttribute(pRoot, "fTractionLossMult", "value", handlingDataItem.fTractionLossMult);
-    GetAttribute(pRoot, "fSuspensionForce", "value", handlingDataItem.fSuspensionForce);
-    GetAttribute(pRoot, "fSuspensionCompDamp", "value", handlingDataItem.fSuspensionCompDamp);
-    GetAttribute(pRoot, "fSuspensionReboundDamp", "value", handlingDataItem.fSuspensionReboundDamp);
-    GetAttribute(pRoot, "fSuspensionUpperLimit", "value", handlingDataItem.fSuspensionUpperLimit);
-    GetAttribute(pRoot, "fSuspensionLowerLimit", "value", handlingDataItem.fSuspensionLowerLimit);
-    GetAttribute(pRoot, "fSuspensionRaise", "value", handlingDataItem.fSuspensionRaise);
-    GetAttribute(pRoot, "fSuspensionBiasFront", "value", handlingDataItem.fSuspensionBiasFront);
-    GetAttribute(pRoot, "fAntiRollBarForce", "value", handlingDataItem.fAntiRollBarForce);
-    GetAttribute(pRoot, "fAntiRollBarBiasFront", "value", handlingDataItem.fAntiRollBarBiasFront);
-    GetAttribute(pRoot, "fRollCentreHeightFront", "value", handlingDataItem.fRollCentreHeightFront);
-    GetAttribute(pRoot, "fRollCentreHeightRear", "value", handlingDataItem.fRollCentreHeightRear);
-    GetAttribute(pRoot, "fCollisionDamageMult", "value", handlingDataItem.fCollisionDamageMult);
-    GetAttribute(pRoot, "fWeaponDamageMult", "value", handlingDataItem.fWeaponDamageMult);
-    GetAttribute(pRoot, "fDeformationDamageMult", "value", handlingDataItem.fDeformationDamageMult);
-    GetAttribute(pRoot, "fEngineDamageMult", "value", handlingDataItem.fEngineDamageMult);
-    GetAttribute(pRoot, "fPetrolTankVolume", "value", handlingDataItem.fPetrolTankVolume);
-    GetAttribute(pRoot, "fOilVolume", "value", handlingDataItem.fOilVolume);
-    GetAttribute(pRoot, "fSeatOffsetDistX", "value", handlingDataItem.fSeatOffsetDistX);
-    GetAttribute(pRoot, "fSeatOffsetDistY", "value", handlingDataItem.fSeatOffsetDistY);
-    GetAttribute(pRoot, "fSeatOffsetDistZ", "value", handlingDataItem.fSeatOffsetDistZ);
-    GetAttribute(pRoot, "nMonetaryValue", "value", handlingDataItem.nMonetaryValue);
+    GetAttribute(itemNode, "fMass", "value", handlingDataItem.fMass);
+    GetAttribute(itemNode, "fInitialDragCoeff", "value", handlingDataItem.fInitialDragCoeff);
+    GetAttribute(itemNode, "fPercentSubmerged", "value", handlingDataItem.fPercentSubmerged);
+    GetAttribute(itemNode, "vecCentreOfMassOffset", "x", handlingDataItem.vecCentreOfMassOffsetX);
+    GetAttribute(itemNode, "vecCentreOfMassOffset", "y", handlingDataItem.vecCentreOfMassOffsetY);
+    GetAttribute(itemNode, "vecCentreOfMassOffset", "z", handlingDataItem.vecCentreOfMassOffsetZ);
+    GetAttribute(itemNode, "vecInertiaMultiplier", "x", handlingDataItem.vecInertiaMultiplierX);
+    GetAttribute(itemNode, "vecInertiaMultiplier", "y", handlingDataItem.vecInertiaMultiplierY);
+    GetAttribute(itemNode, "vecInertiaMultiplier", "z", handlingDataItem.vecInertiaMultiplierZ);
+    GetAttribute(itemNode, "fDriveBiasFront", "value", handlingDataItem.fDriveBiasFront);
+    GetAttribute(itemNode, "nInitialDriveGears", "value", handlingDataItem.nInitialDriveGears);
+    GetAttribute(itemNode, "fInitialDriveForce", "value", handlingDataItem.fInitialDriveForce);
+    GetAttribute(itemNode, "fDriveInertia", "value", handlingDataItem.fDriveInertia);
+    GetAttribute(itemNode, "fClutchChangeRateScaleUpShift", "value", handlingDataItem.fClutchChangeRateScaleUpShift);
+    GetAttribute(itemNode, "fClutchChangeRateScaleDownShift", "value", handlingDataItem.fClutchChangeRateScaleDownShift);
+    GetAttribute(itemNode, "fInitialDriveMaxFlatVel", "value", handlingDataItem.fInitialDriveMaxFlatVel);
+    GetAttribute(itemNode, "fBrakeForce", "value", handlingDataItem.fBrakeForce);
+    GetAttribute(itemNode, "fBrakeBiasFront", "value", handlingDataItem.fBrakeBiasFront);
+    GetAttribute(itemNode, "fHandBrakeForce", "value", handlingDataItem.fHandBrakeForce);
+    GetAttribute(itemNode, "fSteeringLock", "value", handlingDataItem.fSteeringLock);
+    GetAttribute(itemNode, "fTractionCurveMax", "value", handlingDataItem.fTractionCurveMax);
+    GetAttribute(itemNode, "fTractionCurveMin", "value", handlingDataItem.fTractionCurveMin);
+    GetAttribute(itemNode, "fTractionCurveLateral", "value", handlingDataItem.fTractionCurveLateral);
+    GetAttribute(itemNode, "fTractionSpringDeltaMax", "value", handlingDataItem.fTractionSpringDeltaMax);
+    GetAttribute(itemNode, "fLowSpeedTractionLossMult", "value", handlingDataItem.fLowSpeedTractionLossMult);
+    GetAttribute(itemNode, "fCamberStiffnesss", "value", handlingDataItem.fCamberStiffness); // TODO: fCamberStiffnesss???
+    GetAttribute(itemNode, "fTractionBiasFront", "value", handlingDataItem.fTractionBiasFront);
+    GetAttribute(itemNode, "fTractionLossMult", "value", handlingDataItem.fTractionLossMult);
+    GetAttribute(itemNode, "fSuspensionForce", "value", handlingDataItem.fSuspensionForce);
+    GetAttribute(itemNode, "fSuspensionCompDamp", "value", handlingDataItem.fSuspensionCompDamp);
+    GetAttribute(itemNode, "fSuspensionReboundDamp", "value", handlingDataItem.fSuspensionReboundDamp);
+    GetAttribute(itemNode, "fSuspensionUpperLimit", "value", handlingDataItem.fSuspensionUpperLimit);
+    GetAttribute(itemNode, "fSuspensionLowerLimit", "value", handlingDataItem.fSuspensionLowerLimit);
+    GetAttribute(itemNode, "fSuspensionRaise", "value", handlingDataItem.fSuspensionRaise);
+    GetAttribute(itemNode, "fSuspensionBiasFront", "value", handlingDataItem.fSuspensionBiasFront);
+    GetAttribute(itemNode, "fAntiRollBarForce", "value", handlingDataItem.fAntiRollBarForce);
+    GetAttribute(itemNode, "fAntiRollBarBiasFront", "value", handlingDataItem.fAntiRollBarBiasFront);
+    GetAttribute(itemNode, "fRollCentreHeightFront", "value", handlingDataItem.fRollCentreHeightFront);
+    GetAttribute(itemNode, "fRollCentreHeightRear", "value", handlingDataItem.fRollCentreHeightRear);
+    GetAttribute(itemNode, "fCollisionDamageMult", "value", handlingDataItem.fCollisionDamageMult);
+    GetAttribute(itemNode, "fWeaponDamageMult", "value", handlingDataItem.fWeaponDamageMult);
+    GetAttribute(itemNode, "fDeformationDamageMult", "value", handlingDataItem.fDeformationDamageMult);
+    GetAttribute(itemNode, "fEngineDamageMult", "value", handlingDataItem.fEngineDamageMult);
+    GetAttribute(itemNode, "fPetrolTankVolume", "value", handlingDataItem.fPetrolTankVolume);
+    GetAttribute(itemNode, "fOilVolume", "value", handlingDataItem.fOilVolume);
+    GetAttribute(itemNode, "fSeatOffsetDistX", "value", handlingDataItem.fSeatOffsetDistX);
+    GetAttribute(itemNode, "fSeatOffsetDistY", "value", handlingDataItem.fSeatOffsetDistY);
+    GetAttribute(itemNode, "fSeatOffsetDistZ", "value", handlingDataItem.fSeatOffsetDistZ);
+    GetAttribute(itemNode, "nMonetaryValue", "value", handlingDataItem.nMonetaryValue);
 
-    handlingDataItem.strModelFlags = std::stoi(GetElementStr(pRoot, "strModelFlags"), nullptr, 16);
-    handlingDataItem.strHandlingFlags = std::stoi(GetElementStr(pRoot, "strHandlingFlags"), nullptr, 16);
-    handlingDataItem.strDamageFlags = std::stoi(GetElementStr(pRoot, "strDamageFlags"), nullptr, 16);
+    handlingDataItem.strModelFlags = std::stoi(GetElementStr(itemNode, "strModelFlags"), nullptr, 16);
+    handlingDataItem.strHandlingFlags = std::stoi(GetElementStr(itemNode, "strHandlingFlags"), nullptr, 16);
+    handlingDataItem.strDamageFlags = std::stoi(GetElementStr(itemNode, "strDamageFlags"), nullptr, 16);
 
     return handlingDataItem;
 }
@@ -196,82 +205,83 @@ void InsertElementSubHandlingNULL(tinyxml2::XMLNode* rootNode) {
 bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::string& targetFile) {
     tinyxml2::XMLDocument doc{};
     tinyxml2::XMLError err = tinyxml2::XMLError::XML_SUCCESS;
-    tinyxml2::XMLNode* pRoot = nullptr;
 
     logger.Write(DEBUG, "[Write] Writing handling file [%s]", targetFile.c_str());
-    auto comment = doc.NewComment("Generated by RTHandlingEditor");
+    auto comment = doc.NewComment(" Generated by RTHandlingEditor ");
     doc.InsertFirstChild(comment);
 
-    pRoot = doc.NewElement("Item");
-    if (!pRoot) {
+    tinyxml2::XMLNode* itemNode = doc.NewElement("Item");
+    if (!itemNode) {
         logger.Write(ERROR, "[Write] Error creating root element [Item]");
         logger.Write(ERROR, "[Write] Error details: %s", GetXMLError(doc).c_str());
         return false;
     }
     
-    pRoot->ToElement()->SetAttribute("type", "CHandlingData");
+    itemNode->ToElement()->SetAttribute("type", "CHandlingData");
 
-    pRoot = doc.InsertEndChild(pRoot);
+    itemNode = doc.InsertEndChild(itemNode);
 
-    InsertElement(pRoot, "handlingName", handlingDataItem.handlingName.c_str());
-    InsertElement(pRoot, "fMass", handlingDataItem.fMass);
-    InsertElement(pRoot, "fInitialDragCoeff", handlingDataItem.fInitialDragCoeff);
-    InsertElement(pRoot, "fPercentSubmerged", handlingDataItem.fPercentSubmerged);
-    InsertElement(pRoot, "vecCentreOfMassOffset", {
+    InsertElement(itemNode, "handlingName", handlingDataItem.handlingName.c_str());
+    InsertElement(itemNode, "fMass", handlingDataItem.fMass);
+    InsertElement(itemNode, "fInitialDragCoeff", handlingDataItem.fInitialDragCoeff);
+    if (handlingDataItem.fDownforceModifier != 0.0f)
+        InsertElement(itemNode, "fDownforceModifier", handlingDataItem.fDownforceModifier);
+    InsertElement(itemNode, "fPercentSubmerged", handlingDataItem.fPercentSubmerged);
+    InsertElement(itemNode, "vecCentreOfMassOffset", {
         handlingDataItem.vecCentreOfMassOffsetX,
         handlingDataItem.vecCentreOfMassOffsetY,
         handlingDataItem.vecCentreOfMassOffsetZ
     });
-    InsertElement(pRoot, "vecInertiaMultiplier", { 
+    InsertElement(itemNode, "vecInertiaMultiplier", { 
         handlingDataItem.vecInertiaMultiplierX,
         handlingDataItem.vecInertiaMultiplierY,
         handlingDataItem.vecInertiaMultiplierZ
     });
-    InsertElement(pRoot, "fDriveBiasFront", handlingDataItem.fDriveBiasFront);
-    InsertElement(pRoot, "nInitialDriveGears", handlingDataItem.nInitialDriveGears);
-    InsertElement(pRoot, "fInitialDriveForce", handlingDataItem.fInitialDriveForce);
-    InsertElement(pRoot, "fDriveInertia", handlingDataItem.fDriveInertia);
-    InsertElement(pRoot, "fClutchChangeRateScaleUpShift", handlingDataItem.fClutchChangeRateScaleUpShift);
-    InsertElement(pRoot, "fClutchChangeRateScaleDownShift", handlingDataItem.fClutchChangeRateScaleDownShift);
-    InsertElement(pRoot, "fInitialDriveMaxFlatVel", handlingDataItem.fInitialDriveMaxFlatVel);
-    InsertElement(pRoot, "fBrakeForce", handlingDataItem.fBrakeForce);
-    InsertElement(pRoot, "fBrakeBiasFront", handlingDataItem.fBrakeBiasFront);
-    InsertElement(pRoot, "fHandBrakeForce", handlingDataItem.fHandBrakeForce);
-    InsertElement(pRoot, "fSteeringLock", handlingDataItem.fSteeringLock);
-    InsertElement(pRoot, "fTractionCurveMax", handlingDataItem.fTractionCurveMax);
-    InsertElement(pRoot, "fTractionCurveMin", handlingDataItem.fTractionCurveMin);
-    InsertElement(pRoot, "fTractionCurveLateral", handlingDataItem.fTractionCurveLateral);
-    InsertElement(pRoot, "fTractionSpringDeltaMax", handlingDataItem.fTractionSpringDeltaMax);
-    InsertElement(pRoot, "fLowSpeedTractionLossMult", handlingDataItem.fLowSpeedTractionLossMult);
-    InsertElement(pRoot, "fCamberStiffnesss", handlingDataItem.fCamberStiffness);
-    InsertElement(pRoot, "fTractionBiasFront", handlingDataItem.fTractionBiasFront);
-    InsertElement(pRoot, "fTractionLossMult", handlingDataItem.fTractionLossMult);
-    InsertElement(pRoot, "fSuspensionForce", handlingDataItem.fSuspensionForce);
-    InsertElement(pRoot, "fSuspensionCompDamp", handlingDataItem.fSuspensionCompDamp);
-    InsertElement(pRoot, "fSuspensionReboundDamp", handlingDataItem.fSuspensionReboundDamp);
-    InsertElement(pRoot, "fSuspensionUpperLimit", handlingDataItem.fSuspensionUpperLimit);
-    InsertElement(pRoot, "fSuspensionLowerLimit", handlingDataItem.fSuspensionLowerLimit);
-    InsertElement(pRoot, "fSuspensionRaise", handlingDataItem.fSuspensionRaise);
-    InsertElement(pRoot, "fSuspensionBiasFront", handlingDataItem.fSuspensionBiasFront);
-    InsertElement(pRoot, "fAntiRollBarForce", handlingDataItem.fAntiRollBarForce);
-    InsertElement(pRoot, "fAntiRollBarBiasFront", handlingDataItem.fAntiRollBarBiasFront);
-    InsertElement(pRoot, "fRollCentreHeightFront", handlingDataItem.fRollCentreHeightFront);
-    InsertElement(pRoot, "fRollCentreHeightRear", handlingDataItem.fRollCentreHeightRear);
-    InsertElement(pRoot, "fCollisionDamageMult", handlingDataItem.fCollisionDamageMult);
-    InsertElement(pRoot, "fWeaponDamageMult", handlingDataItem.fWeaponDamageMult);
-    InsertElement(pRoot, "fDeformationDamageMult", handlingDataItem.fDeformationDamageMult);
-    InsertElement(pRoot, "fEngineDamageMult", handlingDataItem.fEngineDamageMult);
-    InsertElement(pRoot, "fPetrolTankVolume", handlingDataItem.fPetrolTankVolume);
-    InsertElement(pRoot, "fOilVolume", handlingDataItem.fOilVolume);
-    InsertElement(pRoot, "fSeatOffsetDistX", handlingDataItem.fSeatOffsetDistX);
-    InsertElement(pRoot, "fSeatOffsetDistY", handlingDataItem.fSeatOffsetDistY);
-    InsertElement(pRoot, "fSeatOffsetDistZ", handlingDataItem.fSeatOffsetDistZ);
-    InsertElement(pRoot, "nMonetaryValue", handlingDataItem.nMonetaryValue);
+    InsertElement(itemNode, "fDriveBiasFront", handlingDataItem.fDriveBiasFront);
+    InsertElement(itemNode, "nInitialDriveGears", handlingDataItem.nInitialDriveGears);
+    InsertElement(itemNode, "fInitialDriveForce", handlingDataItem.fInitialDriveForce);
+    InsertElement(itemNode, "fDriveInertia", handlingDataItem.fDriveInertia);
+    InsertElement(itemNode, "fClutchChangeRateScaleUpShift", handlingDataItem.fClutchChangeRateScaleUpShift);
+    InsertElement(itemNode, "fClutchChangeRateScaleDownShift", handlingDataItem.fClutchChangeRateScaleDownShift);
+    InsertElement(itemNode, "fInitialDriveMaxFlatVel", handlingDataItem.fInitialDriveMaxFlatVel);
+    InsertElement(itemNode, "fBrakeForce", handlingDataItem.fBrakeForce);
+    InsertElement(itemNode, "fBrakeBiasFront", handlingDataItem.fBrakeBiasFront);
+    InsertElement(itemNode, "fHandBrakeForce", handlingDataItem.fHandBrakeForce);
+    InsertElement(itemNode, "fSteeringLock", handlingDataItem.fSteeringLock);
+    InsertElement(itemNode, "fTractionCurveMax", handlingDataItem.fTractionCurveMax);
+    InsertElement(itemNode, "fTractionCurveMin", handlingDataItem.fTractionCurveMin);
+    InsertElement(itemNode, "fTractionCurveLateral", handlingDataItem.fTractionCurveLateral);
+    InsertElement(itemNode, "fTractionSpringDeltaMax", handlingDataItem.fTractionSpringDeltaMax);
+    InsertElement(itemNode, "fLowSpeedTractionLossMult", handlingDataItem.fLowSpeedTractionLossMult);
+    InsertElement(itemNode, "fCamberStiffnesss", handlingDataItem.fCamberStiffness);
+    InsertElement(itemNode, "fTractionBiasFront", handlingDataItem.fTractionBiasFront);
+    InsertElement(itemNode, "fTractionLossMult", handlingDataItem.fTractionLossMult);
+    InsertElement(itemNode, "fSuspensionForce", handlingDataItem.fSuspensionForce);
+    InsertElement(itemNode, "fSuspensionCompDamp", handlingDataItem.fSuspensionCompDamp);
+    InsertElement(itemNode, "fSuspensionReboundDamp", handlingDataItem.fSuspensionReboundDamp);
+    InsertElement(itemNode, "fSuspensionUpperLimit", handlingDataItem.fSuspensionUpperLimit);
+    InsertElement(itemNode, "fSuspensionLowerLimit", handlingDataItem.fSuspensionLowerLimit);
+    InsertElement(itemNode, "fSuspensionRaise", handlingDataItem.fSuspensionRaise);
+    InsertElement(itemNode, "fSuspensionBiasFront", handlingDataItem.fSuspensionBiasFront);
+    InsertElement(itemNode, "fAntiRollBarForce", handlingDataItem.fAntiRollBarForce);
+    InsertElement(itemNode, "fAntiRollBarBiasFront", handlingDataItem.fAntiRollBarBiasFront);
+    InsertElement(itemNode, "fRollCentreHeightFront", handlingDataItem.fRollCentreHeightFront);
+    InsertElement(itemNode, "fRollCentreHeightRear", handlingDataItem.fRollCentreHeightRear);
+    InsertElement(itemNode, "fCollisionDamageMult", handlingDataItem.fCollisionDamageMult);
+    InsertElement(itemNode, "fWeaponDamageMult", handlingDataItem.fWeaponDamageMult);
+    InsertElement(itemNode, "fDeformationDamageMult", handlingDataItem.fDeformationDamageMult);
+    InsertElement(itemNode, "fEngineDamageMult", handlingDataItem.fEngineDamageMult);
+    InsertElement(itemNode, "fPetrolTankVolume", handlingDataItem.fPetrolTankVolume);
+    InsertElement(itemNode, "fOilVolume", handlingDataItem.fOilVolume);
+    InsertElement(itemNode, "fSeatOffsetDistX", handlingDataItem.fSeatOffsetDistX);
+    InsertElement(itemNode, "fSeatOffsetDistY", handlingDataItem.fSeatOffsetDistY);
+    InsertElement(itemNode, "fSeatOffsetDistZ", handlingDataItem.fSeatOffsetDistZ);
+    InsertElement(itemNode, "nMonetaryValue", handlingDataItem.nMonetaryValue);
 
     // flags
-    InsertElement(pRoot, "strModelFlags", fmt::format("{:X}", handlingDataItem.strModelFlags).c_str());
-    InsertElement(pRoot, "strHandlingFlags", fmt::format("{:X}", handlingDataItem.strHandlingFlags).c_str());
-    InsertElement(pRoot, "strDamageFlags", fmt::format("{:X}", handlingDataItem.strDamageFlags).c_str());
+    InsertElement(itemNode, "strModelFlags", fmt::format("{:X}", handlingDataItem.strModelFlags).c_str());
+    InsertElement(itemNode, "strHandlingFlags", fmt::format("{:X}", handlingDataItem.strHandlingFlags).c_str());
+    InsertElement(itemNode, "strDamageFlags", fmt::format("{:X}", handlingDataItem.strDamageFlags).c_str());
 
     // joaat
     std::string AIHandling;
@@ -291,9 +301,9 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
         default:
             AIHandling = "AVERAGE";
     }
-    InsertElement(pRoot, "AIHandling", AIHandling.c_str());
+    InsertElement(itemNode, "AIHandling", AIHandling.c_str());
 
-    InsertElementSubHandlingNULL(pRoot);
+    InsertElementSubHandlingNULL(itemNode);
 
     err = doc.SaveFile(targetFile.c_str());
 
