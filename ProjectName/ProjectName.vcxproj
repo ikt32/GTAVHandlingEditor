@@ -171,6 +171,7 @@
     <ClCompile Include="Util\StrUtil.cpp" />
     <ClCompile Include="Util\UI.cpp" />
     <ClCompile Include="VehicleData.cpp" />
+    <ClCompile Include="VehicleMod.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h" />
@@ -205,6 +206,7 @@
     <ClInclude Include="Util\StrUtil.h" />
     <ClInclude Include="Util\UI.h" />
     <ClInclude Include="VehicleData.h" />
+    <ClInclude Include="VehicleMod.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib" />
