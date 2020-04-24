@@ -74,7 +74,7 @@ bool GetKbEntry(float& val) {
 
     float parsedValue;
     try {
-        parsedValue = std::stof(floatStr.c_str(), nullptr);
+        parsedValue = std::stof(floatStr, nullptr);
     }
     catch (std::invalid_argument&) {
         UI::Notify("Failed to parse entry.");
@@ -82,6 +82,46 @@ bool GetKbEntry(float& val) {
     }
 
     val = parsedValue;
+    return true;
+}
+
+std::string GetKbEntryStr(const std::string& existingString) {
+    std::string val;
+    UI::Notify("Enter value");
+    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "",
+        existingString.c_str(), "", "", "", 64);
+    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+        WAIT(0);
+    }
+    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+        UI::Notify("Cancelled value entry");
+        return {};
+    }
+
+    std::string enteredVal = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    if (enteredVal.empty()) {
+        UI::Notify("Cancelled value entry");
+        return {};
+    }
+
+    return enteredVal;
+}
+
+void SetFlags(unsigned& flagArea, std::string& newFlags) {
+    if (!newFlags.empty()) {
+        try {
+            flagArea = std::stoul(newFlags, nullptr, 16);
+        }
+        catch (std::invalid_argument&) {
+            UI::Notify("Error: Couldn't convert entered value to int.");
+        }
+        catch (std::out_of_range&) {
+            UI::Notify("Error: Entered value out of range.");
+        }
+    }
+    else {
+        UI::Notify("Error: No flags entered.");
+    }
 }
 
 void UpdateEditMenu() {
@@ -326,21 +366,24 @@ void UpdateEditMenu() {
     {
         std::string strModelFlags = fmt::format("{:X}", currentHandling->strModelFlags);
         if (menu.Option(fmt::format("strModelFlags: {}", strModelFlags))) {
-            
+            std::string newFlags = GetKbEntryStr(strModelFlags);
+            SetFlags(currentHandling->strModelFlags, newFlags);
         }
     }
 
     {
         std::string strHandlingFlags = fmt::format("{:X}", currentHandling->strHandlingFlags);
         if (menu.Option(fmt::format("strHandlingFlags: {}", strHandlingFlags))) {
-
+            std::string newFlags = GetKbEntryStr(strHandlingFlags);
+            SetFlags(currentHandling->strModelFlags, newFlags);
         }
     }
 
     {
         std::string strDamageFlags = fmt::format("{:X}", currentHandling->strDamageFlags);
         if (menu.Option(fmt::format("strDamageFlags: {}", strDamageFlags))) {
-
+            std::string newFlags = GetKbEntryStr(strDamageFlags);
+            SetFlags(currentHandling->strModelFlags, newFlags);
         }
     }
 
