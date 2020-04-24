@@ -384,9 +384,9 @@ void PromptSave(Vehicle vehicle) {
 
     auto h = getHandling(vehicle);
     h.handlingName = handlingName;
-    outFile = fmt::format("{}/{}.xml", handlingsPath, outFile);
-    std::replace(outFile.begin(), outFile.end(), '\\', '/');
-    RTHE::SaveXMLItem(h, outFile);
+    std::string outPath = fmt::format("{}/{}.xml", handlingsPath, outFile);
+    std::replace(outPath.begin(), outPath.end(), '\\', '/');
+    RTHE::SaveXMLItem(h, outPath);
     UI::Notify(fmt::format("Saved as {}", outFile));
 }
 
