@@ -375,7 +375,7 @@ void UpdateEditMenu() {
         std::string strHandlingFlags = fmt::format("{:X}", currentHandling->strHandlingFlags);
         if (menu.Option(fmt::format("strHandlingFlags: {}", strHandlingFlags))) {
             std::string newFlags = GetKbEntryStr(strHandlingFlags);
-            SetFlags(currentHandling->strModelFlags, newFlags);
+            SetFlags(currentHandling->strHandlingFlags, newFlags);
         }
     }
 
@@ -383,7 +383,7 @@ void UpdateEditMenu() {
         std::string strDamageFlags = fmt::format("{:X}", currentHandling->strDamageFlags);
         if (menu.Option(fmt::format("strDamageFlags: {}", strDamageFlags))) {
             std::string newFlags = GetKbEntryStr(strDamageFlags);
-            SetFlags(currentHandling->strModelFlags, newFlags);
+            SetFlags(currentHandling->strDamageFlags, newFlags);
         }
     }
 
