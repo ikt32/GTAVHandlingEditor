@@ -150,12 +150,8 @@ void UpdateEditMenu() {
         return;
     }
 
-    // TODO:
-    // 1. Combine the ratio things to meta spec
-    // 2. Reload vehicle for:
-    //    - Suspension stuff
-    //    - ???
-    // 3. Precision handling
+    Utils::DrawCOMAndRollCenters(vehicle, currentHandling);
+
     menu.FloatOptionCb("fMass", currentHandling->fMass, 0.0f, 1000000000.0f, 5.0f, GetKbEntry);
 
     {

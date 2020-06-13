@@ -1,5 +1,6 @@
 #pragma once
 #include "inc/natives.h"
+#include "Memory/HandlingInfo.h"
 
 namespace Utils {
     struct Color {
@@ -9,4 +10,6 @@ namespace Utils {
     };
 
     void RespawnVehicle(Vehicle oldVehicle, Ped ped);
+
+    void DrawCOMAndRollCenters(Vehicle vehicle, RTHE::CHandlingData* currentHandling);
 }
