@@ -170,9 +170,9 @@ void UpdateEditMenu() {
         currentHandling->fSubmergedRatio_ = 100.0f / currentHandling->fPercentSubmerged;
     }
 
-    menu.FloatOptionCb("vecCentreOfMassOffset.x", currentHandling->vecCentreOfMassOffset.x, -100.0f, 100.0f, 0.1f, GetKbEntry);
-    menu.FloatOptionCb("vecCentreOfMassOffset.y", currentHandling->vecCentreOfMassOffset.y, -100.0f, 100.0f, 0.1f, GetKbEntry);
-    menu.FloatOptionCb("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -100.0f, 100.0f, 0.1f, GetKbEntry);
+    menu.FloatOptionCb("vecCentreOfMassOffset.x", currentHandling->vecCentreOfMassOffset.x, -20.0f, 20.0f, 0.01f, GetKbEntry);
+    menu.FloatOptionCb("vecCentreOfMassOffset.y", currentHandling->vecCentreOfMassOffset.y, -20.0f, 20.0f, 0.01f, GetKbEntry);
+    menu.FloatOptionCb("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -20.0f, 20.0f, 0.01f, GetKbEntry);
 
     menu.FloatOptionCb("vecInertiaMultiplier.x", currentHandling->vecInertiaMultiplier.x, -100.0f, 100.0f, 0.1f, GetKbEntry);
     menu.FloatOptionCb("vecInertiaMultiplier.y", currentHandling->vecInertiaMultiplier.y, -100.0f, 100.0f, 0.1f, GetKbEntry);
