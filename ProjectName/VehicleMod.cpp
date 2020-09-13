@@ -50,15 +50,15 @@ VehicleModData::VehicleMod VehicleModData::VehicleMod::Get() {
         case ModType::Color:
             VEHICLE::GET_VEHICLE_COLOURS(Handle, &Value0, &Value1);
             break;
-        case ModType::ColorCombo:
-            Value0 = VEHICLE::GET_VEHICLE_COLOUR_COMBINATION(Handle);
+        case ModType::ExtraColors:
+            VEHICLE::GET_VEHICLE_EXTRA_COLOURS(Handle, &Value0, &Value1);
             break;
         case ModType::ColorCustom1:
-            Value0 = VEHICLE::GET_IS_VEHICLE_PRIMARY_COLOUR_CUSTOM(Handle);
+            Value0 = true;// VEHICLE::GET_IS_VEHICLE_PRIMARY_COLOUR_CUSTOM(Handle);
             VEHICLE::GET_VEHICLE_CUSTOM_PRIMARY_COLOUR(Handle, &Value1, &Value2, &Value3);
             break;
         case ModType::ColorCustom2:
-            Value0 = VEHICLE::GET_IS_VEHICLE_SECONDARY_COLOUR_CUSTOM(Handle);
+            Value0 = true;// VEHICLE::GET_IS_VEHICLE_SECONDARY_COLOUR_CUSTOM(Handle);
             VEHICLE::GET_VEHICLE_CUSTOM_SECONDARY_COLOUR(Handle, &Value1, &Value2, &Value3);
             break;
         case ModType::Mod:
@@ -79,9 +79,6 @@ VehicleModData::VehicleMod VehicleModData::VehicleMod::Get() {
             break;
         case ModType::TyreSmoke:
             VEHICLE::GET_VEHICLE_TYRE_SMOKE_COLOR(Handle, &Value0, &Value1, &Value2);
-            break;
-        case ModType::ExtraColors:
-            VEHICLE::GET_VEHICLE_EXTRA_COLOURS(Handle, &Value0, &Value1);
             break;
         case ModType::Livery:
             Value0 = VEHICLE::GET_VEHICLE_LIVERY(Handle);
@@ -124,14 +121,16 @@ void VehicleModData::VehicleMod::Set() {
         case ModType::Color:
             VEHICLE::SET_VEHICLE_COLOURS(Handle, Value0, Value1);
             break;
-        case ModType::ColorCombo:
-            VEHICLE::SET_VEHICLE_COLOUR_COMBINATION(Handle, Value0);
+        case ModType::ExtraColors:
+            VEHICLE::SET_VEHICLE_EXTRA_COLOURS(Handle, Value0, Value1);
             break;
         case ModType::ColorCustom1:
+            VEHICLE::CLEAR_VEHICLE_CUSTOM_PRIMARY_COLOUR(Handle);
             if (Value0)
                 VEHICLE::SET_VEHICLE_CUSTOM_PRIMARY_COLOUR(Handle, Value1, Value2, Value3);
             break;
         case ModType::ColorCustom2:
+            VEHICLE::CLEAR_VEHICLE_CUSTOM_SECONDARY_COLOUR(Handle);
             if (Value0)
                 VEHICLE::SET_VEHICLE_CUSTOM_SECONDARY_COLOUR(Handle, Value1, Value2, Value3);
             break;
@@ -152,9 +151,6 @@ void VehicleModData::VehicleMod::Set() {
             break;
         case ModType::TyreSmoke:
             VEHICLE::SET_VEHICLE_TYRE_SMOKE_COLOR(Handle, Value0, Value1, Value2);
-            break;
-        case ModType::ExtraColors:
-            VEHICLE::SET_VEHICLE_EXTRA_COLOURS(Handle, Value0, Value1);
             break;
         case ModType::Livery:
             VEHICLE::SET_VEHICLE_LIVERY(Handle, Value0);
@@ -199,12 +195,13 @@ void VehicleModData::GetAll() {
 
     Plate = VEHICLE::GET_VEHICLE_NUMBER_PLATE_TEXT(Handle);
 
-    // Primary/Secondary
-    VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::Color }.Get());
-
     // Custom colors
     VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::ColorCustom1 }.Get());
     VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::ColorCustom2 }.Get());
+
+    // Primary/Secondary
+    VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::Color }.Get());
+    VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::ExtraColors }.Get());
 
     // Wheeltype
     VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::WheelType }.Get());
@@ -222,7 +219,6 @@ void VehicleModData::GetAll() {
     VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::TyresCanBurst }.Get());
     VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::TyreSmoke }.Get());
     VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::PlateType }.Get());
-    VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::ExtraColors }.Get());
 
     for (uint8_t i = 0; i <= 60; ++i) {
         VehicleMods.push_back(VehicleMod{ Handle, VehicleMod::ModType::Extra, i }.Get());

@@ -7,15 +7,15 @@ struct VehicleModData {
     struct VehicleMod {
         enum class ModType {
             Color,
-            ColorCombo,
+//            ColorCombo,
             ColorCustom1,
             ColorCustom2,
+            ExtraColors,
             Mod,
             ModToggle,
             WheelType,
             WindowTint,
             TyresCanBurst,
-            ExtraColors,
             Livery,
             TyreSmoke,
             ModColor1,
