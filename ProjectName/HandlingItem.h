@@ -58,10 +58,10 @@ struct CHandlingDataItem {
     float fSeatOffsetDistY;
     float fSeatOffsetDistZ;
     int   nMonetaryValue;
-    int   strModelFlags;          // hex
-    int   strHandlingFlags;       // hex
-    int   strDamageFlags;         // hex
-    int   AIHandling;             // joaat hash
+    uint32_t strModelFlags;          // hex
+    uint32_t strHandlingFlags;       // hex
+    uint32_t strDamageFlags;         // hex
+    uint32_t AIHandling;             // joaat hash
 };
 
 // Returns {} on failure

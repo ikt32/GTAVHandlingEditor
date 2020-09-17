@@ -75,11 +75,7 @@ namespace RTHE {
         Vector3 vecSeatOffsetDist;				//0x010C
         __int32 nMonetaryValue;					//0x0118
         char padXXX[0x08];                      
-        unsigned int strModelFlags;					//0x011C
-        unsigned int strHandlingFlags;					//0x0120
-        unsigned int strDamageFlags;					//0x0124
         char padXXXX[0x0C];
-        unsigned int AIHandling;						//0x0128
         //char pad_0x012C[0x34];					//0x012C
         //float N00001A80;						//0x0160
         //float N00001AB9;						//0x0164
@@ -94,6 +90,10 @@ namespace RTHE {
         ////float fBackEndPopUpMaxDeltaSpeed;		//0x0180
         //char pad_0x0184[0x3C];					//0x0184
     }; //Size=0x01C0
+        uint32_t strModelFlags;                 //0x0124
+        uint32_t strHandlingFlags;              //0x0128
+        uint32_t strDamageFlags;                //0x012C
+        uint32_t AIHandling;                    //0x013C
     static_assert(offsetof(CHandlingData, strModelFlags) == 0x124, "wrong offset");
     static_assert(offsetof(CHandlingData, AIHandling) == 0x13C, "wrong offset");
 
