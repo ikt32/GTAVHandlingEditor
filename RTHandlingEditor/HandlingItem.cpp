@@ -53,13 +53,23 @@ void GetAttribute(
 std::string GetElementStr(tinyxml2::XMLNode* node, const char* elementName) {
     const auto& doc = *node->GetDocument();
     std::string result;
-    auto element = node->FirstChildElement(elementName);
+    auto* element = node->FirstChildElement(elementName);
     if (!element) {
         logger.Write(ERROR, "[Parse] Error reading element [%s]", elementName);
         logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
         return result;
     }
     return element->GetText();
+}
+
+uint32_t StoU32(const std::string& str, int base = 10) {
+    try {
+        return std::stoul(str, nullptr, base);
+    }
+    catch(...) {
+        logger.Write(WARN, "    Failed to convert hex value.");
+        return 0;
+    }
 }
 
 RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
@@ -152,9 +162,9 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
     GetAttribute(itemNode, "fSeatOffsetDistZ", "value", handlingDataItem.fSeatOffsetDistZ);
     GetAttribute(itemNode, "nMonetaryValue", "value", handlingDataItem.nMonetaryValue);
 
-    handlingDataItem.strModelFlags = std::stoi(GetElementStr(itemNode, "strModelFlags"), nullptr, 16);
-    handlingDataItem.strHandlingFlags = std::stoi(GetElementStr(itemNode, "strHandlingFlags"), nullptr, 16);
-    handlingDataItem.strDamageFlags = std::stoi(GetElementStr(itemNode, "strDamageFlags"), nullptr, 16);
+    handlingDataItem.strModelFlags = StoU32(GetElementStr(itemNode, "strModelFlags"), 16);
+    handlingDataItem.strHandlingFlags = StoU32(GetElementStr(itemNode, "strHandlingFlags"), 16);
+    handlingDataItem.strDamageFlags = StoU32(GetElementStr(itemNode, "strDamageFlags"), 16);
 
     return handlingDataItem;
 }
