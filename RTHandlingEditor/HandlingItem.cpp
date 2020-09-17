@@ -24,21 +24,25 @@ std::string GetXMLError(const tinyxml2::XMLDocument& doc) {
 }
 
 template <typename T>
-void GetAttribute(tinyxml2::XMLNode* node, const char* elementName, const char* attributeName, T& out) {
+void GetAttribute(
+    tinyxml2::XMLNode* node,
+    const char* elementName,
+    const char* attributeName,
+    T& out,
+    bool tolerateMissing = false) {
     const auto& doc = *node->GetDocument();
     T result{};
-    auto element = node->FirstChildElement(elementName);
-    if (!element) {
-        logger.Write(ERROR, "[Parse] Error reading element [%s]", elementName);
-        logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
-        out = result;
-        return;
-    }
+    auto* element = node->FirstChildElement(elementName);
+    tinyxml2::XMLError err = tinyxml2::XMLError::XML_SUCCESS;
+    if (element != nullptr)
+        err = element->QueryAttribute(attributeName, &result);
 
-    tinyxml2::XMLError err = element->QueryAttribute(attributeName, &result);
-    if (err != tinyxml2::XMLError::XML_SUCCESS) {
-        logger.Write(ERROR, "[Parse] Error reading attribute [%s]", attributeName);
-        logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+    if (!element || err != tinyxml2::XMLError::XML_SUCCESS) {
+        auto errLvl = ERROR;
+        if (tolerateMissing)
+            errLvl = DEBUG;
+        logger.Write(errLvl, "[Parse] Error reading element [%s]", elementName);
+        logger.Write(errLvl, "[Parse] Error details: %s", GetXMLError(doc).c_str());
         out = result;
         return;
     }
@@ -99,7 +103,7 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
 
     GetAttribute(itemNode, "fMass", "value", handlingDataItem.fMass);
     GetAttribute(itemNode, "fInitialDragCoeff", "value", handlingDataItem.fInitialDragCoeff);
-    GetAttribute(itemNode, "fDownforceModifier", "value", handlingDataItem.fDownforceModifier);
+    GetAttribute(itemNode, "fDownforceModifier", "value", handlingDataItem.fDownforceModifier, true);
     GetAttribute(itemNode, "fPercentSubmerged", "value", handlingDataItem.fPercentSubmerged);
     GetAttribute(itemNode, "vecCentreOfMassOffset", "x", handlingDataItem.vecCentreOfMassOffsetX);
     GetAttribute(itemNode, "vecCentreOfMassOffset", "y", handlingDataItem.vecCentreOfMassOffsetY);
