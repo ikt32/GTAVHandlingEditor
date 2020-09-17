@@ -1,15 +1,13 @@
 #include "VehicleExtensions.hpp"
 
-
 #include "NativeMemory.hpp"
 #include "Versions.h"
-#include "HandlingInfo.h"
-#include "../Util/MathExt.h"
 #include "../Util/Logger.hpp"
+
+#include <inc/main.h>
 
 #include <vector>
 #include <functional>
-#include <map>
 
 // <= b1493: 8  (Top gear = 7)
 // >= b1604: 11 (Top gear = 10)
@@ -17,15 +15,56 @@ uint8_t g_numGears = 8;
 
 eGameVersion g_gameVersion = getGameVersion();
 
-int findOffset(const std::map<int, int, std::greater<int>> &offsets) {
-    return offsets.lower_bound(g_gameVersion)->second;
-}
-
-VehicleExtensions::VehicleExtensions() {
-    g_gameVersion = getGameVersion();
-    if (g_gameVersion >= G_VER_1_0_1604_0_STEAM) {
-        g_numGears = 11;
+namespace {
+    template <typename T> T Sign(T val) {
+        return static_cast<T>((T{} < val) - (val < T{}));
     }
+
+    int rocketBoostActiveOffset = 0;
+    int rocketBoostChargeOffset = 0;
+    int hoverTransformRatioOffset = 0;
+    int hoverTransformRatioLerpOffset = 0;
+    int fuelLevelOffset = 0;
+    int nextGearOffset = 0;
+    int currentGearOffset = 0;
+    int topGearOffset = 0;
+    int gearRatiosOffset = 0;
+    int driveForceOffset = 0;
+    int initialDriveMaxFlatVelOffset = 0;
+    int driveMaxFlatVelOffset = 0;
+    int currentRPMOffset = 0;
+    int clutchOffset = 0;
+    int throttleOffset = 0;
+    int turboOffset = 0;
+    int arenaBoostOffset = 0;
+    int handlingOffset = 0;
+    int lightStatesOffset = 0;
+    int steeringAngleInputOffset = 0;
+    int steeringAngleOffset = 0;
+    int throttlePOffset = 0;
+    int brakePOffset = 0;
+    int handbrakeOffset = 0;
+    int dirtLevelOffset = 0;
+    int engineTempOffset = 0;
+    int dashSpeedOffset = 0;
+    int wheelsPtrOffset = 0;
+    int numWheelsOffset = 0;
+    int modelTypeOffset = 0;
+    int vehicleModelInfoOffset = 0x020;
+    int vehicleFlagsOffset = 0;
+
+    int steeringMultOffset = 0;
+
+    // Wheel stuff
+    int wheelHealthOffset = 0;
+    int wheelSuspensionCompressionOffset = 0;
+    int wheelSteeringAngleOffset = 0;
+    int wheelAngularVelocityOffset = 0;
+    int wheelTractionVectorLengthOffset = 0;
+    int wheelPowerOffset = 0;
+    int wheelBrakeOffset = 0;
+    int wheelFlagsOffset = 0;
+    int wheelDownforceOffset = 0;
 }
 
 void VehicleExtensions::ChangeVersion(int version) {
@@ -35,13 +74,18 @@ void VehicleExtensions::ChangeVersion(int version) {
     }
 }
 
+uint8_t VehicleExtensions::GearsAvailable() {
+    return g_numGears;
+}
+
 /*
- * Offsets/patterns done by me might need revision, but they've been checked 
+ * Offsets/patterns done by me might need revision, but they've been checked
  * against b1180.2 and b877.1 and are okay.
  */
-void VehicleExtensions::initOffsets() {
+void VehicleExtensions::Init() {
     mem::init();
-    uintptr_t addr = mem::FindPattern("\x3A\x91\x00\x00\x00\x00\x74\x00\x84\xD2", "xx????x?xx");
+
+    uintptr_t addr = mem::FindPattern("3A 91 ? ? ? ? 74 ? 84 D2");
     rocketBoostActiveOffset = addr == 0 ? 0 : *(int*)(addr + 2);
     logger.Write(rocketBoostActiveOffset == 0 ? WARN : DEBUG, "Rocket Boost Active Offset: 0x%X", rocketBoostActiveOffset);
 
@@ -49,12 +93,23 @@ void VehicleExtensions::initOffsets() {
     rocketBoostChargeOffset = addr == 0 ? 0 : *(int*)(addr + 9);
     logger.Write(rocketBoostChargeOffset == 0 ? WARN : DEBUG, "Rocket Boost Charge Offset: 0x%X", rocketBoostChargeOffset);
 
+    // Unknown
+    addr = mem::FindPattern("\xF3\x0F\x11\xB3\x00\x00\x00\x00\x44\x88\x00\x00\x00\x00\x00\x48\x85\xC9",
+        "xxxx????xx?????xxx");
+    hoverTransformRatioOffset = addr == 0 ? 0 : *(int*)(addr + 4);
+    logger.Write(hoverTransformRatioOffset == 0 ? WARN : DEBUG, "Hover Transform Active Offset: 0x%X", hoverTransformRatioOffset);
+
+    //addr = mem::FindPattern("\xF3\x0F\x11\xB3\x00\x00\x00\x00\x44\x88\x00\x00\x00\x00\x00\x48\x85\xC9",
+    //    "xxxx????xx?????xxx");
+    hoverTransformRatioLerpOffset = addr == 0 ? 0 : *(int*)(addr + 4) + 0x28;
+    logger.Write(hoverTransformRatioLerpOffset == 0 ? WARN : DEBUG, "Hover Transform Ratio Offset: 0x%X", hoverTransformRatioLerpOffset);
+
     addr = mem::FindPattern("\x74\x26\x0F\x57\xC9", "xxxxx");
     fuelLevelOffset = addr == 0 ? 0 : *(int*)(addr + 8);
     logger.Write(fuelLevelOffset == 0 ? WARN : DEBUG, "Fuel Level Offset: 0x%X", fuelLevelOffset);
 
     addr = mem::FindPattern("\x48\x8D\x8F\x00\x00\x00\x00\x4C\x8B\xC3\xF3\x0F\x11\x7C\x24",
-                            "xxx????xxxxxxxx");
+        "xxx????xxxxxxxx");
     nextGearOffset = addr == 0 ? 0 : *(int*)(addr + 3);
     logger.Write(nextGearOffset == 0 ? WARN : DEBUG, "Next Gear Offset: 0x%X", nextGearOffset);
 
@@ -83,7 +138,7 @@ void VehicleExtensions::initOffsets() {
     logger.Write(driveMaxFlatVelOffset == 0 ? WARN : DEBUG, "Drive Max Flat Velocity Offset: 0x%X", driveMaxFlatVelOffset);
 
     addr = mem::FindPattern("\x76\x03\x0F\x28\xF0\xF3\x44\x0F\x10\x93",
-                            "xxxxxxxxxx");
+        "xxxxxxxxxx");
     currentRPMOffset = addr == 0 ? 0 : *(int*)(addr + 10);
     logger.Write(currentRPMOffset == 0 ? WARN : DEBUG, "RPM Offset: 0x%X", currentRPMOffset);
 
@@ -103,10 +158,23 @@ void VehicleExtensions::initOffsets() {
     turboOffset = addr == 0 ? 0 : *(int*)(addr + 4);
     logger.Write(turboOffset == 0 ? WARN : DEBUG, "Turbo Offset: 0x%X", turboOffset);
 
+    if (g_gameVersion >= G_VER_1_0_1604_0_STEAM) {
+        // TODO: pattern
+        arenaBoostOffset = turboOffset + 0x30;
+    }
+    else {
+        arenaBoostOffset = 0;
+    }
+
     addr = mem::FindPattern("\x3C\x03\x0F\x85\x00\x00\x00\x00\x48\x8B\x41\x20\x48\x8B\x88",
-                            "xxxx????xxxxxxx");
+        "xxxx????xxxxxxx");
     handlingOffset = addr == 0 ? 0 : *(int*)(addr + 0x16);
     logger.Write(handlingOffset == 0 ? WARN : DEBUG, "Handling Offset: 0x%X", handlingOffset);
+
+    addr = mem::FindPattern("FD 02 DB 08 98 ? ? ? ? 48 8B 5C 24 30");
+    lightStatesOffset = addr == 0 ? 0 : *(int*)(addr - 4) - 1;
+    logger.Write(lightStatesOffset == 0 ? WARN : DEBUG, "Light States Offset: 0x%X", lightStatesOffset);
+    // Or "8A 96 ? ? ? ? 0F B6 C8 84 D2 41", +10 or something (+31 is the engine starting bit), (0x928 starting addr)
 
     addr = mem::FindPattern("\x74\x0A\xF3\x0F\x11\xB3\x1C\x09\x00\x00\xEB\x25", "xxxxxx????xx");
     steeringAngleInputOffset = addr == 0 ? 0 : *(int*)(addr + 6);
@@ -121,22 +189,28 @@ void VehicleExtensions::initOffsets() {
     brakePOffset = addr == 0 ? 0 : *(int*)(addr + 6) + 0x14;
     logger.Write(brakePOffset == 0 ? WARN : DEBUG, "BrakeP Offset: 0x%X", brakePOffset);
 
-    addr = mem::FindPattern("\x44\x88\xA3\x00\x00\x00\x00\x45\x8A\xF4", "xxx????xxx");
-    handbrakeOffset = addr == 0 ? 0 : *(int*)(addr + 3);
+    if (g_gameVersion >= G_VER_1_0_2060_0_STEAM) {
+        addr = mem::FindPattern("8A C2 24 01 C0 E0 04 08 81");
+        handbrakeOffset = addr == 0 ? 0 : *(int*)(addr + 19);
+    }
+    else {
+        addr = mem::FindPattern("\x44\x88\xA3\x00\x00\x00\x00\x45\x8A\xF4", "xxx????xxx");
+        handbrakeOffset = addr == 0 ? 0 : *(int*)(addr + 3);
+    }
     logger.Write(handbrakeOffset == 0 ? WARN : DEBUG, "Handbrake Offset: 0x%X", handbrakeOffset);
 
-    addr = mem::FindPattern("\x0F\x29\x7C\x24\x30\x0F\x85\xE3\x00\x00\x00\xF3\x0F\x10\xB9\x68\x09\x00\x00", 
-                            "xx???xx????xxxx????");
+    addr = mem::FindPattern("\x0F\x29\x7C\x24\x30\x0F\x85\xE3\x00\x00\x00\xF3\x0F\x10\xB9\x68\x09\x00\x00",
+        "xx???xx????xxxx????");
     dirtLevelOffset = addr == 0 ? 0 : *(int*)(addr + 0xF);
     logger.Write(dirtLevelOffset == 0 ? WARN : DEBUG, "Dirt Level Offset: 0x%X", dirtLevelOffset);
 
     addr = mem::FindPattern("\xF3\x0F\x11\x9B\xDC\x09\x00\x00\x0F\x84\xB1\x00\x00\x00",
-                            "xxxx????xxx???");
+        "xxxx????xxx???");
     engineTempOffset = addr == 0 ? 0 : *(int*)(addr + 4);
     logger.Write(engineTempOffset == 0 ? WARN : DEBUG, "Engine Temperature Offset: 0x%X", engineTempOffset);
 
-    addr = mem::FindPattern("\xF3\x0F\x10\x8F\x10\x0A\x00\x00\xF3\x0F\x59\x05\x5E\x30\x8D\x00", 
-                            "xxxx????xxxx????");
+    addr = mem::FindPattern("\xF3\x0F\x10\x8F\x10\x0A\x00\x00\xF3\x0F\x59\x05\x5E\x30\x8D\x00",
+        "xxxx????xxxx????");
     dashSpeedOffset = addr == 0 ? 0 : *(int*)(addr + 4);
     logger.Write(dashSpeedOffset == 0 ? WARN : DEBUG, "Dashboard Speed Offset: 0x%X", dashSpeedOffset);
 
@@ -155,14 +229,18 @@ void VehicleExtensions::initOffsets() {
     vehicleFlagsOffset = addr == 0 ? 0 : *(int*)(addr + 7);
     logger.Write(vehicleFlagsOffset == 0 ? WARN : DEBUG, "Vehicle Flags Offset: 0x%X", vehicleFlagsOffset);
 
-    addr = mem::FindPattern("\x0F\xBA\xAB\xEC\x01\x00\x00\x09\x0F\x2F\xB3\x40\x01\x00\x00\x48\x8B\x83\x20\x01\x00\x00", 
-                            "xx?????xxx???xxxx?????");
+    addr = mem::FindPattern("\x0F\xBA\xAB\xEC\x01\x00\x00\x09\x0F\x2F\xB3\x40\x01\x00\x00\x48\x8B\x83\x20\x01\x00\x00",
+        "xx?????xxx???xxxx?????");
     steeringMultOffset = addr == 0 ? 0 : *(int*)(addr + 11);
     logger.Write(steeringMultOffset == 0 ? WARN : DEBUG, "Steering Multiplier Offset: 0x%X", steeringMultOffset);
 
     addr = mem::FindPattern("\x75\x11\x48\x8b\x01\x8b\x88", "xxxxxxx");
     wheelFlagsOffset = addr == 0 ? 0 : *(int*)(addr + 7);
     logger.Write(wheelFlagsOffset == 0 ? WARN : DEBUG, "Wheel Flags Offset: 0x%X", wheelFlagsOffset);
+
+    wheelDownforceOffset = addr == 0 ? 0 : *(int*)(addr + 7) + 0x1C;
+    logger.Write(wheelDownforceOffset == 0 ? WARN : DEBUG, "Wheel Downforce Offset: 0x%X", wheelDownforceOffset);
+
 
     addr = mem::FindPattern("\x75\x24\xF3\x0F\x10\x81\xE0\x01\x00\x00\xF3\x0F\x5C\xC1", "xxxxx???xxxx??");
     wheelHealthOffset = addr == 0 ? 0 : *(int*)(addr + 6);
@@ -192,72 +270,92 @@ void VehicleExtensions::initOffsets() {
     wheelPowerOffset = addr == 0 ? 0 : (*(int*)(addr + 3)) + 0x8;
     logger.Write(wheelPowerOffset == 0 ? WARN : DEBUG, "Wheel Power Offset: 0x%X", wheelPowerOffset);
 
-    wheelSmokeOffset = addr == 0 ? 0 : (*(int*)(addr + 3)) - 0x14;
-    logger.Write(wheelSmokeOffset == 0 ? WARN : DEBUG, "Wheel Smoke Offset: 0x%X", wheelSmokeOffset);
+    wheelTractionVectorLengthOffset = addr == 0 ? 0 : (*(int*)(addr + 3)) - 0x14;
+    logger.Write(wheelTractionVectorLengthOffset == 0 ? WARN : DEBUG, "Wheel Traction Vector Length Offset: 0x%X", wheelTractionVectorLengthOffset);
 }
 
-BYTE *VehicleExtensions::GetAddress(Vehicle handle) {
-    return reinterpret_cast<BYTE *>(mem::GetAddressOfEntity(handle));
+BYTE* VehicleExtensions::GetAddress(Vehicle handle) {
+    return reinterpret_cast<BYTE*>(mem::GetAddressOfEntity(handle));
 }
 
 bool VehicleExtensions::GetRocketBoostActive(Vehicle handle) {
     if (rocketBoostActiveOffset == 0) return false;
-    return *reinterpret_cast<bool *>(GetAddress(handle) + rocketBoostActiveOffset);
+    return *reinterpret_cast<bool*>(GetAddress(handle) + rocketBoostActiveOffset);
 }
 
 void VehicleExtensions::SetRocketBoostActive(Vehicle handle, bool val) {
     if (rocketBoostActiveOffset == 0) return;
-    *reinterpret_cast<bool *>(GetAddress(handle) + rocketBoostActiveOffset) = val;
+    *reinterpret_cast<bool*>(GetAddress(handle) + rocketBoostActiveOffset) = val;
 }
 
 float VehicleExtensions::GetRocketBoostCharge(Vehicle handle) {
     if (rocketBoostChargeOffset == 0) return 0.0f;
-    return *reinterpret_cast<float *>(GetAddress(handle) + rocketBoostChargeOffset);
+    return *reinterpret_cast<float*>(GetAddress(handle) + rocketBoostChargeOffset);
 }
 
 void VehicleExtensions::SetRocketBoostCharge(Vehicle handle, float value) {
     if (rocketBoostChargeOffset == 0) return;
-    *reinterpret_cast<float *>(GetAddress(handle) + rocketBoostChargeOffset) = value;
+    *reinterpret_cast<float*>(GetAddress(handle) + rocketBoostChargeOffset) = value;
+}
+
+float VehicleExtensions::GetHoverTransformRatio(Vehicle handle) {
+    if (hoverTransformRatioOffset == 0) return false;
+    return *reinterpret_cast<float*>(GetAddress(handle) + hoverTransformRatioOffset);
+}
+
+void VehicleExtensions::SetHoverTransformRatio(Vehicle handle, float value) {
+    if (hoverTransformRatioOffset == 0) return;
+    *reinterpret_cast<float*>(GetAddress(handle) + hoverTransformRatioOffset) = value;
+}
+
+float VehicleExtensions::GetHoverTransformRatioLerp(Vehicle handle) {
+    if (hoverTransformRatioLerpOffset == 0) return 0.0f;
+    return *reinterpret_cast<float*>(GetAddress(handle) + hoverTransformRatioLerpOffset);
+}
+
+void VehicleExtensions::SetHoverTransformRatioLerp(Vehicle handle, float value) {
+    if (hoverTransformRatioLerpOffset == 0) return;
+    *reinterpret_cast<float*>(GetAddress(handle) + hoverTransformRatioLerpOffset) = value;
 }
 
 float VehicleExtensions::GetFuelLevel(Vehicle handle) {
     if (fuelLevelOffset == 0) return 0.0f;
-    return *reinterpret_cast<float *>(GetAddress(handle) + fuelLevelOffset);
+    return *reinterpret_cast<float*>(GetAddress(handle) + fuelLevelOffset);
 }
 
 void VehicleExtensions::SetFuelLevel(Vehicle handle, float value) {
     if (fuelLevelOffset == 0) return;
-    *reinterpret_cast<float *>(GetAddress(handle) + fuelLevelOffset) = value;
+    *reinterpret_cast<float*>(GetAddress(handle) + fuelLevelOffset) = value;
 }
 
 uint16_t VehicleExtensions::GetGearNext(Vehicle handle) {
     if (nextGearOffset == 0) return 0;
-    return *reinterpret_cast<const uint16_t *>(GetAddress(handle) + nextGearOffset);
+    return *reinterpret_cast<const uint16_t*>(GetAddress(handle) + nextGearOffset);
 }
 
 void VehicleExtensions::SetGearNext(Vehicle handle, uint16_t value) {
     if (nextGearOffset == 0) return;
-    *reinterpret_cast<uint16_t *>(GetAddress(handle) + nextGearOffset) = value;
+    *reinterpret_cast<uint16_t*>(GetAddress(handle) + nextGearOffset) = value;
 }
 
 uint16_t VehicleExtensions::GetGearCurr(Vehicle handle) {
     if (currentGearOffset == 0) return 0;
-    return *reinterpret_cast<const uint16_t *>(GetAddress(handle) + currentGearOffset);
+    return *reinterpret_cast<const uint16_t*>(GetAddress(handle) + currentGearOffset);
 }
 
 void VehicleExtensions::SetGearCurr(Vehicle handle, uint16_t value) {
     if (currentGearOffset == 0) return;
-    *reinterpret_cast<uint16_t *>(GetAddress(handle) + currentGearOffset) = value;
+    *reinterpret_cast<uint16_t*>(GetAddress(handle) + currentGearOffset) = value;
 }
 
 uint8_t VehicleExtensions::GetTopGear(Vehicle handle) {
     if (topGearOffset == 0) return 0;
-    return *reinterpret_cast<uint8_t *>(GetAddress(handle) + topGearOffset);
+    return *reinterpret_cast<uint8_t*>(GetAddress(handle) + topGearOffset);
 }
 
 void VehicleExtensions::SetTopGear(Vehicle handle, uint8_t value) {
     if (topGearOffset == 0) return;
-    *reinterpret_cast<uint8_t *>(GetAddress(handle) + topGearOffset) = value;
+    *reinterpret_cast<uint8_t*>(GetAddress(handle) + topGearOffset) = value;
 }
 
 float* VehicleExtensions::GetGearRatioPtr(Vehicle handle, uint8_t gear) {
@@ -271,7 +369,7 @@ std::vector<float> VehicleExtensions::GetGearRatios(Vehicle handle) {
     auto address = GetAddress(handle);
     std::vector<float> ratios(GetTopGear(handle) + 1);
     for (int gear = 0; gear < GetTopGear(handle) + 1; ++gear) {
-        ratios[gear] = *reinterpret_cast<float *>(address + gearRatiosOffset + gear * sizeof(float));
+        ratios[gear] = *reinterpret_cast<float*>(address + gearRatiosOffset + gear * sizeof(float));
     }
     return ratios;
 }
@@ -280,144 +378,175 @@ void VehicleExtensions::SetGearRatios(Vehicle handle, const std::vector<float>& 
     if (gearRatiosOffset == 0) return;
     auto address = GetAddress(handle);
     for (uint8_t gear = 0; gear < values.size(); ++gear) {
-        *reinterpret_cast<float *>(address + gearRatiosOffset + gear * sizeof(float)) = values[gear];
+        *reinterpret_cast<float*>(address + gearRatiosOffset + gear * sizeof(float)) = values[gear];
     }
 }
 
 float VehicleExtensions::GetDriveForce(Vehicle handle) {
     if (driveForceOffset == 0) return 0.0f;
-    return *reinterpret_cast<float *>(GetAddress(handle) + driveForceOffset);
+    return *reinterpret_cast<float*>(GetAddress(handle) + driveForceOffset);
 }
 
 void VehicleExtensions::SetDriveForce(Vehicle handle, float value) {
     if (driveForceOffset == 0) return;
-    *reinterpret_cast<float *>(GetAddress(handle) + driveForceOffset) = value;
+    *reinterpret_cast<float*>(GetAddress(handle) + driveForceOffset) = value;
 }
 
 float VehicleExtensions::GetInitialDriveMaxFlatVel(Vehicle handle) {
     if (initialDriveMaxFlatVelOffset == 0) return 0.0f;
-    return *reinterpret_cast<float *>(GetAddress(handle) + initialDriveMaxFlatVelOffset);
+    return *reinterpret_cast<float*>(GetAddress(handle) + initialDriveMaxFlatVelOffset);
 }
 
 void VehicleExtensions::SetInitialDriveMaxFlatVel(Vehicle handle, float value) {
     if (initialDriveMaxFlatVelOffset == 0) return;
-    *reinterpret_cast<float *>(GetAddress(handle) + initialDriveMaxFlatVelOffset) = value;
+    *reinterpret_cast<float*>(GetAddress(handle) + initialDriveMaxFlatVelOffset) = value;
 }
 
 float VehicleExtensions::GetDriveMaxFlatVel(Vehicle handle) {
     if (driveMaxFlatVelOffset == 0) return 0.0f;
-    return *reinterpret_cast<float *>(GetAddress(handle) + driveMaxFlatVelOffset);
+    return *reinterpret_cast<float*>(GetAddress(handle) + driveMaxFlatVelOffset);
 }
 
 void VehicleExtensions::SetDriveMaxFlatVel(Vehicle handle, float value) {
     if (driveMaxFlatVelOffset == 0) return;
-    *reinterpret_cast<float *>(GetAddress(handle) + driveMaxFlatVelOffset) = value;
+    *reinterpret_cast<float*>(GetAddress(handle) + driveMaxFlatVelOffset) = value;
 }
 
 float VehicleExtensions::GetCurrentRPM(Vehicle handle) {
     if (currentRPMOffset == 0) return 0.0f;
-    return *reinterpret_cast<const float *>(GetAddress(handle) + currentRPMOffset);
+    return *reinterpret_cast<const float*>(GetAddress(handle) + currentRPMOffset);
 }
 
 void VehicleExtensions::SetCurrentRPM(Vehicle handle, float value) {
     if (currentRPMOffset == 0) return;
-    *reinterpret_cast<float *>(GetAddress(handle) + currentRPMOffset) = value;
+    *reinterpret_cast<float*>(GetAddress(handle) + currentRPMOffset) = value;
 }
 
 float VehicleExtensions::GetClutch(Vehicle handle) {
     if (clutchOffset == 0) return 0.0f;
     auto address = GetAddress(handle);
-    return address == nullptr ? 0 : *reinterpret_cast<const float *>(address + clutchOffset);
+    return address == nullptr ? 0 : *reinterpret_cast<const float*>(address + clutchOffset);
 }
 
 void VehicleExtensions::SetClutch(Vehicle handle, float value) {
     if (clutchOffset == 0) return;
     auto address = GetAddress(handle);
-    *reinterpret_cast<float *>(address + clutchOffset) = value;
+    *reinterpret_cast<float*>(address + clutchOffset) = value;
 }
 
 float VehicleExtensions::GetThrottle(Vehicle handle) {
     if (throttleOffset == 0) return 0.0f;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + throttleOffset);
+    return *reinterpret_cast<float*>(address + throttleOffset);
 }
 
 void VehicleExtensions::SetThrottle(Vehicle handle, float value) {
     if (throttleOffset == 0) return;
     auto address = GetAddress(handle);
-    *reinterpret_cast<float *>(address + throttleOffset) = value;
+    *reinterpret_cast<float*>(address + throttleOffset) = value;
 }
 
 float VehicleExtensions::GetTurbo(Vehicle handle) {
     if (turboOffset == 0) return 0.0f;
     auto address = GetAddress(handle);
-    return address == nullptr ? 0 : *reinterpret_cast<const float *>(address + turboOffset);
+    return address == nullptr ? 0 : *reinterpret_cast<const float*>(address + turboOffset);
 }
 
 void VehicleExtensions::SetTurbo(Vehicle handle, float value) {
     if (turboOffset == 0) return;
     auto address = GetAddress(handle);
-    *reinterpret_cast<float *>(address + turboOffset) = value;
+    *reinterpret_cast<float*>(address + turboOffset) = value;
+}
+
+float VehicleExtensions::GetArenaBoost(Vehicle handle) {
+    if (arenaBoostOffset == 0) return 0.0f;
+    auto address = GetAddress(handle);
+    return address == nullptr ? 0 : *reinterpret_cast<const float*>(address + arenaBoostOffset);
+}
+
+void VehicleExtensions::SetArenaBoost(Vehicle handle, float value) {
+    if (arenaBoostOffset == 0) return;
+    auto address = GetAddress(handle);
+    *reinterpret_cast<float*>(address + arenaBoostOffset) = value;
 }
 
 uint64_t VehicleExtensions::GetHandlingPtr(Vehicle handle) {
     if (handlingOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<uint64_t *>(address + handlingOffset);
+    return *reinterpret_cast<uint64_t*>(address + handlingOffset);
+}
+
+void VehicleExtensions::SetHandlingPtr(Vehicle handle, uint64_t value) {
+    if (handlingOffset == 0) return;
+    auto address = GetAddress(handle);
+    if (address == 0) return;
+    *reinterpret_cast<uint64_t*>(address + handlingOffset) = value;
+}
+
+uint32_t VehicleExtensions::GetLightStates(Vehicle handle) {
+    if (lightStatesOffset == 0) return 0;
+    auto address = GetAddress(handle);
+    return *reinterpret_cast<uint32_t*>(address + lightStatesOffset);
+}
+
+void VehicleExtensions::SetLightStates(Vehicle handle, uint32_t value) {
+    if (lightStatesOffset == 0) return;
+    auto address = GetAddress(handle);
+    *reinterpret_cast<uint32_t*>(address + lightStatesOffset) = value;
 }
 
 float VehicleExtensions::GetSteeringInputAngle(Vehicle handle) {
     if (steeringAngleInputOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + steeringAngleInputOffset);
+    return *reinterpret_cast<float*>(address + steeringAngleInputOffset);
 }
 
 void VehicleExtensions::SetSteeringInputAngle(Vehicle handle, float value) {
     if (steeringAngleInputOffset == 0) return;
     auto address = GetAddress(handle);
-    *reinterpret_cast<float *>(address + steeringAngleInputOffset) = value;
+    *reinterpret_cast<float*>(address + steeringAngleInputOffset) = value;
 }
 
 float VehicleExtensions::GetSteeringAngle(Vehicle handle) {
     if (steeringAngleOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + steeringAngleOffset);
+    return *reinterpret_cast<float*>(address + steeringAngleOffset);
 }
 
 void VehicleExtensions::SetSteeringAngle(Vehicle handle, float value) {
     if (steeringAngleOffset == 0) return;
     auto address = GetAddress(handle);
-    *reinterpret_cast<float *>(address + steeringAngleOffset) = value;
+    *reinterpret_cast<float*>(address + steeringAngleOffset) = value;
 }
 
 float VehicleExtensions::GetThrottleP(Vehicle handle) {
     if (throttlePOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + throttlePOffset);
+    return *reinterpret_cast<float*>(address + throttlePOffset);
 }
 
 void VehicleExtensions::SetThrottleP(Vehicle handle, float value) {
     if (throttlePOffset == 0) return;
     auto address = GetAddress(handle);
-    *reinterpret_cast<float *>(address + throttlePOffset) = value;
+    *reinterpret_cast<float*>(address + throttlePOffset) = value;
 }
 
 float VehicleExtensions::GetBrakeP(Vehicle handle) {
     if (brakePOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + brakePOffset);
+    return *reinterpret_cast<float*>(address + brakePOffset);
 }
 
 void VehicleExtensions::SetBrakeP(Vehicle handle, float value) {
     if (brakePOffset == 0) return;
     auto address = GetAddress(handle);
-    *reinterpret_cast<float *>(address + brakePOffset) = value;
+    *reinterpret_cast<float*>(address + brakePOffset) = value;
 }
 
 bool VehicleExtensions::GetHandbrake(Vehicle handle) {
     if (handbrakeOffset == 0) return false;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<bool *>(address + handbrakeOffset);
+    return *reinterpret_cast<bool*>(address + handbrakeOffset);
 }
 
 void VehicleExtensions::SetHandbrake(Vehicle handle, bool value) {
@@ -429,67 +558,38 @@ void VehicleExtensions::SetHandbrake(Vehicle handle, bool value) {
 float VehicleExtensions::GetDirtLevel(Vehicle handle) {
     if (dirtLevelOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + dirtLevelOffset);
+    return *reinterpret_cast<float*>(address + dirtLevelOffset);
 }
 
 float VehicleExtensions::GetEngineTemp(Vehicle handle) {
     if (engineTempOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + engineTempOffset);
+    return *reinterpret_cast<float*>(address + engineTempOffset);
 }
 
 float VehicleExtensions::GetDashSpeed(Vehicle handle) {
     if (dashSpeedOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<float *>(address + dashSpeedOffset);
+    return *reinterpret_cast<float*>(address + dashSpeedOffset);
 }
 
 int VehicleExtensions::GetModelType(Vehicle handle) {
     if (modelTypeOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<int *>(address + modelTypeOffset);
+    return *reinterpret_cast<int*>(address + modelTypeOffset);
 }
 
 uint64_t VehicleExtensions::GetWheelsPtr(Vehicle handle) {
     if (wheelsPtrOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<uint64_t *>(address + wheelsPtrOffset);
+    return *reinterpret_cast<uint64_t*>(address + wheelsPtrOffset);
 }
 
 uint8_t VehicleExtensions::GetNumWheels(Vehicle handle) {
     if (numWheelsOffset == 0) return 0;
     auto address = GetAddress(handle);
-    return *reinterpret_cast<int *>(address + numWheelsOffset);
-}
-
-float VehicleExtensions::GetDriveBiasFront(Vehicle handle) {
-    auto address = GetHandlingPtr(handle);
-    if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTHE::Offsets.fDriveBiasFront);
-}
-
-float VehicleExtensions::GetDriveBiasRear(Vehicle handle) {
-    auto address = GetHandlingPtr(handle);
-    if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTHE::Offsets.fDriveBiasRear);
-}
-
-float VehicleExtensions::GetPetrolTankVolume(Vehicle handle) {
-    auto address = GetHandlingPtr(handle);
-    if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTHE::Offsets.fPetrolTankVolume);
-}
-
-float VehicleExtensions::GetOilVolume(Vehicle handle) {
-    auto address = GetHandlingPtr(handle);
-    if (address == 0) return 0.0f;
-    return *reinterpret_cast<float *>(address + RTHE::Offsets.fOilVolume);
-}
-
-float VehicleExtensions::GetMaxSteeringAngle(Vehicle handle) {
-    auto address = GetHandlingPtr(handle);
-    if (address == 0) return 0.0f;
-    return *reinterpret_cast<float*>(address + RTHE::Offsets.fSteeringLock);
+    if (address == 0) return 0;
+    return *reinterpret_cast<int*>(address + numWheelsOffset);
 }
 
 Hash VehicleExtensions::GetAIHandling(Vehicle handle) {
@@ -497,7 +597,7 @@ Hash VehicleExtensions::GetAIHandling(Vehicle handle) {
     if (address == 0) return 0;
     auto offset = 0x13C;
     if (offset == 0) return 0;
-    return *reinterpret_cast<Hash *>(address + offset);
+    return *reinterpret_cast<Hash*>(address + offset);
 }
 
 std::vector<uint64_t> VehicleExtensions::GetWheelPtrs(Vehicle handle) {
@@ -505,7 +605,7 @@ std::vector<uint64_t> VehicleExtensions::GetWheelPtrs(Vehicle handle) {
     auto numWheels = GetNumWheels(handle);
     std::vector<uint64_t> wheelPtrs(numWheels);
     for (auto i = 0; i < numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
         wheelPtrs[i] = wheelAddr;
     }
     return wheelPtrs;
@@ -518,7 +618,7 @@ float VehicleExtensions::GetVisualHeight(Vehicle handle) {
     if (offset == 0)
         return 0.0f;
 
-    return *reinterpret_cast<float *>(wheelPtr + offset);
+    return *reinterpret_cast<float*>(wheelPtr + offset);
 }
 
 void VehicleExtensions::SetVisualHeight(Vehicle handle, float height) {
@@ -528,7 +628,7 @@ void VehicleExtensions::SetVisualHeight(Vehicle handle, float height) {
     if (offset == 0)
         return;
 
-    *reinterpret_cast<float *>(wheelPtr + offset) = height;
+    *reinterpret_cast<float*>(wheelPtr + offset) = height;
 }
 
 std::vector<float> VehicleExtensions::GetWheelHealths(Vehicle handle) {
@@ -540,8 +640,8 @@ std::vector<float> VehicleExtensions::GetWheelHealths(Vehicle handle) {
     if (wheelHealthOffset == 0) return healths;
 
     for (auto i = 0; i < numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        healths[i] = *reinterpret_cast<float *>(wheelAddr + wheelHealthOffset);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        healths[i] = *reinterpret_cast<float*>(wheelAddr + wheelHealthOffset);
     }
     return healths;
 }
@@ -553,8 +653,8 @@ void VehicleExtensions::SetWheelsHealth(Vehicle handle, float health) {
     auto numWheels = GetNumWheels(handle);
 
     for (auto i = 0; i < numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        *reinterpret_cast<float *>(wheelAddr + wheelHealthOffset) = health;
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        *reinterpret_cast<float*>(wheelAddr + wheelHealthOffset) = health;
     }
 }
 
@@ -563,7 +663,7 @@ float VehicleExtensions::GetSteeringMultiplier(Vehicle handle) {
     auto numWheels = GetNumWheels(handle);
 
     if (numWheels > 1) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * 1);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * 1);
         return abs(*reinterpret_cast<float*>(wheelAddr + steeringMultOffset));
     }
     return 1.0f;
@@ -573,9 +673,9 @@ void VehicleExtensions::SetSteeringMultiplier(Vehicle handle, float value) {
     auto wheelPtr = GetWheelsPtr(handle);
     auto numWheels = GetNumWheels(handle);
 
-    for (int i = 0; i<numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        float sign = sgn(*reinterpret_cast<float*>(wheelAddr + steeringMultOffset));
+    for (int i = 0; i < numWheels; i++) {
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        float sign = Sign(*reinterpret_cast<float*>(wheelAddr + steeringMultOffset));
         *reinterpret_cast<float*>(wheelAddr + steeringMultOffset) = value * sign;
     }
 }
@@ -590,24 +690,13 @@ std::vector<Vector3> VehicleExtensions::GetWheelOffsets(Vehicle handle) {
 
     positions.reserve(wheels.size());
     for (auto wheelAddr : wheels) {
-        positions.emplace_back(Vector3 {
-            *reinterpret_cast<float *>(wheelAddr + offPosX), 0,
-            *reinterpret_cast<float *>(wheelAddr + offPosY), 0,
-            *reinterpret_cast<float *>(wheelAddr + offPosZ), 0,
-        });
+        positions.emplace_back(Vector3{
+            *reinterpret_cast<float*>(wheelAddr + offPosX), 0,
+            *reinterpret_cast<float*>(wheelAddr + offPosY), 0,
+            *reinterpret_cast<float*>(wheelAddr + offPosZ), 0,
+            });
     }
     return positions;
-}
-
-std::vector<Vector3> VehicleExtensions::GetWheelCoords(Vehicle handle, Vector3 position, Vector3 rotation, Vector3 direction) {
-    std::vector<Vector3> worldCoords;
-    std::vector<Vector3> positions = GetWheelOffsets(handle);
-
-    worldCoords.reserve(positions.size());
-    for (Vector3 wheelPos : positions) {
-        worldCoords.emplace_back(GetOffsetInWorldCoords(position, rotation, direction, wheelPos));
-    }
-    return worldCoords;
 }
 
 std::vector<Vector3> VehicleExtensions::GetWheelLastContactCoords(Vehicle handle) {
@@ -627,9 +716,9 @@ std::vector<Vector3> VehicleExtensions::GetWheelLastContactCoords(Vehicle handle
     positions.reserve(wheels.size());
     for (auto wheelAddr : wheels) {
         positions.emplace_back(Vector3{
-            *reinterpret_cast<float *>(wheelAddr + offPosX), 0,
-            *reinterpret_cast<float *>(wheelAddr + offPosY), 0,
-            *reinterpret_cast<float *>(wheelAddr + offPosZ), 0,
+            *reinterpret_cast<float*>(wheelAddr + offPosX), 0,
+            *reinterpret_cast<float*>(wheelAddr + offPosY), 0,
+            *reinterpret_cast<float*>(wheelAddr + offPosZ), 0,
             });
     }
     return positions;
@@ -644,8 +733,8 @@ std::vector<float> VehicleExtensions::GetWheelCompressions(Vehicle handle) {
     if (wheelSuspensionCompressionOffset == 0) return compressions;
 
     for (auto i = 0; i < numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        compressions[i] = *reinterpret_cast<float *>(wheelAddr + wheelSuspensionCompressionOffset);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        compressions[i] = *reinterpret_cast<float*>(wheelAddr + wheelSuspensionCompressionOffset);
     }
     return compressions;
 }
@@ -659,8 +748,8 @@ std::vector<float> VehicleExtensions::GetWheelSteeringAngles(Vehicle handle) {
     if (wheelSteeringAngleOffset == 0) return angles;
 
     for (auto i = 0; i < numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        angles[i] = *reinterpret_cast<float *>(wheelAddr + wheelSteeringAngleOffset);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        angles[i] = *reinterpret_cast<float*>(wheelAddr + wheelSteeringAngleOffset);
     }
     return angles;
 }
@@ -720,9 +809,9 @@ std::vector<WheelDimensions> VehicleExtensions::GetWheelDimensions(Vehicle handl
         if (!wheelAddr) continue;
 
         WheelDimensions dimensions;
-        dimensions.TyreRadius = *reinterpret_cast<float *>(wheelAddr + offTyreRadius);
-        dimensions.RimRadius = *reinterpret_cast<float *>(wheelAddr + offRimRadius);
-        dimensions.TyreWidth = *reinterpret_cast<float *>(wheelAddr + offTyreWidth);
+        dimensions.TyreRadius = *reinterpret_cast<float*>(wheelAddr + offTyreRadius);
+        dimensions.RimRadius = *reinterpret_cast<float*>(wheelAddr + offRimRadius);
+        dimensions.TyreWidth = *reinterpret_cast<float*>(wheelAddr + offTyreWidth);
         dimensionsSet.push_back(dimensions);
     }
     return dimensionsSet;
@@ -736,10 +825,20 @@ std::vector<float> VehicleExtensions::GetWheelRotationSpeeds(Vehicle handle) {
     if (wheelAngularVelocityOffset == 0) return speeds;
 
     for (auto i = 0; i < numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        speeds[i] = -*reinterpret_cast<float *>(wheelAddr + wheelAngularVelocityOffset);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        speeds[i] = -*reinterpret_cast<float*>(wheelAddr + wheelAngularVelocityOffset);
     }
     return speeds;
+}
+
+void VehicleExtensions::SetWheelRotationSpeed(Vehicle handle, uint8_t index, float value) {
+    if (index > GetNumWheels(handle)) return;
+    if (wheelAngularVelocityOffset == 0) return;
+
+    auto wheelPtr = GetWheelsPtr(handle);
+
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+    *reinterpret_cast<float*>(wheelAddr + wheelAngularVelocityOffset) = value;
 }
 
 std::vector<float> VehicleExtensions::GetTyreSpeeds(Vehicle handle) {
@@ -754,26 +853,26 @@ std::vector<float> VehicleExtensions::GetTyreSpeeds(Vehicle handle) {
     return wheelSpeeds;
 }
 
-void VehicleExtensions::SetWheelSkidSmokeEffect(Vehicle handle, uint8_t index, float value) {
+void VehicleExtensions::SetWheelTractionVectorLength(Vehicle handle, uint8_t index, float value) {
     if (index > GetNumWheels(handle)) return;
-    if (wheelSmokeOffset == 0) return;
+    if (wheelTractionVectorLengthOffset == 0) return;
 
     auto wheelPtr = GetWheelsPtr(handle);
 
-    auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * index);
-    *reinterpret_cast<float *>(wheelAddr + wheelSmokeOffset) = value;
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+    *reinterpret_cast<float*>(wheelAddr + wheelTractionVectorLengthOffset) = value;
 }
 
-std::vector<float> VehicleExtensions::GetWheelSkidSmokeEffect(Vehicle handle) {
+std::vector<float> VehicleExtensions::GetWheelTractionVectorLength(Vehicle handle) {
     auto numWheels = GetNumWheels(handle);
     std::vector<float> values(numWheels);
     auto wheelPtr = GetWheelsPtr(handle);
 
-    if (wheelSmokeOffset == 0) return values;
+    if (wheelTractionVectorLengthOffset == 0) return values;
 
     for (auto i = 0; i < numWheels; i++) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        values[i] = (-*reinterpret_cast<float *>(wheelAddr + wheelSmokeOffset));
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        values[i] = (-*reinterpret_cast<float*>(wheelAddr + wheelTractionVectorLengthOffset));
     }
     return values;
 }
@@ -787,8 +886,8 @@ std::vector<float> VehicleExtensions::GetWheelPower(Vehicle handle) {
     if (wheelPowerOffset == 0) return values;
 
     for (auto i = 0; i < numWheels; ++i) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        values[i] = *reinterpret_cast<float *>(wheelAddr + wheelPowerOffset);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        values[i] = *reinterpret_cast<float*>(wheelAddr + wheelPowerOffset);
     }
     return values;
 }
@@ -799,8 +898,8 @@ void VehicleExtensions::SetWheelPower(Vehicle handle, uint8_t index, float value
 
     auto wheelPtr = GetWheelsPtr(handle);
 
-    auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * index);
-    *reinterpret_cast<float *>(wheelAddr + wheelPowerOffset) = value;
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+    *reinterpret_cast<float*>(wheelAddr + wheelPowerOffset) = value;
 }
 
 std::vector<float> VehicleExtensions::GetWheelBrakePressure(Vehicle handle) {
@@ -811,8 +910,8 @@ std::vector<float> VehicleExtensions::GetWheelBrakePressure(Vehicle handle) {
     if (wheelBrakeOffset == 0) return values;
 
     for (auto i = 0; i < numWheels; ++i) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        values[i] = *reinterpret_cast<float *>(wheelAddr + wheelBrakeOffset);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        values[i] = *reinterpret_cast<float*>(wheelAddr + wheelBrakeOffset);
     }
     return values;
 }
@@ -823,8 +922,8 @@ void VehicleExtensions::SetWheelBrakePressure(Vehicle handle, uint8_t index, flo
 
     auto wheelPtr = GetWheelsPtr(handle);
 
-    auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * index);
-    *reinterpret_cast<float *>(wheelAddr + wheelBrakeOffset) = value;
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+    *reinterpret_cast<float*>(wheelAddr + wheelBrakeOffset) = value;
 }
 
 bool VehicleExtensions::IsWheelPowered(Vehicle handle, uint8_t index) {
@@ -832,8 +931,8 @@ bool VehicleExtensions::IsWheelPowered(Vehicle handle, uint8_t index) {
     if (wheelFlagsOffset == 0) return false;
 
     auto wheelPtr = GetWheelsPtr(handle);
-    auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * index);
-    auto wheelFlags = *reinterpret_cast<uint32_t *>(wheelAddr + wheelFlagsOffset);
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+    auto wheelFlags = *reinterpret_cast<uint32_t*>(wheelAddr + wheelFlagsOffset);
     return wheelFlags & 0x10;
 }
 
@@ -845,10 +944,44 @@ std::vector<uint16_t> VehicleExtensions::GetWheelFlags(Vehicle handle) {
     if (wheelFlagsOffset == 0) return flags;
 
     for (auto i = 0; i < numWheels; ++i) {
-        auto wheelAddr = *reinterpret_cast<uint64_t *>(wheelPtr + 0x008 * i);
-        flags[i] = *reinterpret_cast<uint16_t *>(wheelAddr + wheelFlagsOffset);
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        flags[i] = *reinterpret_cast<uint16_t*>(wheelAddr + wheelFlagsOffset);
     }
     return flags;
+}
+
+std::vector<float> VehicleExtensions::GetWheelDownforces(Vehicle handle) {
+    auto wheelPtr = GetWheelsPtr(handle);
+    auto numWheels = GetNumWheels(handle);
+    std::vector<float> dfs(numWheels);
+
+    if (wheelDownforceOffset == 0) return dfs;
+
+    for (auto i = 0; i < numWheels; i++) {
+        auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * i);
+        dfs[i] = *reinterpret_cast<float*>(wheelAddr + 0x220);
+    }
+    return dfs;
+}
+
+uint64_t VehicleExtensions::GetWheelHandlingPtr(Vehicle handle, uint8_t index) {
+    if (handlingOffset == 0) return 0;
+
+    auto wheelPtr = GetWheelsPtr(handle);
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+
+    return *reinterpret_cast<uint64_t*>(wheelAddr + 0x120);
+}
+
+void VehicleExtensions::SetWheelHandlingPtr(Vehicle handle, uint8_t index, uint64_t value) {
+    if (handlingOffset == 0) return;
+    auto address = GetAddress(handle);
+    if (address == 0) return;
+
+    auto wheelPtr = GetWheelsPtr(handle);
+    auto wheelAddr = *reinterpret_cast<uint64_t*>(wheelPtr + 0x008 * index);
+
+    *reinterpret_cast<uint64_t*>(wheelAddr + 0x120) = value;
 }
 
 std::vector<uint32_t> VehicleExtensions::GetVehicleFlags(Vehicle handle) {

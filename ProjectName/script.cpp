@@ -30,14 +30,14 @@
 
 namespace fs = std::filesystem;
 
-VehicleExtensions g_ext;
+using VExt = VehicleExtensions;
 std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
 
 
 void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CHandlingData* currentHandling = nullptr;
 
-    uint64_t addr = g_ext.GetHandlingPtr(vehicle);
+    uint64_t addr = VExt::GetHandlingPtr(vehicle);
     currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
 
     if (currentHandling == nullptr) {
@@ -202,7 +202,7 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     RTHE::CHandlingData* currentHandling = nullptr;
 
-    uint64_t addr = g_ext.GetHandlingPtr(vehicle);
+    uint64_t addr = VExt::GetHandlingPtr(vehicle);
     currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
 
     if (currentHandling == nullptr) {
@@ -334,32 +334,32 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
 void PromptSave(Vehicle vehicle) {
     UI::Notify("Enter handling name");
-    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
-    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+    while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }
-    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+    if (!MISC::GET_ONSCREEN_KEYBOARD_RESULT()) {
         UI::Notify("Cancelled save");
         return;
     }
 
-    std::string handlingName = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    std::string handlingName = MISC::GET_ONSCREEN_KEYBOARD_RESULT();
     if (handlingName.empty()) {
         UI::Notify("Cancelled save - No handling name entered");
         return;
     }
 
     UI::Notify("Enter file name");
-    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
-    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+    while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }
-    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+    if (!MISC::GET_ONSCREEN_KEYBOARD_RESULT()) {
         UI::Notify("Cancelled save");
         return;
     }
 
-    std::string fileName = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    std::string fileName = MISC::GET_ONSCREEN_KEYBOARD_RESULT();
     if (fileName.empty()) {
         UI::Notify("Cancelled save - No file name entered");
         return;
@@ -404,7 +404,7 @@ void onMenuClose() {
 
 void main() {
     mem::init();
-    g_ext.initOffsets();
+    VExt::Init();
 
     GetMenu().RegisterOnMain([] { onMenuInit(); });
     GetMenu().RegisterOnExit([] { onMenuClose(); });

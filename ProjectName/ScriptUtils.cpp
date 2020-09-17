@@ -28,7 +28,7 @@ Vehicle spawnVehicle(Hash hash, Vector3 velocity, Ped playerPed) {
         ENTITY::SET_ENTITY_AS_MISSION_ENTITY(oldVeh, true, true);
         VEHICLE::DELETE_VEHICLE(&oldVeh);
 
-        Vehicle veh = VEHICLE::CREATE_VEHICLE(hash, pos.x, pos.y, pos.z, heading, 0, 1);
+        Vehicle veh = VEHICLE::CREATE_VEHICLE(hash, pos.x, pos.y, pos.z, heading, 0, 1, false);
 
         VEHICLE::SET_VEHICLE_DIRT_LEVEL(veh, 0.0f);
         ENTITY::SET_ENTITY_ROTATION(veh, rot.x, rot.y, rot.z, 0, false);
@@ -71,7 +71,7 @@ void Utils::DrawCOMAndRollCenters(Vehicle vehicle, RTHE::CHandlingData* currentH
     //Vector3 dims = GetEntityDimensions(vehicle);
 
     Vector3 modelDimMin, modelDimMax;
-    GAMEPLAY::GET_MODEL_DIMENSIONS(ENTITY::GET_ENTITY_MODEL(vehicle), &modelDimMin, &modelDimMax);
+    MISC::GET_MODEL_DIMENSIONS(ENTITY::GET_ENTITY_MODEL(vehicle), &modelDimMin, &modelDimMax);
 
     Vector3 lfd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMin.x, modelDimMax.y, modelDimMin.z);
     Vector3 lfu = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMin.x, modelDimMax.y, modelDimMax.z);

@@ -9,26 +9,26 @@ namespace {
 }
 
 void UI::ShowText(float x, float y, float scale, const std::string& text) {
-    UI::SET_TEXT_FONT(0);
-    UI::SET_TEXT_SCALE(scale, scale);
-    UI::SET_TEXT_COLOUR(255, 255, 255, 255);
-    UI::SET_TEXT_WRAP(0.0, 1.0);
-    UI::SET_TEXT_CENTRE(0);
-    UI::SET_TEXT_OUTLINE();
-    UI::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
-    UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
-    UI::END_TEXT_COMMAND_DISPLAY_TEXT(x, y);
+    HUD::SET_TEXT_FONT(0);
+    HUD::SET_TEXT_SCALE(scale, scale);
+    HUD::SET_TEXT_COLOUR(255, 255, 255, 255);
+    HUD::SET_TEXT_WRAP(0.0, 1.0);
+    HUD::SET_TEXT_CENTRE(0);
+    HUD::SET_TEXT_OUTLINE();
+    HUD::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
+    HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
+    HUD::END_TEXT_COMMAND_DISPLAY_TEXT(x, y, 0);
 }
 
 void showNotification(const std::string& message, int* prevNotification) {
     if (prevNotification != nullptr && *prevNotification != 0) {
-        UI::_REMOVE_NOTIFICATION(*prevNotification);
+        HUD::THEFEED_REMOVE_ITEM(*prevNotification);
     }
-    UI::_SET_NOTIFICATION_TEXT_ENTRY("STRING");
+    HUD::BEGIN_TEXT_COMMAND_THEFEED_POST("STRING");
 
-    UI::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(message.c_str());
+    HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(message.c_str());
 
-    int id = UI::_DRAW_NOTIFICATION(false, false);
+    int id = HUD::END_TEXT_COMMAND_THEFEED_POST_TICKER(false, false);
     if (prevNotification != nullptr) {
         *prevNotification = id;
     }

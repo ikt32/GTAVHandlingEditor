@@ -56,17 +56,17 @@ bool IsNear(T a, T b, T x) {
 
 bool GetKbEntry(float& val) {
     UI::Notify("Enter value");
-    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "", 
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", 
         fmt::format("{:f}", val).c_str(), "", "", "", 64);
-    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+    while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }
-    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+    if (!MISC::GET_ONSCREEN_KEYBOARD_RESULT()) {
         UI::Notify("Cancelled value entry");
         return false;
     }
 
-    std::string floatStr = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    std::string floatStr = MISC::GET_ONSCREEN_KEYBOARD_RESULT();
     if (floatStr.empty()) {
         UI::Notify("Cancelled value entry");
         return false;
@@ -88,17 +88,17 @@ bool GetKbEntry(float& val) {
 std::string GetKbEntryStr(const std::string& existingString) {
     std::string val;
     UI::Notify("Enter value");
-    GAMEPLAY::DISPLAY_ONSCREEN_KEYBOARD(UNK::_GET_CURRENT_LANGUAGE_ID() == 0, "FMMC_KEY_TIP8", "",
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "",
         existingString.c_str(), "", "", "", 64);
-    while (GAMEPLAY::UPDATE_ONSCREEN_KEYBOARD() == 0) {
+    while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }
-    if (!GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT()) {
+    if (!MISC::GET_ONSCREEN_KEYBOARD_RESULT()) {
         UI::Notify("Cancelled value entry");
         return {};
     }
 
-    std::string enteredVal = GAMEPLAY::GET_ONSCREEN_KEYBOARD_RESULT();
+    std::string enteredVal = MISC::GET_ONSCREEN_KEYBOARD_RESULT();
     if (enteredVal.empty()) {
         UI::Notify("Cancelled value entry");
         return {};
@@ -137,7 +137,7 @@ void UpdateEditMenu() {
     }
 
     std::string vehicleNameLabel = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    std::string vehicleName = UI::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
+    std::string vehicleName = HUD::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
     menu.Subtitle(fmt::format("{}", vehicleName));
 
     RTHE::CHandlingData* currentHandling = nullptr;
@@ -427,7 +427,7 @@ void UpdateLoadMenu() {
     }
 
     std::string vehicleNameLabel = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    std::string vehicleName = UI::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
+    std::string vehicleName = HUD::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
     menu.Subtitle(fmt::format("{}", vehicleName));
 
     // TODO: Filter option
