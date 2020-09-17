@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{71D4C2A8-9E78-47A8-A2B7-3FB2DE014D27}</ProjectGuid>
-    <RootNamespace>ProjectName</RootNamespace>
+    <RootNamespace>RTHandlingEditor</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>RTHandlingEditor</ProjectName>
   </PropertyGroup>
