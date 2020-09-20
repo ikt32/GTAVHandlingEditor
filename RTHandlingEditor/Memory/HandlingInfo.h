@@ -9,6 +9,14 @@ namespace RTHE {
         float z;
     };
 
+    class CAdvancedData {
+    public:
+        virtual ~CAdvancedData() = default;
+        int Slot;
+        int Index;
+        float Value;
+    };
+
     class CBaseSubHandlingData
     {
     public:
@@ -99,20 +107,63 @@ namespace RTHE {
     static_assert(offsetof(CHandlingData, AIHandling)    == 0x13C, "wrong offset");
     static_assert(offsetof(CHandlingData, m_subHandlingData) == 0x158, "wrong offset");
 
-    // CCarHandlingData: (@0?)
-    // vtable? (ptr)                           //0x0000
-    // fBackEndPopUpCarImpulseMult             //0x0008
-    // fBackEndPopUpBuildingImpulseMult        //0x000C
-    // fBackEndPopUpMaxDeltaSpeed              //0x0010
-    // fToeFront                               //0x0014
-    // fToeRear                                //0x0018
-    // fCamberFront                            //0x001C
-    // fCamberRear                             //0x0020
-    // fCastor                                 //0x0024
-    // fEngineResistance                       //0x0028
-    // ? -1.0                                  //0x002C
-    // ?  1.0                                  //0x0030
-    // ?  1.0                                  //0x0034
-    // ? 0x9E58B8A9                            //0x0038
-    // strAdvancedFlags                        //0x003C
+    class CCarHandlingData : public CBaseSubHandlingData {
+    public:
+        // vtable? (ptr)                                //0x0000
+        float fBackEndPopUpCarImpulseMult;              //0x0008
+        float fBackEndPopUpBuildingImpulseMult;         //0x000C
+        float fBackEndPopUpMaxDeltaSpeed;               //0x0010
+        float fToeFront;                                //0x0014
+        float fToeRear;                                 //0x0018
+        float fCamberFront;                             //0x001C
+        float fCamberRear;                              //0x0020
+        float fCastor;                                  //0x0024
+        float fEngineResistance;                        //0x0028
+        float fMaxDriveBiasTransfer;                    //0x002C // Seems to be ignored
+        float fJumpForceScale;                          //0x0030
+        float fUnk_0x034;                               //0x0034 // Always 1.0?
+        uint32_t fUnk_0x038;                            //0x0038 // Could be some hash? 0 when no strAdvancedFlags
+        uint32_t strAdvancedFlags;                      //0x003C
+        atArray<CAdvancedData*> pAdvancedData;          //0x0040
+    };
+
+    class CBoatHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
+
+    class CBikeHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
+
+    class CFlyingHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
+
+    class CVehicleWeaponHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
+
+    class CSubmarineHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
+
+    class CTrailerHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
+
+    class CSeaPlaneHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
+
+    class CSpecialFlightHandlingData : public CBaseSubHandlingData {
+    public:
+        // TODO
+    };
 }
