@@ -193,6 +193,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="HandlingItem.h" />
     <ClInclude Include="keyboard.h" />
+    <ClInclude Include="Memory\atArray.h" />
     <ClInclude Include="Memory\HandlingInfo.h" />
     <ClInclude Include="Memory\NativeMemory.hpp" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
