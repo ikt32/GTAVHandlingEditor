@@ -27,6 +27,7 @@
 #include "Util/StrUtil.h"
 #include "fmt/format.h"
 #include "Util/UI.h"
+#include "Compatibility.h"
 
 namespace fs = std::filesystem;
 
@@ -403,6 +404,7 @@ void onMenuClose() {
 }
 
 void main() {
+    setupCompatibility();
     mem::init();
     VExt::Init();
 
