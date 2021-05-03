@@ -147,6 +147,9 @@
     <ClInclude Include="Memory\atArray.h">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="..\thirdparty\GTAVHandlingReplacement\HandlingReplacement.h">
+      <Filter>thirdparty\HandlingReplacement</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">
@@ -173,10 +176,16 @@
     <Filter Include="thirdparty\simpleini">
       <UniqueIdentifier>{40514aba-5228-4536-8d1e-488f7d411f53}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\HandlingReplacement">
+      <UniqueIdentifier>{d6c16398-6193-4edb-8abe-d8da648398b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib">
       <Filter>ScriptHookV</Filter>
+    </Library>
+    <Library Include="..\thirdparty\GTAVHandlingReplacement\HandlingReplacement.lib">
+      <Filter>thirdparty\HandlingReplacement</Filter>
     </Library>
   </ItemGroup>
 </Project>

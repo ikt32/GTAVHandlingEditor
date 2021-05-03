@@ -1,10 +1,5 @@
 #include "script.h"
 
-#include "menu.h"
-
-#include "inc/natives.h"
-
-#include "fmt/format.h"
 #include "Memory/HandlingInfo.h"
 #include "Memory/VehicleExtensions.hpp"
 #include "ScriptUtils.h"
@@ -12,6 +7,11 @@
 #include "Util/StrUtil.h"
 #include "Util/UI.h"
 #include "Constants.h"
+
+#include <HandlingReplacement.h>
+#include <menu.h>
+#include <inc/natives.h>
+#include <fmt/format.h>
 
 extern VehicleExtensions g_ext;
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
@@ -21,6 +21,7 @@ void PromptSave(Vehicle vehicle);
 
 namespace {
 NativeMenu::Menu menu;
+bool editStock = true;
 }
 
 NativeMenu::Menu& GetMenu() {
@@ -148,6 +149,30 @@ void UpdateEditMenu() {
     if (currentHandling == nullptr) {
         menu.Option("Could not find handling pointer!");
         return;
+    }
+
+    void* handlingDataOrig = nullptr;
+    bool customHandling = false;
+    bool hrActive = false;
+    {
+        void* handlingDataReplace = nullptr;
+
+        if (HR_GetHandlingData(vehicle, &handlingDataOrig, &handlingDataReplace)) {
+            customHandling = true;
+            hrActive = true;
+        }
+    }
+
+    if (hrActive) {
+        menu.BoolOption("Edit original?", editStock,
+            { "HandlingReplacement is active. Check box to edit original data.",
+              "If active, new vehicle instances spawn with the applied changes, but the current instance does not update.",
+              "If not active, new vehicle instances spawn with the unedited original data.",
+              "Recommended to enable if HandlingReplacement is active. Remember to respawn after edits!"});
+    }
+
+    if (customHandling && editStock && handlingDataOrig != nullptr) {
+        currentHandling = reinterpret_cast<RTHE::CHandlingData*>(handlingDataOrig);
     }
 
     Utils::DrawCOMAndRollCenters(vehicle, currentHandling);
