@@ -3,6 +3,21 @@
 #include <cstdint>
 
 namespace RTHE {
+    enum eHandlingType
+    {
+        HANDLING_TYPE_BIKE,
+        HANDLING_TYPE_FLYING,
+        HANDLING_TYPE_VERTICAL_FLYING,
+        HANDLING_TYPE_BOAT,
+        HANDLING_TYPE_SEAPLANE,
+        HANDLING_TYPE_SUBMARINE,
+        HANDLING_TYPE_TRAIN,
+        HANDLING_TYPE_TRAILER,
+        HANDLING_TYPE_CAR,
+        HANDLING_TYPE_WEAPON,
+        HANDLING_TYPE_MAX_TYPES
+    };
+
     struct Vector3 {
         float x;
         float y;
@@ -17,13 +32,18 @@ namespace RTHE {
         float Value;
     };
 
-    class CBaseSubHandlingData
+    class CHandlingObject
     {
     public:
-        virtual ~CBaseSubHandlingData() = default;
-        virtual void* GetParser() = 0;
-        virtual int GetUnk() = 0;
-        virtual void ProcessOnLoad() = 0;
+        virtual ~CHandlingObject() = 0;
+        virtual void* parser_GetStructure() = 0; //ret rage::parStructure
+    };
+
+    class CBaseSubHandlingData : public CHandlingObject
+    {
+    public:
+        virtual eHandlingType GetHandlingType() = 0;
+        virtual void OnPostLoad() = 0;
     };
 
     class CHandlingData {
@@ -122,9 +142,9 @@ namespace RTHE {
         float fMaxDriveBiasTransfer;                    //0x002C // Seems to be ignored
         float fJumpForceScale;                          //0x0030
         float fUnk_0x034;                               //0x0034 // Always 1.0?
-        uint32_t fUnk_0x038;                            //0x0038 // Could be some hash? 0 when no strAdvancedFlags
+        uint32_t Unk_0x038;                             //0x0038 // Could be some hash? 0 when no strAdvancedFlags
         uint32_t strAdvancedFlags;                      //0x003C
-        atArray<CAdvancedData*> pAdvancedData;          //0x0040
+        atArray<CAdvancedData> pAdvancedData;          //0x0040
     };
 
     class CBoatHandlingData : public CBaseSubHandlingData {

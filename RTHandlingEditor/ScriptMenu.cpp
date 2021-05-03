@@ -435,6 +435,65 @@ void UpdateEditMenu() {
             })) {
         }
     }
+
+    {
+        for(uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
+            RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
+
+            if (subHandlingData) {
+                menu.Option("SubHandlingData found",
+                    { "Only CCarHandlingData supported currently." });
+
+                auto type = subHandlingData->GetHandlingType();
+                menu.Option(fmt::format("SHD[{}] {}", idx, type));
+
+                if (type == RTHE::HANDLING_TYPE_CAR) {
+                    RTHE::CCarHandlingData* carHandling = static_cast<RTHE::CCarHandlingData*>(subHandlingData);
+                    menu.FloatOptionCb("fBackEndPopUpCarImpulseMult", carHandling->fBackEndPopUpCarImpulseMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fBackEndPopUpBuildingImpulseMult", carHandling->fBackEndPopUpBuildingImpulseMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fBackEndPopUpMaxDeltaSpeed", carHandling->fBackEndPopUpMaxDeltaSpeed, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+
+                    menu.FloatOptionCb("fToeFront", carHandling->fToeFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fToeRear", carHandling->fToeRear, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fCamberFront", carHandling->fCamberFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fCamberRear", carHandling->fCamberRear, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fCastor", carHandling->fCastor, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fEngineResistance", carHandling->fEngineResistance, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fMaxDriveBiasTransfer", carHandling->fMaxDriveBiasTransfer, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fJumpForceScale", carHandling->fJumpForceScale, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    menu.FloatOptionCb("fUnk_0x034", carHandling->fUnk_0x034, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+
+                    {
+                        std::string strUnk_0x038_Flags = fmt::format("{:X}", carHandling->Unk_0x038);
+                        if (menu.Option(fmt::format("Unk_0x038: {}", strUnk_0x038_Flags))) {
+                            std::string newFlags = GetKbEntryStr(strUnk_0x038_Flags);
+                            SetFlags(carHandling->Unk_0x038, newFlags);
+                        }
+                    }
+
+                    {
+                        std::string strAdvancedFlags = fmt::format("{:X}", carHandling->strAdvancedFlags);
+                        if (menu.Option(fmt::format("strAdvancedFlags: {}", strAdvancedFlags))) {
+                            std::string newFlags = GetKbEntryStr(strAdvancedFlags);
+                            SetFlags(carHandling->strAdvancedFlags, newFlags);
+                        }
+                    }
+
+                    auto numAdvData = carHandling->pAdvancedData.GetCount();
+                    if (numAdvData > 0) {
+                        menu.Option(fmt::format("CAdvancedData found ({})", numAdvData));
+                    }
+
+                    for (uint16_t iAdv = 0; iAdv < carHandling->pAdvancedData.GetCount(); ++iAdv) {
+                        RTHE::CAdvancedData* advancedData = &carHandling->pAdvancedData.Get(iAdv);
+                        menu.IntOption(fmt::format("[{}] Slot", iAdv), advancedData->Slot, 0, 255);
+                        menu.IntOption(fmt::format("[{}] Index", iAdv), advancedData->Index, 0, 255);
+                        menu.FloatOptionCb(fmt::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f, GetKbEntry);
+                     }
+                }
+            }
+        }
+    }
 }
 
 bool onlyCurrent = true;
