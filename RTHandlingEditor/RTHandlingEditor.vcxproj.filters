@@ -57,6 +57,7 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="VehicleMod.cpp" />
+    <ClCompile Include="Compatibility.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -150,6 +151,7 @@
     <ClInclude Include="..\thirdparty\GTAVHandlingReplacement\HandlingReplacement.h">
       <Filter>thirdparty\HandlingReplacement</Filter>
     </ClInclude>
+    <ClInclude Include="Compatibility.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">
@@ -183,9 +185,6 @@
   <ItemGroup>
     <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib">
       <Filter>ScriptHookV</Filter>
-    </Library>
-    <Library Include="..\thirdparty\GTAVHandlingReplacement\HandlingReplacement.lib">
-      <Filter>thirdparty\HandlingReplacement</Filter>
     </Library>
   </ItemGroup>
 </Project>
