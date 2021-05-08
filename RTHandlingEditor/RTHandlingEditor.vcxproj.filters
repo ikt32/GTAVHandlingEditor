@@ -42,9 +42,6 @@
     <ClCompile Include="Util\MathExt.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
-    <ClCompile Include="Util\FileVersion.cpp">
-      <Filter>Utility</Filter>
-    </ClCompile>
     <ClCompile Include="Util\Paths.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -126,9 +123,6 @@
     </ClInclude>
     <ClInclude Include="Memory\Versions.h">
       <Filter>Memory</Filter>
-    </ClInclude>
-    <ClInclude Include="Util\FileVersion.h">
-      <Filter>Utility</Filter>
     </ClInclude>
     <ClInclude Include="Util\Paths.h">
       <Filter>Utility</Filter>
