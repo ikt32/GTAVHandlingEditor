@@ -152,6 +152,7 @@
       <Filter>thirdparty\HandlingReplacement</Filter>
     </ClInclude>
     <ClInclude Include="Compatibility.h" />
+    <ClInclude Include="Table.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">

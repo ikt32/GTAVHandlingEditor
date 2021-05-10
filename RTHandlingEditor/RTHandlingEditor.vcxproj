@@ -203,6 +203,7 @@
     <ClInclude Include="Memory\Versions.h" />
     <ClInclude Include="script.h" />
     <ClInclude Include="ScriptUtils.h" />
+    <ClInclude Include="Table.h" />
     <ClInclude Include="Util\FileVersion.h" />
     <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="Util\MathExt.h" />

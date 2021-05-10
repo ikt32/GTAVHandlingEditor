@@ -7,6 +7,7 @@
 #include "Util/StrUtil.h"
 #include "Util/UI.h"
 #include "Constants.h"
+#include "Table.h"
 
 #include <HandlingReplacement.h>
 #include <menu.h>
@@ -385,18 +386,98 @@ void UpdateEditMenu() {
     menu.IntOption("nMonetaryValue", currentHandling->nMonetaryValue, 0, 1000000, 1);
 
     {
+        bool show = false;
         std::string strModelFlags = fmt::format("{:X}", currentHandling->strModelFlags);
-        if (menu.Option(fmt::format("strModelFlags: {}", strModelFlags))) {
+        if (menu.OptionPlus(fmt::format("strModelFlags: {}", strModelFlags), {}, &show, nullptr, nullptr, "", {})) {
             std::string newFlags = GetKbEntryStr(strModelFlags);
             SetFlags(currentHandling->strModelFlags, newFlags);
+        }
+
+        std::vector<std::string> extra;
+        if (show) {
+            extra.push_back("See also https://eddlm.github.io/Handling-Tools/flags");
+            menu.OptionPlusPlus(extra, "Flags");
+
+            auto& f = currentHandling->strModelFlags;
+
+            STable modelFlagsTable{{
+                {SCell{"IS_VAN",            (f & 0x00000001)>0 }, SCell{"IS_BUS",         (f & 0x00000002)>0}, SCell{"IS_LOW",             (f & 0x00000004)>0}, SCell{"IS_BIG",                    (f & 0x00000008)>0}},
+                {SCell{"ABS_STD",           (f & 0x00000010)>0 }, SCell{"ABS_OPTION",     (f & 0x00000020)>0}, SCell{"ABS_ALT_STD",        (f & 0x00000040)>0}, SCell{"ABS_ALT_OPTION",            (f & 0x00000080)>0}},
+                {SCell{"NO_DOORS",          (f & 0x00000100)>0 }, SCell{"TANDEM_SEATS",   (f & 0x00000200)>0}, SCell{"SIT_IN_BOAT",        (f & 0x00000400)>0}, SCell{"HAS_TRACKS",                (f & 0x00000800)>0}},
+                {SCell{"NO_EXHAUST",        (f & 0x00001000)>0 }, SCell{"DOUBLE_EXHAUST", (f & 0x00002000)>0}, SCell{"NO1FPS_LOOK_BEHIND", (f & 0x00004000)>0}, SCell{"CAN_ENTER_IF_NO_DOOR",      (f & 0x00008000)>0}},
+                {SCell{"AXLE_F_TORSION",    (f & 0x00010000)>0 }, SCell{"AXLE_F_SOLID",   (f & 0x00020000)>0}, SCell{"AXLE_F_MCPHERSON",   (f & 0x00040000)>0}, SCell{"ATTACH_PED_TO_BODYSHELL",   (f & 0x00080000)>0}},
+                {SCell{"AXLE_R_TORSION",    (f & 0x00100000)>0 }, SCell{"AXLE_R_SOLID",   (f & 0x00200000)>0}, SCell{"AXLE_R_MCPHERSON",   (f & 0x00400000)>0}, SCell{"DONT_FORCE_GRND_CLEARANCE", (f & 0x00800000)>0}},
+                {SCell{"DONT_RENDER_STEER", (f & 0x01000000)>0 }, SCell{"NO_WHEEL_BURST", (f & 0x02000000)>0}, SCell{"INDESTRUCTIBLE",     (f & 0x04000000)>0}, SCell{"DOUBLE_FRONT_WHEELS",       (f & 0x08000000)>0}},
+                {SCell{"RC",                (f & 0x10000000)>0 }, SCell{"DOUBLE_RWHEELS", (f & 0x20000000)>0}, SCell{"MF_NO_WHEEL_BREAK",  (f & 0x40000000)>0}, SCell{"IS_HATCHBACK",              (f & 0x80000000)>0}},
+            }};
+
+            const uint32_t tableRows = 8;
+            const uint32_t rowCells = 4;
+
+            const UI::SColor enabled =  {   0, 255,   0, 255 };
+            const UI::SColor disabled = { 127, 127, 127, 255 };
+
+            const float cellWidth  = 0.100f;
+            const float cellHeight = 0.025f;
+
+            for (uint32_t row = 0; row < tableRows; ++row) {
+                for (uint32_t cell = 0; cell < rowCells; ++cell) {
+                    auto color = modelFlagsTable.Cells[row][cell].Enable ? enabled : disabled;
+                    UI::ShowText(0.30f + cell * cellWidth, 0.30f + row * cellHeight, 0.25f,
+                        modelFlagsTable.Cells[row][cell].Contents,
+                        color);
+                }
+            }
+
+            GRAPHICS::DRAW_RECT(0.5f, 0.4f, cellWidth * rowCells, cellHeight * tableRows, 0, 0, 0, 91, false);
         }
     }
 
     {
+        bool show = false;
         std::string strHandlingFlags = fmt::format("{:X}", currentHandling->strHandlingFlags);
-        if (menu.Option(fmt::format("strHandlingFlags: {}", strHandlingFlags))) {
+        if (menu.OptionPlus(fmt::format("strHandlingFlags: {}", strHandlingFlags), {}, &show, nullptr, nullptr, "", {})) {
             std::string newFlags = GetKbEntryStr(strHandlingFlags);
             SetFlags(currentHandling->strHandlingFlags, newFlags);
+        }
+
+        std::vector<std::string> extra;
+        if (show) {
+            extra.push_back("See also https://eddlm.github.io/Handling-Tools/flags");
+            menu.OptionPlusPlus(extra, "Flags");
+
+            auto& f = currentHandling->strHandlingFlags;
+
+            STable modelFlagsTable{ {
+                {SCell{"SMOOTH_COMPRESN",        (f & 0x00000001) > 0 }, SCell{"REDUCED_MOD_MASS",         (f & 0x00000002) > 0}, SCell{"?",                                    (f & 0x00000004) > 0}, SCell{"_INVERT_GRIP",      (f & 0x00000008) > 0}},
+                {SCell{"NO_HANDBRAKE",           (f & 0x00000010) > 0 }, SCell{"STEER_REARWHEELS",         (f & 0x00000020) > 0}, SCell{"HB_REARWHEEL_STEER",                   (f & 0x00000040) > 0}, SCell{"STEER_ALL_WHEELS",  (f & 0x00000080) > 0}},
+                {SCell{"FREEWHEEL_NO_GAS",       (f & 0x00000100) > 0 }, SCell{"NO_REVERSE",               (f & 0x00000200) > 0}, SCell{"?",                                    (f & 0x00000400) > 0}, SCell{"STEER_NO_WHEELS",   (f & 0x00000800) > 0}},
+                {SCell{"CVT",                    (f & 0x00001000) > 0 }, SCell{"ALT_EXT_WHEEL_BOUNDS_BEH", (f & 0x00002000) > 0}, SCell{"DONT_RAISE_BOUNDS_AT_SPEED",           (f & 0x00004000) > 0}, SCell{"?",                 (f & 0x00008000) > 0}},
+                {SCell{"LESS_SNOW_SINK",         (f & 0x00010000) > 0 }, SCell{"TYRES_CAN_CLI",            (f & 0x00020000) > 0}, SCell{"?",                                    (f & 0x00040000) > 0}, SCell{"?",                 (f & 0x00080000) > 0}},
+                {SCell{"OFFROAD_ABILITY",        (f & 0x00100000) > 0 }, SCell{"OFFROAD_ABILITY2",         (f & 0x00200000) > 0}, SCell{"HF_TYRES_RAISE_SIDE_IMPACT_THRESHOLD", (f & 0x00400000) > 0}, SCell{"_INCREASE_GRAVITY", (f & 0x00800000) > 0}},
+                {SCell{"ENABLE_LEAN",            (f & 0x01000000) > 0 }, SCell{"?",                        (f & 0x02000000) > 0}, SCell{"HEAVYARMOUR",                          (f & 0x04000000) > 0}, SCell{"ARMOURED",          (f & 0x08000000) > 0}},
+                {SCell{"SELF_RIGHTING_IN_WATER", (f & 0x10000000) > 0 }, SCell{"IMPROVED_RIGHTING_FORCE",  (f & 0x20000000) > 0}, SCell{"?",                                    (f & 0x40000000) > 0}, SCell{"?",                 (f & 0x80000000) > 0}},
+            } };
+
+            const uint32_t tableRows = 8;
+            const uint32_t rowCells = 4;
+
+            const UI::SColor enabled = { 0, 255,   0, 255 };
+            const UI::SColor disabled = { 127, 127, 127, 255 };
+
+            const float cellWidth = 0.100f;
+            const float cellHeight = 0.025f;
+
+            for (uint32_t row = 0; row < tableRows; ++row) {
+                for (uint32_t cell = 0; cell < rowCells; ++cell) {
+                    auto color = modelFlagsTable.Cells[row][cell].Enable ? enabled : disabled;
+                    UI::ShowText(0.30f + cell * cellWidth, 0.30f + row * cellHeight, 0.25f,
+                        modelFlagsTable.Cells[row][cell].Contents,
+                        color);
+                }
+            }
+
+            GRAPHICS::DRAW_RECT(0.5f, 0.4f, cellWidth * rowCells, cellHeight * tableRows, 0, 0, 0, 91, false);
         }
     }
 
@@ -472,10 +553,50 @@ void UpdateEditMenu() {
                     }
 
                     {
+                        bool show = false;
                         std::string strAdvancedFlags = fmt::format("{:X}", carHandling->strAdvancedFlags);
-                        if (menu.Option(fmt::format("strAdvancedFlags: {}", strAdvancedFlags))) {
+                        if (menu.OptionPlus(fmt::format("strAdvancedFlags: {}", strAdvancedFlags), {}, &show, nullptr, nullptr, "", {})) {
                             std::string newFlags = GetKbEntryStr(strAdvancedFlags);
                             SetFlags(carHandling->strAdvancedFlags, newFlags);
+                        }
+
+                        std::vector<std::string> extra;
+                        if (show) {
+                            extra.push_back("See also https://eddlm.github.io/Handling-Tools/flags");
+                            menu.OptionPlusPlus(extra, "Flags");
+
+                            auto& f = currentHandling->strHandlingFlags;
+
+                            STable modelFlagsTable{ {
+                                {SCell{"?",                         (f & 0x00000001) > 0 }, SCell{"?",                 (f & 0x00000002) > 0}, SCell{"?",                         (f & 0x00000004) > 0}, SCell{"?",                                 (f & 0x00000008) > 0}},
+                                {SCell{"?",                         (f & 0x00000010) > 0 }, SCell{"?",                 (f & 0x00000020) > 0}, SCell{"?",                         (f & 0x00000040) > 0}, SCell{"?",                                 (f & 0x00000080) > 0}},
+                                {SCell{"?",                         (f & 0x00000100) > 0 }, SCell{"?",                 (f & 0x00000200) > 0}, SCell{"?",                         (f & 0x00000400) > 0}, SCell{"?",                                 (f & 0x00000800) > 0}},
+                                {SCell{"?",                         (f & 0x00001000) > 0 }, SCell{"?",                 (f & 0x00002000) > 0}, SCell{"?",                         (f & 0x00004000) > 0}, SCell{"?",                                 (f & 0x00008000) > 0}},
+                                {SCell{"_TRACTION_CONTROL",         (f & 0x00010000) > 0 }, SCell{"_HOLD_GEAR_LONGER", (f & 0x00020000) > 0}, SCell{"_STIFFER_SPRING_SPEED",     (f & 0x00040000) > 0}, SCell{"_FAKE_WHEELSPIN",                   (f & 0x00080000) > 0}},
+                                {SCell{"?",                         (f & 0x00100000) > 0 }, SCell{"?",                 (f & 0x00200000) > 0}, SCell{"_SMOOTH_REV_1ST",           (f & 0x00400000) > 0}, SCell{"?",                                 (f & 0x00800000) > 0}},
+                                {SCell{"?",                         (f & 0x01000000) > 0 }, SCell{"?",                 (f & 0x02000000) > 0}, SCell{"_IGNORE_TUNED_WHEELS_CLIP", (f & 0x04000000) > 0}, SCell{"_OPENWHEEL_DOWNFORCE_NO_CURBBOOST", (f & 0x08000000) > 0}},
+                                {SCell{"_DECREASE_BODYROLL_TUNING", (f & 0x10000000) > 0 }, SCell{"?",                 (f & 0x20000000) > 0}, SCell{"?",                         (f & 0x40000000) > 0}, SCell{"?",                                 (f & 0x80000000) > 0}},
+                            } };
+
+                            const uint32_t tableRows = 8;
+                            const uint32_t rowCells = 4;
+
+                            const UI::SColor enabled = { 0, 255,   0, 255 };
+                            const UI::SColor disabled = { 127, 127, 127, 255 };
+
+                            const float cellWidth = 0.100f;
+                            const float cellHeight = 0.025f;
+
+                            for (uint32_t row = 0; row < tableRows; ++row) {
+                                for (uint32_t cell = 0; cell < rowCells; ++cell) {
+                                    auto color = modelFlagsTable.Cells[row][cell].Enable ? enabled : disabled;
+                                    UI::ShowText(0.30f + cell * cellWidth, 0.30f + row * cellHeight, 0.25f,
+                                        modelFlagsTable.Cells[row][cell].Contents,
+                                        color);
+                                }
+                            }
+
+                            GRAPHICS::DRAW_RECT(0.5f, 0.4f, cellWidth * rowCells, cellHeight * tableRows, 0, 0, 0, 91, false);
                         }
                     }
 

@@ -9,9 +9,13 @@ namespace {
 }
 
 void UI::ShowText(float x, float y, float scale, const std::string& text) {
+    UI::ShowText(x, y, scale, text, { 255, 255, 255, 255 });
+}
+
+void UI::ShowText(float x, float y, float scale, const std::string& text, SColor color) {
     HUD::SET_TEXT_FONT(0);
     HUD::SET_TEXT_SCALE(scale, scale);
-    HUD::SET_TEXT_COLOUR(255, 255, 255, 255);
+    HUD::SET_TEXT_COLOUR(color.R, color.G, color.B, color.A);
     HUD::SET_TEXT_WRAP(0.0, 1.0);
     HUD::SET_TEXT_CENTRE(0);
     HUD::SET_TEXT_OUTLINE();
