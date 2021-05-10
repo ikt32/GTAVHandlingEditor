@@ -122,7 +122,11 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
     GetAttribute(itemNode, "vecInertiaMultiplier", "y", handlingDataItem.vecInertiaMultiplierY);
     GetAttribute(itemNode, "vecInertiaMultiplier", "z", handlingDataItem.vecInertiaMultiplierZ);
     GetAttribute(itemNode, "fDriveBiasFront", "value", handlingDataItem.fDriveBiasFront);
-    GetAttribute(itemNode, "nInitialDriveGears", "value", handlingDataItem.nInitialDriveGears);
+
+    uint32_t initialDriveGears = 0;
+    GetAttribute(itemNode, "nInitialDriveGears", "value", initialDriveGears);
+    handlingDataItem.nInitialDriveGears = static_cast<uint8_t>(initialDriveGears);
+
     GetAttribute(itemNode, "fInitialDriveForce", "value", handlingDataItem.fInitialDriveForce);
     GetAttribute(itemNode, "fDriveInertia", "value", handlingDataItem.fDriveInertia);
     GetAttribute(itemNode, "fClutchChangeRateScaleUpShift", "value", handlingDataItem.fClutchChangeRateScaleUpShift);

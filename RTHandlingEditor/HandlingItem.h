@@ -19,7 +19,7 @@ struct CHandlingDataItem {
     float vecInertiaMultiplierY;
     float vecInertiaMultiplierZ;
     float fDriveBiasFront;
-    int   nInitialDriveGears;
+    uint8_t nInitialDriveGears;
     float fInitialDriveForce;
     float fDriveInertia;
     float fClutchChangeRateScaleUpShift;

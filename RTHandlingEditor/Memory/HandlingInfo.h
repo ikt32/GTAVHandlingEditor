@@ -63,7 +63,10 @@ namespace RTHE {
         float fSubmergedRatio_;                 //0x0044
         float fDriveBiasFront;                  //0x0048
         float fDriveBiasRear;                   //0x004C // fDriveBiasRear
-        int nInitialDriveGears;                 //0x0050
+        uint8_t nInitialDriveGears;             //0x0050
+        uint8_t nPad0x51;                       //0x0051
+        uint8_t nPad0x52;                       //0x0052
+        uint8_t nPad0x53;                       //0x0053
         float fDriveInertia;                    //0x0054
         float fClutchChangeRateScaleUpShift;    //0x0058
         float fClutchChangeRateScaleDownShift;  //0x005C

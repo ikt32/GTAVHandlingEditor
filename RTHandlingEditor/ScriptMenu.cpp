@@ -242,7 +242,7 @@ void UpdateEditMenu() {
 
     //menu.FloatOptionCb("fAcceleration", currentHandling->fAcceleration, -1000.0f, 1000.0f, 0.01f);
 
-    menu.IntOption("nInitialDriveGears", currentHandling->nInitialDriveGears, 1, 10, 1);
+    menu.UInt8Option("nInitialDriveGears", currentHandling->nInitialDriveGears, 1u, 10u, 1u);
     menu.FloatOptionCb("fInitialDriveForce", currentHandling->fInitialDriveForce, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
     menu.FloatOptionCb("fDriveInertia", currentHandling->fDriveInertia, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
 
