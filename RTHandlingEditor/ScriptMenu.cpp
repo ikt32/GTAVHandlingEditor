@@ -148,7 +148,7 @@ void DrawRect(float x, float y, float w, float h, UI::SColor color) {
 }
 
 void DrawFlagsTable(const STable& flagsTable, uint8_t selectedIndex) {
-    const UI::SColor enabledBg =  {  91, 255,  91, 219 };
+    const UI::SColor enabledBg =  {   0, 128,   0, 219 };
     const UI::SColor disabledBg = {   0,   0,   0, 169 };
 
     const UI::SColor enabledFg =  {   0,   0,   0, 255 };
@@ -189,8 +189,8 @@ void DrawFlagsTable(const STable& flagsTable, uint8_t selectedIndex) {
 
             auto colorBg = flagsTable.Cells[row][cell].Enable ? enabledBg : disabledBg;
             if (selected) {
-                const UI::SColor enabledBg =  { 255, 255,  255, 219 };
-                const UI::SColor disabledBg = {   0,   0,    0, 255 };
+                const UI::SColor enabledBg =  {  63, 255,   63, 255 };
+                const UI::SColor disabledBg = { 107, 107,  107, 255 };
                 colorBg = flagsTable.Cells[row][cell].Enable ? enabledBg : disabledBg;
             }
             DrawRect(pX + cellWidthBg / 2.0f, pY + cellHeightBg / 2.0f,
