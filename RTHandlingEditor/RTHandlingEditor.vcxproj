@@ -194,6 +194,7 @@
     <ClInclude Include="..\thirdparty\tinyxml2\tinyxml2.h" />
     <ClInclude Include="Compatibility.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="HandlingFlags.h" />
     <ClInclude Include="HandlingItem.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="Memory\atArray.h" />
