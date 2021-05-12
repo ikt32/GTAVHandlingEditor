@@ -571,15 +571,15 @@ void UpdateEditMenu() {
                     menu.FloatOptionCb("fEngineResistance", carHandling->fEngineResistance, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
                     menu.FloatOptionCb("fMaxDriveBiasTransfer", carHandling->fMaxDriveBiasTransfer, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
                     menu.FloatOptionCb("fJumpForceScale", carHandling->fJumpForceScale, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fUnk_0x034", carHandling->fUnk_0x034, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    //menu.FloatOptionCb("fUnk_0x034", carHandling->fUnk_0x034, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
 
-                    {
-                        std::string strUnk_0x038_Flags = fmt::format("{:X}", carHandling->Unk_0x038);
-                        if (menu.Option(fmt::format("Unk_0x038: {}", strUnk_0x038_Flags))) {
-                            std::string newFlags = GetKbEntryStr(strUnk_0x038_Flags);
-                            SetFlags(carHandling->Unk_0x038, newFlags);
-                        }
-                    }
+                    //{
+                    //    std::string strUnk_0x038_Flags = fmt::format("{:X}", carHandling->Unk_0x038);
+                    //    if (menu.Option(fmt::format("Unk_0x038: {}", strUnk_0x038_Flags))) {
+                    //        std::string newFlags = GetKbEntryStr(strUnk_0x038_Flags);
+                    //        SetFlags(carHandling->Unk_0x038, newFlags);
+                    //    }
+                    //}
 
                     OptionFlags("strAdvancedFlags", AdvancedFlags, carHandling->strAdvancedFlags, advancedFlagsIndex);
 

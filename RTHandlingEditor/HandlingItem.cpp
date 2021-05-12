@@ -351,8 +351,6 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
                 InsertElement(subHandlingDataItem, "fEngineResistance", carHandlingData.fEngineResistance);
                 InsertElement(subHandlingDataItem, "fMaxDriveBiasTransfer", carHandlingData.fMaxDriveBiasTransfer);
                 InsertElement(subHandlingDataItem, "fJumpForceScale", carHandlingData.fJumpForceScale);
-                //InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.fUnk_0x034);
-                //InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.Unk_0x038);
                 InsertElement(subHandlingDataItem, "strAdvancedFlags", fmt::format("{:08X}", carHandlingData.strAdvancedFlags).c_str());
                 //InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.pAdvancedData);
 
