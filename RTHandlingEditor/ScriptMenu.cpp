@@ -21,7 +21,7 @@ extern VehicleExtensions g_ext;
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
 
 void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataItem);
-void PromptSave(Vehicle vehicle);
+void PromptSave(Vehicle vehicle, Hash handlingNameHash);
 
 namespace {
 NativeMenu::Menu menu;
@@ -52,13 +52,19 @@ void UpdateMainMenu() {
         if (menu.Option("Respawn vehicle")) {
             Utils::RespawnVehicle(vehicle, playerPed);
         }
-    }
-    
-    menu.MenuOption("Load handling", "LoadMenu");
 
-    if (menu.Option("Save")) {
-        PromptSave(vehicle);
+        menu.MenuOption("Load handling", "LoadMenu");
+
+        if (menu.Option("Save")) {
+            RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(g_ext.GetHandlingPtr(vehicle));
+
+            PromptSave(vehicle, currentHandling->NameHash);
+        }
     }
+    else {
+        menu.Option("Unavailable", { "Only available while in a vehicle." });
+    }
+
 }
 
 template <typename T>
@@ -255,8 +261,8 @@ void UpdateEditMenu() {
     Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
     if (!ENTITY::DOES_ENTITY_EXIST(vehicle)) {
-        menu.Subtitle("Not in a vehicle");
-        menu.Option("Not in a vehicle");
+        menu.Subtitle("Unavailable");
+        menu.Option("Unavailable", { "Only available while in a vehicle." });
         return;
     }
 
@@ -613,8 +619,8 @@ void UpdateLoadMenu() {
     Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
     if (!ENTITY::DOES_ENTITY_EXIST(vehicle)) {
-        menu.Subtitle("Not in a vehicle");
-        menu.Option("Not in a vehicle");
+        menu.Subtitle("Unavailable");
+        menu.Option("Unavailable", { "Only available while in a vehicle." });
         return;
     }
 

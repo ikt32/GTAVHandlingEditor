@@ -28,6 +28,7 @@
 #include "fmt/format.h"
 #include "Util/UI.h"
 #include "Compatibility.h"
+#include "Util/AddonSpawnerCache.h"
 
 namespace fs = std::filesystem;
 
@@ -362,9 +363,30 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
     return handlingDataItem;
 }
 
-void PromptSave(Vehicle vehicle) {
-    UI::Notify("Enter handling name");
-    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
+    // Find out handling name.
+    std::string autoHandlingName;
+
+    auto modelNamesCache = ASCache::Get();
+    auto foundNameIt = modelNamesCache.find(handlingNameHash);
+    auto foundModelNameIt = modelNamesCache.find(ENTITY::GET_ENTITY_MODEL(vehicle));
+    bool found = false;
+    if (foundNameIt != modelNamesCache.end()) {
+        autoHandlingName = foundNameIt->second;
+        found = true;
+    }
+    else if (foundModelNameIt != modelNamesCache.end()){
+        // handling hash doesn't correspond to any model, so try with the modelName.
+        autoHandlingName = foundModelNameIt->second;
+    }
+
+    std::string handlingNameMessage = "Enter handling name.";
+    if (!found && !autoHandlingName.empty()) {
+        handlingNameMessage += " This is a guess. Check and fix if needed.";
+    }
+
+    UI::Notify(handlingNameMessage);
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", autoHandlingName.c_str(), "", "", "", 64);
     while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }
@@ -380,7 +402,7 @@ void PromptSave(Vehicle vehicle) {
     }
 
     UI::Notify("Enter file name");
-    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", "", "", "", "", 64);
+    MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", autoHandlingName.c_str(), "", "", "", 64);
     while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }

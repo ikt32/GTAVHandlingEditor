@@ -58,6 +58,9 @@
     </ClCompile>
     <ClCompile Include="VehicleMod.cpp" />
     <ClCompile Include="Compatibility.cpp" />
+    <ClCompile Include="Util\AddonSpawnerCache.cpp">
+      <Filter>Utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -155,6 +158,9 @@
     <ClInclude Include="Table.h" />
     <ClInclude Include="HandlingFlags.h" />
     <ClInclude Include="AdvancedDataNames.h" />
+    <ClInclude Include="Util\AddonSpawnerCache.h">
+      <Filter>Utility</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">

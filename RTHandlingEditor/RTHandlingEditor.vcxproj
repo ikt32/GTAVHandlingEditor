@@ -165,6 +165,7 @@
     <ClCompile Include="script.cpp" />
     <ClCompile Include="ScriptMenu.cpp" />
     <ClCompile Include="ScriptUtils.cpp" />
+    <ClCompile Include="Util\AddonSpawnerCache.cpp" />
     <ClCompile Include="Util\FileVersion.cpp" />
     <ClCompile Include="Util\Logger.cpp" />
     <ClCompile Include="Util\MathExt.cpp" />
@@ -206,6 +207,7 @@
     <ClInclude Include="script.h" />
     <ClInclude Include="ScriptUtils.h" />
     <ClInclude Include="Table.h" />
+    <ClInclude Include="Util\AddonSpawnerCache.h" />
     <ClInclude Include="Util\FileVersion.h" />
     <ClInclude Include="Util\Logger.hpp" />
     <ClInclude Include="Util\MathExt.h" />
