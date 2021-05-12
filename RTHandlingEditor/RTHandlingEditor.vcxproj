@@ -192,6 +192,7 @@
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h" />
     <ClInclude Include="..\thirdparty\simpleini\SimpleIni.h" />
     <ClInclude Include="..\thirdparty\tinyxml2\tinyxml2.h" />
+    <ClInclude Include="AdvancedDataNames.h" />
     <ClInclude Include="Compatibility.h" />
     <ClInclude Include="Constants.h" />
     <ClInclude Include="HandlingFlags.h" />

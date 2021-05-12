@@ -8,13 +8,14 @@
 #include "Util/UI.h"
 #include "Constants.h"
 #include "Table.h"
+#include "HandlingFlags.h"
+#include "AdvancedDataNames.h"
 
 #include <HandlingReplacement.h>
 #include <menu.h>
 #include <menukeyboard.h>
 #include <inc/natives.h>
 #include <fmt/format.h>
-#include "HandlingFlags.h"
 
 extern VehicleExtensions g_ext;
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
@@ -589,7 +590,11 @@ void UpdateEditMenu() {
 
                     for (uint16_t iAdv = 0; iAdv < carHandling->pAdvancedData.GetCount(); ++iAdv) {
                         RTHE::CAdvancedData* advancedData = &carHandling->pAdvancedData.Get(iAdv);
-                        menu.IntOption(fmt::format("[{}] Slot", iAdv), advancedData->Slot, 0, 255);
+
+                        std::string slotName = AdvancedDataSlotIdName[advancedData->Slot];
+                        menu.IntOption(fmt::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1,
+                            { fmt::format("Slot ID name: {}", slotName) });
+                        
                         menu.IntOption(fmt::format("[{}] Index", iAdv), advancedData->Index, 0, 255);
                         menu.FloatOptionCb(fmt::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f, GetKbEntry);
                      }

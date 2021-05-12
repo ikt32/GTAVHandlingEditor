@@ -154,6 +154,7 @@
     <ClInclude Include="Compatibility.h" />
     <ClInclude Include="Table.h" />
     <ClInclude Include="HandlingFlags.h" />
+    <ClInclude Include="AdvancedDataNames.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">
