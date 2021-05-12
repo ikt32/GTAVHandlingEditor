@@ -3,8 +3,8 @@
 #define STR(x) STR_HELPER(x)
 
 #define VERSION_MAJOR 2
-#define VERSION_MINOR 0
-#define VERSION_PATCH 1
+#define VERSION_MINOR 1
+#define VERSION_PATCH 0
 //#define VERSION_LABEL "beta2"
 
 #ifdef VERSION_LABEL
