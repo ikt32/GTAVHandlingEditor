@@ -298,9 +298,9 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     InsertElement(itemNode, "nMonetaryValue", handlingDataItem.nMonetaryValue);
 
     // flags
-    InsertElement(itemNode, "strModelFlags", fmt::format("{:X}", handlingDataItem.strModelFlags).c_str());
-    InsertElement(itemNode, "strHandlingFlags", fmt::format("{:X}", handlingDataItem.strHandlingFlags).c_str());
-    InsertElement(itemNode, "strDamageFlags", fmt::format("{:X}", handlingDataItem.strDamageFlags).c_str());
+    InsertElement(itemNode, "strModelFlags", fmt::format("{:08X}", handlingDataItem.strModelFlags).c_str());
+    InsertElement(itemNode, "strHandlingFlags", fmt::format("{:08X}", handlingDataItem.strHandlingFlags).c_str());
+    InsertElement(itemNode, "strDamageFlags", fmt::format("{:08X}", handlingDataItem.strDamageFlags).c_str());
 
     // joaat
     std::string AIHandling;
@@ -322,7 +322,57 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     }
     InsertElement(itemNode, "AIHandling", AIHandling.c_str());
 
-    InsertElementSubHandlingNULL(itemNode);
+    logger.Write(DEBUG, fmt::format("SubHandlingData"));
+    logger.Write(DEBUG, fmt::format("{} SHDs", handlingDataItem.subHandlingData.size()));
+    if (handlingDataItem.subHandlingData.size() == 0) {
+        InsertElementSubHandlingNULL(itemNode);
+    }
+    else {
+        tinyxml2::XMLElement* shdElement = itemNode->GetDocument()->NewElement("SubHandlingData");
+        for (size_t i = 0; i < handlingDataItem.subHandlingData.size(); ++i) {
+            auto type = handlingDataItem.subHandlingData[i].HandlingType;
+            logger.Write(DEBUG, fmt::format("[{}] Type: {}", i, type));
+
+            if (type == RTHE::HANDLING_TYPE_CAR) {
+                auto carHandlingData = handlingDataItem.subHandlingData[i];
+
+                // 1
+                tinyxml2::XMLElement* subHandlingDataItem = itemNode->GetDocument()->NewElement("Item");
+                subHandlingDataItem->SetAttribute("type", "CCarHandlingData");
+
+                InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.fBackEndPopUpCarImpulseMult);
+                InsertElement(subHandlingDataItem, "fBackEndPopUpBuildingImpulseMult", carHandlingData.fBackEndPopUpBuildingImpulseMult);
+                InsertElement(subHandlingDataItem, "fBackEndPopUpMaxDeltaSpeed", carHandlingData.fBackEndPopUpMaxDeltaSpeed);
+                InsertElement(subHandlingDataItem, "fToeFront", carHandlingData.fToeFront);
+                InsertElement(subHandlingDataItem, "fToeRear", carHandlingData.fToeRear);
+                InsertElement(subHandlingDataItem, "fCamberFront", carHandlingData.fCamberFront);
+                InsertElement(subHandlingDataItem, "fCamberRear", carHandlingData.fCamberRear);
+                InsertElement(subHandlingDataItem, "fCastor", carHandlingData.fCastor);
+                InsertElement(subHandlingDataItem, "fEngineResistance", carHandlingData.fEngineResistance);
+                InsertElement(subHandlingDataItem, "fMaxDriveBiasTransfer", carHandlingData.fMaxDriveBiasTransfer);
+                InsertElement(subHandlingDataItem, "fJumpForceScale", carHandlingData.fJumpForceScale);
+                //InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.fUnk_0x034);
+                //InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.Unk_0x038);
+                InsertElement(subHandlingDataItem, "strAdvancedFlags", fmt::format("{:08X}", carHandlingData.strAdvancedFlags).c_str());
+                //InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.pAdvancedData);
+
+                shdElement->InsertEndChild(subHandlingDataItem);
+
+                // TODO: Figure out why there are 2 additional things for cars, + if they're required.
+                // 2
+                subHandlingDataItem = itemNode->GetDocument()->NewElement("Item");
+                subHandlingDataItem->SetAttribute("type", "NULL");
+                shdElement->InsertEndChild(subHandlingDataItem);
+
+                // 3
+                subHandlingDataItem = itemNode->GetDocument()->NewElement("Item");
+                subHandlingDataItem->SetAttribute("type", "NULL");
+                shdElement->InsertEndChild(subHandlingDataItem);
+
+            }
+        }
+        itemNode->InsertEndChild(shdElement);
+    }
 
     err = doc.SaveFile(targetFile.c_str());
 

@@ -1,7 +1,31 @@
 #pragma once
+#include "Memory/HandlingInfo.h"
 #include <string>
+#include <vector>
 
 namespace RTHE {
+struct CBaseSubHandlingDataItem {
+    eHandlingType HandlingType;
+};
+class CCarHandlingDataItem : public CBaseSubHandlingDataItem {
+public:
+    float fBackEndPopUpCarImpulseMult;
+    float fBackEndPopUpBuildingImpulseMult;
+    float fBackEndPopUpMaxDeltaSpeed;
+    float fToeFront;
+    float fToeRear;
+    float fCamberFront;
+    float fCamberRear;
+    float fCastor;
+    float fEngineResistance;
+    float fMaxDriveBiasTransfer;
+    float fJumpForceScale;
+    float fUnk_0x034;
+    uint32_t Unk_0x038;
+    uint32_t strAdvancedFlags;
+    // TODO: std::vector<CAdvancedDataItem> pAdvancedData;
+};
+
 struct CHandlingDataItem {
     struct MetaData {
         std::string fileName;
@@ -62,6 +86,7 @@ struct CHandlingDataItem {
     uint32_t strHandlingFlags;       // hex
     uint32_t strDamageFlags;         // hex
     uint32_t AIHandling;             // joaat hash
+    std::vector<CCarHandlingDataItem> subHandlingData; // TODO: CBaseSubHandlingData
 };
 
 // Returns {} on failure

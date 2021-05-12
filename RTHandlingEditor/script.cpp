@@ -165,6 +165,8 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
     currentHandling->strModelFlags = handlingDataItem.strModelFlags;
     currentHandling->strHandlingFlags = handlingDataItem.strHandlingFlags;
     currentHandling->strDamageFlags = handlingDataItem.strDamageFlags;
+
+    // TODO: Load subhandlingdata
 }
 
 void UpdateHandlingDataItems() {
@@ -328,7 +330,34 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     handlingDataItem.AIHandling = currentHandling->AIHandling;
 
-    // TODO: Extra handling data stuff
+    for (uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
+        RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
+        logger.Write(DEBUG, fmt::format("SHD[{}] {}", idx, fmt::ptr(subHandlingData)));
+        if (subHandlingData && subHandlingData->GetHandlingType() == RTHE::eHandlingType::HANDLING_TYPE_CAR) {
+            logger.Write(DEBUG, fmt::format("SHD[{}] Type: CCarHandlingData", idx));
+
+            RTHE::CCarHandlingData* carHandlingData = reinterpret_cast<RTHE::CCarHandlingData *>(subHandlingData);
+            RTHE::CCarHandlingDataItem carHandlingDataItem;
+            carHandlingDataItem.HandlingType = RTHE::eHandlingType::HANDLING_TYPE_CAR;
+            carHandlingDataItem.fBackEndPopUpCarImpulseMult      = carHandlingData->fBackEndPopUpCarImpulseMult     ;
+            carHandlingDataItem.fBackEndPopUpBuildingImpulseMult = carHandlingData->fBackEndPopUpBuildingImpulseMult;
+            carHandlingDataItem.fBackEndPopUpMaxDeltaSpeed       = carHandlingData->fBackEndPopUpMaxDeltaSpeed      ;
+            carHandlingDataItem.fToeFront                        = carHandlingData->fToeFront                       ;
+            carHandlingDataItem.fToeRear                         = carHandlingData->fToeRear                        ;
+            carHandlingDataItem.fCamberFront                     = carHandlingData->fCamberFront                    ;
+            carHandlingDataItem.fCamberRear                      = carHandlingData->fCamberRear                     ;
+            carHandlingDataItem.fCastor                          = carHandlingData->fCastor                         ;
+            carHandlingDataItem.fEngineResistance                = carHandlingData->fEngineResistance               ;
+            carHandlingDataItem.fMaxDriveBiasTransfer            = carHandlingData->fMaxDriveBiasTransfer           ;
+            carHandlingDataItem.fJumpForceScale                  = carHandlingData->fJumpForceScale                 ;
+            //float fUnk_0x034;
+            //uint32_t Unk_0x038;
+            carHandlingDataItem.strAdvancedFlags                 = carHandlingData->strAdvancedFlags;
+            // TODO: atArray<CAdvancedData> pAdvancedData;
+
+            handlingDataItem.subHandlingData.push_back(carHandlingDataItem);
+        }
+    }
 
     return handlingDataItem;
 }
