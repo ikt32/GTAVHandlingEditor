@@ -352,7 +352,21 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
                 InsertElement(subHandlingDataItem, "fMaxDriveBiasTransfer", carHandlingData.fMaxDriveBiasTransfer);
                 InsertElement(subHandlingDataItem, "fJumpForceScale", carHandlingData.fJumpForceScale);
                 InsertElement(subHandlingDataItem, "strAdvancedFlags", fmt::format("{:08X}", carHandlingData.strAdvancedFlags).c_str());
-                //InsertElement(subHandlingDataItem, "fBackEndPopUpCarImpulseMult", carHandlingData.pAdvancedData);
+
+                if (carHandlingData.pAdvancedData.size() > 0) {
+                    auto advancedDataElement = subHandlingDataItem->GetDocument()->NewElement("AdvancedData");
+                    for (uint32_t i = 0; i < carHandlingData.pAdvancedData.size(); ++i) {
+                        auto advancedDataItemElement = advancedDataElement->GetDocument()->NewElement("Item");
+                        advancedDataItemElement->SetAttribute("type", "CAdvancedData");
+
+                        InsertElement(advancedDataItemElement, "Slot", carHandlingData.pAdvancedData[i].Slot);
+                        InsertElement(advancedDataItemElement, "Index", carHandlingData.pAdvancedData[i].Index);
+                        InsertElement(advancedDataItemElement, "Value", carHandlingData.pAdvancedData[i].Value);
+
+                        advancedDataElement->InsertEndChild(advancedDataItemElement);
+                    }
+                    subHandlingDataItem->InsertEndChild(advancedDataElement);
+                }
 
                 shdElement->InsertEndChild(subHandlingDataItem);
 

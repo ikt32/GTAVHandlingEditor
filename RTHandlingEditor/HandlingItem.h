@@ -4,6 +4,13 @@
 #include <vector>
 
 namespace RTHE {
+class CAdvancedDataItem {
+public:
+    int Slot;
+    int Index;
+    float Value;
+};
+
 struct CBaseSubHandlingDataItem {
     eHandlingType HandlingType;
 };
@@ -23,7 +30,7 @@ public:
     float fUnk_0x034;
     uint32_t Unk_0x038;
     uint32_t strAdvancedFlags;
-    // TODO: std::vector<CAdvancedDataItem> pAdvancedData;
+    std::vector<CAdvancedDataItem> pAdvancedData;
 };
 
 struct CHandlingDataItem {

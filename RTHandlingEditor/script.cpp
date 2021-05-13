@@ -354,7 +354,11 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
             //float fUnk_0x034;
             //uint32_t Unk_0x038;
             carHandlingDataItem.strAdvancedFlags                 = carHandlingData->strAdvancedFlags;
-            // TODO: atArray<CAdvancedData> pAdvancedData;
+            carHandlingDataItem.pAdvancedData = std::vector<RTHE::CAdvancedDataItem>();
+            for (uint16_t iAdv = 0; iAdv < carHandlingData->pAdvancedData.GetCount(); ++iAdv) {
+                RTHE::CAdvancedData* advancedData = &carHandlingData->pAdvancedData.Get(iAdv);
+                carHandlingDataItem.pAdvancedData.push_back({ advancedData->Slot , advancedData->Index, advancedData->Value });
+            }
 
             handlingDataItem.subHandlingData.push_back(carHandlingDataItem);
         }
