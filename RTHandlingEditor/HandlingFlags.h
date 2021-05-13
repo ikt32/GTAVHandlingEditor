@@ -72,7 +72,7 @@ const std::map<uint32_t, SFlag> HandlingFlags{
     {0x00400000, { "HF_TYRES_RAISE_SIDE_IMPACT_THRESHOLD",  "Includes the tires in the general side collision hitbox of the vehicle. Recommended for vehicles whose wheels extend beyond the bodywork, like monster-trucks."}},
     {0x00800000, { "INCREASED_GRAVITY",                     "Includes bush-collision immunity, flat grip increase proportional to slip angle/lateral velocity, increased vehicle gravity."}},
     {0x01000000, { "ENABLE_LEAN",                           "??? Notes: Possibly for motorcycle leaning or boat leaning."}},
-    {0x02000000, { "???",                                   "???"}},
+    {0x02000000, { "_ALLOW_MOTORCYCLE_TRACTION_LOSS",       "Allows motorcycles to lose traction."}},
     {0x04000000, { "HEAVYARMOUR",                           "???"}},
     {0x08000000, { "ARMOURED",                              "???"}},
     {0x10000000, { "SELF_RIGHTING_IN_WATER",                "???"}},
