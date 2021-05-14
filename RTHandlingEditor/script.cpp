@@ -216,6 +216,28 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
         carHandlingData->strAdvancedFlags = handlingDataItem.subHandlingData[idx].strAdvancedFlags;
 
         logger.Write(DEBUG, fmt::format("Load handling: Loaded SubHandlingData.Item<CCarHandlingData>"));
+
+        // Only apply AdvancedData if the size matches.
+        auto numAdvData = carHandlingData->pAdvancedData.GetCount();
+        auto numAdvDataFile = handlingDataItem.subHandlingData[idx].pAdvancedData.size();
+        if (numAdvData != numAdvDataFile) {
+            logger.Write(DEBUG, fmt::format("Load handling: Skipped AdvancedData, size does not match. Vehicle has {}, handling has {}",
+                numAdvData, numAdvDataFile));
+            continue;
+        }
+
+        if (numAdvData == 0) {
+            logger.Write(DEBUG, fmt::format("Load handling: Skipped AdvancedData, empty"));
+            continue;
+        }
+        
+        for (uint32_t iAdv = 0; iAdv < numAdvData; ++iAdv) {
+            // Not sure about Slot and Index, I'll just leave that free to mess up for the user.
+            carHandlingData->pAdvancedData.Get(iAdv).Index = handlingDataItem.subHandlingData[idx].pAdvancedData[iAdv].Index;
+            carHandlingData->pAdvancedData.Get(iAdv).Slot = handlingDataItem.subHandlingData[idx].pAdvancedData[iAdv].Slot;
+            carHandlingData->pAdvancedData.Get(iAdv).Value = handlingDataItem.subHandlingData[idx].pAdvancedData[iAdv].Value;
+        }
+        logger.Write(DEBUG, fmt::format("Load handling: Loaded SubHandlingData.Item<CCarHandlingData>.AdvancedData"));
     }
 }
 

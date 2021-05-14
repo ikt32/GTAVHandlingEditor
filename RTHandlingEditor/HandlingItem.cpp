@@ -201,7 +201,22 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
 
                 carHandlingDataItem.strAdvancedFlags = StoU32(GetElementStr(shdItemElement, "strAdvancedFlags"), 16);
 
-                // TODO: AdvancedData
+                tinyxml2::XMLNode* advancedDataNode = shdItemElement->FirstChildElement("AdvancedData");
+                if (advancedDataNode != nullptr) {
+                    logger.Write(DEBUG, "[Parse] Parsing CCarHandlingData.AdvancedData");
+
+                    tinyxml2::XMLNode* advDataItemElement = advancedDataNode->FirstChildElement("Item");
+                    while (advDataItemElement != nullptr){
+                        // Type is "CAdvancedData", dunno if any other type/base occurs
+                        CAdvancedDataItem advancedDataItem;
+                        GetAttribute(advDataItemElement, "Slot", "value", advancedDataItem.Slot);
+                        GetAttribute(advDataItemElement, "Index", "value", advancedDataItem.Index);
+                        GetAttribute(advDataItemElement, "Value", "value", advancedDataItem.Value);
+                        carHandlingDataItem.pAdvancedData.push_back(advancedDataItem);
+
+                        advDataItemElement = advDataItemElement->NextSiblingElement();
+                    }
+                }
 
                 handlingDataItem.subHandlingData.push_back(carHandlingDataItem);
             }
