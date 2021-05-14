@@ -170,6 +170,53 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
     handlingDataItem.strHandlingFlags = StoU32(GetElementStr(itemNode, "strHandlingFlags"), 16);
     handlingDataItem.strDamageFlags = StoU32(GetElementStr(itemNode, "strDamageFlags"), 16);
 
+    // AI is skipped for now
+
+    tinyxml2::XMLNode* shdNode = itemNode->FirstChildElement("SubHandlingData");
+    if (shdNode) {
+        logger.Write(DEBUG, "[Parse] SubHandlingData element found");
+
+        tinyxml2::XMLNode* shdItemElement = shdNode->FirstChildElement("Item");
+        while (shdItemElement != nullptr) {
+            const char* type = nullptr;
+            ((tinyxml2::XMLElement*)shdItemElement)->QueryStringAttribute("type", &type);
+
+            if (std::string("CCarHandlingData") == type) {
+                logger.Write(DEBUG, "[Parse] Item was CCarHandlingData");
+
+                CCarHandlingDataItem carHandlingDataItem{};
+                carHandlingDataItem.HandlingType = HANDLING_TYPE_CAR;
+                GetAttribute(shdItemElement, "fBackEndPopUpCarImpulseMult", "value", carHandlingDataItem.fBackEndPopUpCarImpulseMult, true);
+                GetAttribute(shdItemElement, "fBackEndPopUpBuildingImpulseMult", "value", carHandlingDataItem.fBackEndPopUpBuildingImpulseMult, true);
+                GetAttribute(shdItemElement, "fBackEndPopUpMaxDeltaSpeed", "value", carHandlingDataItem.fBackEndPopUpMaxDeltaSpeed, true);
+
+                GetAttribute(shdItemElement, "fToeFront", "value", carHandlingDataItem.fToeFront, true);
+                GetAttribute(shdItemElement, "fToeRear", "value", carHandlingDataItem.fToeRear, true);
+                GetAttribute(shdItemElement, "fCamberFront", "value", carHandlingDataItem.fCamberFront, true);
+                GetAttribute(shdItemElement, "fCamberRear", "value", carHandlingDataItem.fCamberRear, true);
+                GetAttribute(shdItemElement, "fCastor", "value", carHandlingDataItem.fCastor, true);
+                GetAttribute(shdItemElement, "fEngineResistance", "value", carHandlingDataItem.fEngineResistance, true);
+                GetAttribute(shdItemElement, "fMaxDriveBiasTransfer", "value", carHandlingDataItem.fMaxDriveBiasTransfer, true);
+                GetAttribute(shdItemElement, "fJumpForceScale", "value", carHandlingDataItem.fJumpForceScale, true);
+
+                carHandlingDataItem.strAdvancedFlags = StoU32(GetElementStr(shdItemElement, "strAdvancedFlags"), 16);
+
+                // TODO: AdvancedData
+
+                handlingDataItem.subHandlingData.push_back(carHandlingDataItem);
+            }
+            else {
+                const char* type_ = type != nullptr ? type : "nullptr";
+                logger.Write(DEBUG, "[Parse] Item was unknown: [%s]. Adding dummy item.", type_);
+
+                CCarHandlingDataItem dummyHandlingDataItem{};
+                dummyHandlingDataItem.HandlingType = HANDLING_TYPE_MAX_TYPES;
+                handlingDataItem.subHandlingData.push_back(dummyHandlingDataItem);
+            }
+            shdItemElement = shdItemElement->NextSibling();
+        }
+    }
+
     return handlingDataItem;
 }
 

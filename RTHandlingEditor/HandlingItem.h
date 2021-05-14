@@ -12,7 +12,7 @@ public:
 };
 
 struct CBaseSubHandlingDataItem {
-    eHandlingType HandlingType;
+    eHandlingType HandlingType = HANDLING_TYPE_MAX_TYPES;
 };
 class CCarHandlingDataItem : public CBaseSubHandlingDataItem {
 public:

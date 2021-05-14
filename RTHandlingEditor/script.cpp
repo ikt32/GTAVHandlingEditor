@@ -167,7 +167,56 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
     currentHandling->strHandlingFlags = handlingDataItem.strHandlingFlags;
     currentHandling->strDamageFlags = handlingDataItem.strDamageFlags;
 
-    // TODO: Load subhandlingdata
+    // AI is skipped for now
+
+    // Do not do anything with subHandlingData if there's a mismatch between them.
+    auto currentHandlingSHDCount = currentHandling->m_subHandlingData.GetCount();
+    auto newHandlingSHDCount = handlingDataItem.subHandlingData.size();
+    //if (currentHandlingSHDCount != newHandlingSHDCount) {
+    //    logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData, vehicle has {}, handling has {}",
+    //        currentHandlingSHDCount, newHandlingSHDCount));
+    //    return;
+    //}
+
+    for (uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
+        RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
+
+        if (subHandlingData == nullptr) {
+            logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData, vehicles' subHandlingData[{}], was nullptr", idx));
+            continue;
+        }
+
+        if (idx >= handlingDataItem.subHandlingData.size()) {
+            logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData[{}], data items' size doesn't go here.", idx));
+            continue;
+        }
+
+        if (subHandlingData->GetHandlingType() != handlingDataItem.subHandlingData[idx].HandlingType) {
+            logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData, type does not match"));
+            continue;
+        }
+
+        RTHE::CCarHandlingData* carHandlingData = reinterpret_cast<RTHE::CCarHandlingData*>(subHandlingData);
+
+        carHandlingData->fBackEndPopUpCarImpulseMult      = handlingDataItem.subHandlingData[idx].fBackEndPopUpCarImpulseMult     ;
+        carHandlingData->fBackEndPopUpBuildingImpulseMult = handlingDataItem.subHandlingData[idx].fBackEndPopUpBuildingImpulseMult;
+        carHandlingData->fBackEndPopUpMaxDeltaSpeed       = handlingDataItem.subHandlingData[idx].fBackEndPopUpMaxDeltaSpeed      ;
+        carHandlingData->fToeFront                        = handlingDataItem.subHandlingData[idx].fToeFront                       ;
+        carHandlingData->fToeRear                         = handlingDataItem.subHandlingData[idx].fToeRear                        ;
+        carHandlingData->fCamberFront                     = handlingDataItem.subHandlingData[idx].fCamberFront                    ;
+        carHandlingData->fCamberRear                      = handlingDataItem.subHandlingData[idx].fCamberRear                     ;
+        carHandlingData->fCastor                          = handlingDataItem.subHandlingData[idx].fCastor                         ;
+        carHandlingData->fEngineResistance                = handlingDataItem.subHandlingData[idx].fEngineResistance               ;
+        carHandlingData->fMaxDriveBiasTransfer            = handlingDataItem.subHandlingData[idx].fMaxDriveBiasTransfer           ;
+        carHandlingData->fJumpForceScale                  = handlingDataItem.subHandlingData[idx].fJumpForceScale                 ;
+
+        //float fUnk_0x034;
+        //uint32_t Unk_0x038;
+
+        carHandlingData->strAdvancedFlags = handlingDataItem.subHandlingData[idx].strAdvancedFlags;
+
+        logger.Write(DEBUG, fmt::format("Load handling: Loaded SubHandlingData.Item<CCarHandlingData>"));
+    }
 }
 
 void UpdateHandlingDataItems() {
