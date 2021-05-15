@@ -61,6 +61,7 @@
     <ClCompile Include="Util\AddonSpawnerCache.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
+    <ClCompile Include="HandlingFlags.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -161,6 +162,9 @@
     <ClInclude Include="Util\AddonSpawnerCache.h">
       <Filter>Utility</Filter>
     </ClInclude>
+    <ClInclude Include="..\thirdparty\json\include\nlohmann\json.hpp">
+      <Filter>thirdparty\nlohmann_json</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">
@@ -189,6 +193,9 @@
     </Filter>
     <Filter Include="thirdparty\HandlingReplacement">
       <UniqueIdentifier>{d6c16398-6193-4edb-8abe-d8da648398b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="thirdparty\nlohmann_json">
+      <UniqueIdentifier>{ed265d01-098c-4fca-a8f1-e6481edb9b73}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

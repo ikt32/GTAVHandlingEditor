@@ -29,6 +29,7 @@
 #include "Util/UI.h"
 #include "Compatibility.h"
 #include "Util/AddonSpawnerCache.h"
+#include "HandlingFlags.h"
 
 namespace fs = std::filesystem;
 
@@ -529,8 +530,10 @@ void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
     UI::Notify(fmt::format("Saved as {}", outFile));
 }
 
-void Update() {
-
+void UpdateCheats() {
+    if (MISC::_HAS_CHEAT_STRING_JUST_BEEN_ENTERED(StrUtil::joaat("rtherld"))) {
+        Flags::Load();
+    }
 }
 
 void onMenuInit() {
@@ -552,12 +555,12 @@ void main() {
     GetMenu().Initialize();
     GetMenu().ReadSettings();
 
+    Flags::Load();
     UpdateHandlingDataItems();
 
-    while (true)
-    {
+    while (true) {
         UpdateMenu();
-        Update();
+        UpdateCheats();
         WAIT(0);
     }
 }

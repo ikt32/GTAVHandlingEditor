@@ -134,7 +134,7 @@
       <PreprocessorDefinitions>NOGDI;HR_RUNTIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\GTAVHandlingReplacement;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\GTAVHandlingReplacement;$(SolutionDir)thirdparty\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -157,6 +157,7 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
     <ClCompile Include="..\thirdparty\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="Compatibility.cpp" />
+    <ClCompile Include="HandlingFlags.cpp" />
     <ClCompile Include="HandlingItem.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="main.cpp" />
@@ -186,6 +187,7 @@
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menusettings.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menuutils.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\Scaleform.h" />
+    <ClInclude Include="..\thirdparty\json\include\nlohmann\json.hpp" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h" />

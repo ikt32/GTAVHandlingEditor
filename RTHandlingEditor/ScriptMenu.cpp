@@ -207,7 +207,7 @@ void DrawFlagsTable(const STable& flagsTable, uint8_t selectedIndex) {
     GRAPHICS::RESET_SCRIPT_GFX_ALIGN();
 }
 
-STable CreateFlagsTable(const std::map<uint32_t, SFlag>& flagDefinitions, uint32_t flags) {
+STable CreateFlagsTable(const std::vector<Flags::SFlag>& flagDefinitions, uint32_t flags) {
     STable flagsTable;
     flagsTable.Cells.resize(tableRows);
     for (uint32_t row = 0; row < tableRows; ++row) {
@@ -215,13 +215,13 @@ STable CreateFlagsTable(const std::map<uint32_t, SFlag>& flagDefinitions, uint32
         rowData.resize(rowCells);
         for (uint32_t cell = 0; cell < rowCells; ++cell) {
             uint32_t flag = 1u << (row * rowCells + cell);
-            rowData[cell] = SCell{ flagDefinitions.at(flag).Name, (flags & flag) > 0 };
+            rowData[cell] = SCell{ flagDefinitions[row * rowCells + cell].Name, (flags & flag) > 0 };
         }
     }
     return flagsTable;
 }
 
-void OptionFlags(const std::string& optionName, const std::map<uint32_t, SFlag>& flagList, uint32_t& flags, uint8_t& flagIndex) {
+void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>& flagList, uint32_t& flags, uint8_t& flagIndex) {
     bool show = false;
     std::string strFlags = fmt::format("{:X}", flags);
     if (menu.OptionPlus(fmt::format("{}: {}", optionName, strFlags),
@@ -235,15 +235,22 @@ void OptionFlags(const std::string& optionName, const std::map<uint32_t, SFlag>&
     }
 
     if (show) {
+        if (flagList.empty()) {
+            std::vector<std::string> extra;
+            extra.push_back("Table editor disabled.");
+            extra.push_back("Error reading flag descriptions, see HandlingEditor.log.");
+            menu.OptionPlusPlus(extra, "Flags");
+            return;
+        }
+
         std::vector<std::string> extra;
-        extra.push_back("Flags info: https://discord.gg/Gx46Zxu");
         extra.push_back("Underscores are prefixed to guessed flag names.");
 
         STable flagsTable = CreateFlagsTable(flagList, flags);
 
         extra.push_back(fmt::format("Flag 0x{:08X}:", 1u << flagIndex));
-        extra.push_back(fmt::format("Name: {}", flagList.at(1u << flagIndex).Name));
-        extra.push_back(fmt::format("Description: {}", flagList.at(1u << flagIndex).Description));
+        extra.push_back(fmt::format("Name: {}", flagList[flagIndex].Name));
+        extra.push_back(fmt::format("Description: {}", flagList[flagIndex].Description));
         menu.OptionPlusPlus(extra, "Flags");
 
         DrawFlagsTable(flagsTable, flagIndex);
@@ -513,8 +520,8 @@ void UpdateEditMenu() {
 
     menu.IntOption("nMonetaryValue", currentHandling->nMonetaryValue, 0, 1000000, 1);
 
-    OptionFlags("strModelFlags", ModelFlags, currentHandling->strModelFlags, modelFlagsIndex);
-    OptionFlags("strHandlingFlags", HandlingFlags, currentHandling->strHandlingFlags, handlingFlagsIndex);
+    OptionFlags("strModelFlags", Flags::GetModelFlags(), currentHandling->strModelFlags, modelFlagsIndex);
+    OptionFlags("strHandlingFlags", Flags::GetHandlingFlags(), currentHandling->strHandlingFlags, handlingFlagsIndex);
 
     {
         std::string strDamageFlags = fmt::format("{:X}", currentHandling->strDamageFlags);
@@ -587,7 +594,7 @@ void UpdateEditMenu() {
                     //    }
                     //}
 
-                    OptionFlags("strAdvancedFlags", AdvancedFlags, carHandling->strAdvancedFlags, advancedFlagsIndex);
+                    OptionFlags("strAdvancedFlags", Flags::GetAdvancedFlags(), carHandling->strAdvancedFlags, advancedFlagsIndex);
 
                     auto numAdvData = carHandling->pAdvancedData.GetCount();
                     if (numAdvData > 0) {
