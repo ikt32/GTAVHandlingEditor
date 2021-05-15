@@ -169,30 +169,25 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
     // AI is skipped for now
 
-    // Do not do anything with subHandlingData if there's a mismatch between them.
-    auto currentHandlingSHDCount = currentHandling->m_subHandlingData.GetCount();
-    auto newHandlingSHDCount = handlingDataItem.subHandlingData.size();
-    //if (currentHandlingSHDCount != newHandlingSHDCount) {
-    //    logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData, vehicle has {}, handling has {}",
-    //        currentHandlingSHDCount, newHandlingSHDCount));
-    //    return;
-    //}
+    auto localLog = [&](const std::string& arg) {
+        logger.Write(DEBUG, fmt::format("[Set handling] [{}] {}", handlingDataItem.handlingName, arg));
+    };
 
     for (uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
         RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
 
         if (subHandlingData == nullptr) {
-            logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData, vehicles' subHandlingData[{}], was nullptr", idx));
             continue;
         }
 
         if (idx >= handlingDataItem.subHandlingData.size()) {
-            logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData[{}], data items' size doesn't go here.", idx));
+            localLog(fmt::format("Skipped SubHandlingData[{}], vehicle doesn't have this SubHandlingData", idx));
             continue;
         }
 
         if (subHandlingData->GetHandlingType() != handlingDataItem.subHandlingData[idx].HandlingType) {
-            logger.Write(DEBUG, fmt::format("Load handling: Skipped subHandlingData, type does not match"));
+            localLog(fmt::format("Skipped SubHandlingData[{}], vehicle type '{}' does not match handling typ '{}'",
+                idx, subHandlingData->GetHandlingType(), handlingDataItem.subHandlingData[idx].HandlingType));
             continue;
         }
 
@@ -215,19 +210,19 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
         carHandlingData->strAdvancedFlags = handlingDataItem.subHandlingData[idx].strAdvancedFlags;
 
-        logger.Write(DEBUG, fmt::format("Load handling: Loaded SubHandlingData.Item<CCarHandlingData>"));
+        localLog(fmt::format("Loaded SubHandlingData.Item[{}]<CCarHandlingData>", idx));
 
         // Only apply AdvancedData if the size matches.
         auto numAdvData = carHandlingData->pAdvancedData.GetCount();
         auto numAdvDataFile = handlingDataItem.subHandlingData[idx].pAdvancedData.size();
         if (numAdvData != numAdvDataFile) {
-            logger.Write(DEBUG, fmt::format("Load handling: Skipped AdvancedData, size does not match. Vehicle has {}, handling has {}",
-                numAdvData, numAdvDataFile));
+            localLog(fmt::format("Skipped SubHandlingData.Item[{}]<CCarHandlingData>.AdvancedData, size mismatch. "
+                "Vehicle has {}, handling has {}", idx, numAdvData, numAdvDataFile));
             continue;
         }
 
         if (numAdvData == 0) {
-            logger.Write(DEBUG, fmt::format("Load handling: Skipped AdvancedData, empty"));
+            localLog(fmt::format("Skipped SubHandlingData.Item[{}]<CCarHandlingData>.AdvancedData, empty", idx));
             continue;
         }
         
@@ -237,18 +232,19 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
             carHandlingData->pAdvancedData.Get(iAdv).Slot = handlingDataItem.subHandlingData[idx].pAdvancedData[iAdv].Slot;
             carHandlingData->pAdvancedData.Get(iAdv).Value = handlingDataItem.subHandlingData[idx].pAdvancedData[iAdv].Value;
         }
-        logger.Write(DEBUG, fmt::format("Load handling: Loaded SubHandlingData.Item<CCarHandlingData>.AdvancedData"));
+
+        localLog(fmt::format("Loaded SubHandlingData.Item[{}]<CCarHandlingData>.AdvancedData", idx));
     }
 }
 
 void UpdateHandlingDataItems() {
-    logger.Write(DEBUG, "Clearing and handling items...");
+    logger.Write(DEBUG, "[Files] Clearing and handling items...");
     g_handlingDataItems.clear();
     const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
     const std::string handlingsPath = absoluteModPath + "\\HandlingFiles";
 
     if (!(fs::exists(fs::path(handlingsPath)) && fs::is_directory(fs::path(handlingsPath)))) {
-        logger.Write(WARN, "Directory [%s] not found!", handlingsPath.c_str());
+        logger.Write(WARN, "[Files] Directory [%s] not found!", handlingsPath.c_str());
         return;
     }
 
@@ -261,14 +257,14 @@ void UpdateHandlingDataItems() {
         RTHE::CHandlingDataItem handling = RTHE::ParseXMLItem(file.path().string());
         if (handling.handlingName.empty()) {
             logger.Write(WARN,
-                "Handling file [%s] failed to parse, skipping...",
+                "[Files] Handling file [%s] failed to parse, skipping...",
                 file.path().string().c_str());
             continue;
         }
         g_handlingDataItems.push_back(handling);
-        logger.Write(DEBUG, "Added handling [%s]", handling.handlingName.c_str());
+        logger.Write(DEBUG, "[Files] Added handling [%s]", handling.handlingName.c_str());
     }
-    logger.Write(INFO, "Configs loaded: %d", g_handlingDataItems.size());
+    logger.Write(INFO, "[Files] Configs loaded: %d", g_handlingDataItems.size());
 }
 
 // Warning: handlingName not set!
@@ -281,7 +277,7 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
     currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
 
     if (currentHandling == nullptr) {
-        logger.Write(ERROR, "[Set handling] Couldn't find handling ptr?");
+        logger.Write(ERROR, "[Get handling] Couldn't find handling ptr?");
         return {};
     }
 
@@ -402,11 +398,20 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     handlingDataItem.AIHandling = currentHandling->AIHandling;
 
+    auto localLog = [&](const std::string& arg) {
+        auto it = ASCache::Get().find(currentHandling->NameHash);
+        std::string handlingName = (it != ASCache::Get().end()) ? it->second : fmt::format("{:08X}", currentHandling->NameHash);
+        logger.Write(DEBUG, fmt::format("[Get handling] [{}] {}", handlingName, arg));
+    };
+
     for (uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
         RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
-        logger.Write(DEBUG, fmt::format("SHD[{}] {}", idx, fmt::ptr(subHandlingData)));
-        if (subHandlingData && subHandlingData->GetHandlingType() == RTHE::eHandlingType::HANDLING_TYPE_CAR) {
-            logger.Write(DEBUG, fmt::format("SHD[{}] Type: CCarHandlingData", idx));
+
+        if (!subHandlingData)
+            continue;
+
+        if (subHandlingData->GetHandlingType() == RTHE::eHandlingType::HANDLING_TYPE_CAR) {
+            localLog(fmt::format("SubHandlingData[{}] Type: CCarHandlingData", idx));
 
             RTHE::CCarHandlingData* carHandlingData = reinterpret_cast<RTHE::CCarHandlingData *>(subHandlingData);
             RTHE::CCarHandlingDataItem carHandlingDataItem;
@@ -432,6 +437,13 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
             }
 
             handlingDataItem.subHandlingData.push_back(carHandlingDataItem);
+        }
+        else {
+            localLog(fmt::format("SubHandlingData[{}] Type: {}", idx, subHandlingData->GetHandlingType()));
+
+            RTHE::CCarHandlingDataItem dummyHandlingDataItem;
+            dummyHandlingDataItem.HandlingType = subHandlingData->GetHandlingType();
+            handlingDataItem.subHandlingData.push_back(dummyHandlingDataItem);
         }
     }
 
