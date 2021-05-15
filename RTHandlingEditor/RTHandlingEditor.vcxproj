@@ -131,10 +131,10 @@
       <WarningLevel>Level3</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NOGDI;HR_RUNTIME;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NOGDI;HR_RUNTIME;CURL_STATICLIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\GTAVHandlingReplacement;$(SolutionDir)thirdparty\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)thirdparty;$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\GTAVHandlingReplacement;$(SolutionDir)thirdparty\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -177,6 +177,15 @@
     <ClCompile Include="VehicleMod.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\thirdparty\curl\curl.h" />
+    <ClInclude Include="..\thirdparty\curl\curlver.h" />
+    <ClInclude Include="..\thirdparty\curl\easy.h" />
+    <ClInclude Include="..\thirdparty\curl\mprintf.h" />
+    <ClInclude Include="..\thirdparty\curl\multi.h" />
+    <ClInclude Include="..\thirdparty\curl\stdcheaders.h" />
+    <ClInclude Include="..\thirdparty\curl\system.h" />
+    <ClInclude Include="..\thirdparty\curl\typecheck-gcc.h" />
+    <ClInclude Include="..\thirdparty\curl\urlapi.h" />
     <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h" />
     <ClInclude Include="..\thirdparty\GTAVHandlingReplacement\HandlingReplacement.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h" />
@@ -220,6 +229,7 @@
     <ClInclude Include="VehicleMod.h" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="..\thirdparty\curl\libcurl.lib" />
     <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

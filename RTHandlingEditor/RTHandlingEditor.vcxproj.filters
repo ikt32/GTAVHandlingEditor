@@ -165,6 +165,33 @@
     <ClInclude Include="..\thirdparty\json\include\nlohmann\json.hpp">
       <Filter>thirdparty\nlohmann_json</Filter>
     </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\stdcheaders.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\system.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\typecheck-gcc.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\urlapi.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\curl.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\curlver.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\easy.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\mprintf.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\curl\multi.h">
+      <Filter>thirdparty\curl</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">
@@ -197,10 +224,16 @@
     <Filter Include="thirdparty\nlohmann_json">
       <UniqueIdentifier>{ed265d01-098c-4fca-a8f1-e6481edb9b73}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\curl">
+      <UniqueIdentifier>{48d24f3a-9847-4c2e-b77a-8270039c4dcc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib">
       <Filter>ScriptHookV</Filter>
+    </Library>
+    <Library Include="..\thirdparty\curl\libcurl.lib">
+      <Filter>thirdparty\curl</Filter>
     </Library>
   </ItemGroup>
 </Project>

@@ -1,0 +1,7 @@
+curl 7.63.0
+Windows\VC15
+Build platform: v142
+SDK: 10.0 (Latest)
+LIB Release - DLL Windows SSPI - DLL WinIDN
+64-bit
+Properties/C++/Code Generation/Runtime Library: Multi-threaded (/MT)

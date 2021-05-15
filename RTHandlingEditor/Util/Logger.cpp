@@ -23,7 +23,7 @@ void Logger::Write(LogLevel level, const std::string& text) const {
 #ifndef _DEBUG
     if (level < minLevel) return;
 #endif
-    std::ofstream logFile(file, std::ios_base::out | std::ios_base::app);
+    std::ofstream logFile(file, std::ios_base::out | std::ios_base::app | std::ios::binary);
     SYSTEMTIME currTimeLog;
     GetLocalTime(&currTimeLog);
     logFile << "[" <<
