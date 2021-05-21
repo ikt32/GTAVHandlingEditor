@@ -12,5 +12,6 @@ namespace Flags {
 
     const std::vector<SFlag>& GetModelFlags();
     const std::vector<SFlag>& GetHandlingFlags();
+    const std::vector<SFlag>& GetDamageFlags();
     const std::vector<SFlag>& GetAdvancedFlags();
 }

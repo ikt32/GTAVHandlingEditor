@@ -35,6 +35,7 @@ struct SAllFlags {
     SVersion Version;
     std::vector<Flags::SFlag> ModelFlags;
     std::vector<Flags::SFlag> HandlingFlags;
+    std::vector<Flags::SFlag> DamageFlags;
     std::vector<Flags::SFlag> AdvancedFlags;
 };
 
@@ -50,6 +51,10 @@ const std::vector<Flags::SFlag>& Flags::GetHandlingFlags() {
     return g_AllFlags.HandlingFlags;
 }
 
+const std::vector<Flags::SFlag>& Flags::GetDamageFlags() {
+    return g_AllFlags.DamageFlags;
+}
+
 const std::vector<Flags::SFlag>& Flags::GetAdvancedFlags() {
     return g_AllFlags.AdvancedFlags;
 }
@@ -61,7 +66,7 @@ SAllFlags ReadJson(const std::string& jsonContent) {
     try {
         json flagsDoc = json::parse(jsonContent);
 
-        auto version = flagsDoc.at("version").get<std::string>();
+        auto version = flagsDoc.value("version", "0.0");
         logger.Write(INFO, fmt::format("[Flags] Version '{}'", version));
 
         int major, minor;
@@ -75,9 +80,10 @@ SAllFlags ReadJson(const std::string& jsonContent) {
         allFlags.Version = { major, minor };
 
         auto flags = flagsDoc.at("flags");
-        auto modelFlags = flags.at("strModelFlags");
-        auto handlingFlags = flags.at("strHandlingFlags");
-        auto advancedFlags = flags.at("strAdvancedFlags");
+        auto modelFlags = flags["strModelFlags"];
+        auto handlingFlags = flags["strHandlingFlags"];
+        auto damageFlags = flags["strDamageFlags"];
+        auto advancedFlags = flags["strAdvancedFlags"];
 
         if (modelFlags.size() == 32) {
             allFlags.ModelFlags.reserve(32);
@@ -101,6 +107,18 @@ SAllFlags ReadJson(const std::string& jsonContent) {
         }
         else {
             logger.Write(ERROR, "[Flags] Expected 32 items in strHandlingFlags");
+        }
+
+        if (damageFlags.size() == 32) {
+            allFlags.DamageFlags.reserve(32);
+            for (const auto& docFlag : damageFlags) {
+                std::string name = docFlag.at("name").get<std::string>();
+                std::string description = docFlag.at("description").get<std::string>();
+                allFlags.DamageFlags.emplace_back(Flags::SFlag{ name, description });
+            }
+        }
+        else {
+            logger.Write(ERROR, "[Flags] Expected 32 items in strAdvancedFlags");
         }
 
         if (advancedFlags.size() == 32) {

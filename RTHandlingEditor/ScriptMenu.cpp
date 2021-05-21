@@ -32,6 +32,7 @@ const uint32_t rowCells = 4;
 
 uint8_t modelFlagsIndex = 0;
 uint8_t handlingFlagsIndex = 0;
+uint8_t damageFlagsIndex = 0;
 uint8_t advancedFlagsIndex = 0;
 }
 
@@ -522,14 +523,7 @@ void UpdateEditMenu() {
 
     OptionFlags("strModelFlags", Flags::GetModelFlags(), currentHandling->strModelFlags, modelFlagsIndex);
     OptionFlags("strHandlingFlags", Flags::GetHandlingFlags(), currentHandling->strHandlingFlags, handlingFlagsIndex);
-
-    {
-        std::string strDamageFlags = fmt::format("{:X}", currentHandling->strDamageFlags);
-        if (menu.Option(fmt::format("strDamageFlags: {}", strDamageFlags))) {
-            std::string newFlags = GetKbEntryStr(strDamageFlags);
-            SetFlags(currentHandling->strDamageFlags, newFlags);
-        }
-    }
+    OptionFlags("strDamageFlags", Flags::GetDamageFlags(), currentHandling->strDamageFlags, damageFlagsIndex);
 
     {
         std::string AIHandling;
