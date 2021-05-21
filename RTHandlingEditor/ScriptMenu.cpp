@@ -182,12 +182,36 @@ void DrawFlagsTable(const STable& flagsTable, uint8_t selectedIndex) {
             auto pX = offsetX + cell * cellWidth;
             auto pY = offsetY + row * cellHeight;
 
-            std::string shortenedText = flagsTable.Cells[row][cell].Contents;
+            std::string formattedText = flagsTable.Cells[row][cell].Contents;
+            if (formattedText != "N/A" && formattedText.size() > 0) {
+                bool guess = formattedText[0] == '_';
+
+                auto words = StrUtil::split(formattedText, '_');
+
+                std::string camelText;
+                for (const auto& word : words) {
+                    if (word.size() == 0)
+                        continue;
+
+                    if (word == "MF" || word == "HF" || word == "DF" || word == "AF")
+                        continue;
+
+                    std::string withCapital = StrUtil::toLower(word);
+                    withCapital[0] = toupper(withCapital[0]);
+                    camelText += withCapital;
+                }
+
+                formattedText = camelText;
+                if (guess)
+                    formattedText.insert(formattedText.begin(), '_');
+            }
+
+            std::string shortenedText = formattedText;
             while (GetStringWidth(shortenedText, 0.25f, 0) > cellWidthBg * 0.90f && shortenedText.length() > 5) {
                 shortenedText.pop_back();
             }
 
-            if (shortenedText != flagsTable.Cells[row][cell].Contents) {
+            if (shortenedText != formattedText) {
                 shortenedText += "...";
             }
 
