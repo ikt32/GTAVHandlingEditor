@@ -7,7 +7,7 @@ namespace {
     std::unordered_map<Hash, std::string> hashCache;
 }
 
-std::unordered_map<Hash, std::string> ASCache::Get() {
+const std::unordered_map<Hash, std::string>& ASCache::Get() {
     if (!hashCache.empty())
         return hashCache;
 

@@ -400,8 +400,9 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
     handlingDataItem.AIHandling = currentHandling->AIHandling;
 
     auto localLog = [&](const std::string& arg) {
-        auto it = ASCache::Get().find(currentHandling->NameHash);
-        std::string handlingName = (it != ASCache::Get().end()) ? it->second : fmt::format("{:08X}", currentHandling->NameHash);
+        auto& asCache = ASCache::Get();
+        auto it = asCache.find(currentHandling->NameHash);
+        std::string handlingName = (it != asCache.end()) ? it->second : fmt::format("{:08X}", currentHandling->NameHash);
         logger.Write(DEBUG, fmt::format("[Get handling] [{}] {}", handlingName, arg));
     };
 
@@ -518,6 +519,7 @@ void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
             if (StrUtil::toLower(p.path().stem().string()) == StrUtil::toLower(outFile)) {
                 duplicate = true;
                 outFile = fmt::format("{}_{:02d}", fileName.c_str(), saveFileSuffix++);
+                break;
             }
         }
     } while (duplicate);

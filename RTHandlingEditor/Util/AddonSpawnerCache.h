@@ -4,5 +4,5 @@
 #include <unordered_map>
 
 namespace ASCache {
-    std::unordered_map<Hash, std::string> Get();
+    const std::unordered_map<Hash, std::string>& Get();
 }
