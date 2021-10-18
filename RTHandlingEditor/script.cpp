@@ -103,7 +103,6 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
     currentHandling->fTractionCurveMaxRatio_ = 1.0f / handlingDataItem.fTractionCurveMax;
 
     currentHandling->fTractionCurveMin = handlingDataItem.fTractionCurveMin;
-    currentHandling->fTractionCurveRatio_ = 1.0f / handlingDataItem.fTractionCurveMin;
 
     currentHandling->fTractionCurveRatio_ = 1.0f / (currentHandling->fTractionCurveMax - currentHandling->fTractionCurveMin);
 
