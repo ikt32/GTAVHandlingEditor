@@ -254,7 +254,7 @@ void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>&
         &show,
         [&] { if (flagIndex < 31) ++flagIndex; },
         [&] { if (flagIndex > 0) --flagIndex; },
-        "", { "Move selection with Left and Right. Space to toggle. Enter to edit flags string." })) {
+        "", { "Move selection with Left and Right. Space (KB) or RB (Controller) to toggle. Enter to edit flags string." })) {
         std::string newFlags = GetKbEntryStr(strFlags);
         SetFlags(flags, newFlags);
     }
@@ -280,7 +280,8 @@ void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>&
 
         DrawFlagsTable(flagsTable, flagIndex);
 
-        if (NativeMenu::IsKeyJustUp(VK_SPACE, true)) {
+        if (NativeMenu::IsKeyJustUp(VK_SPACE, true) ||
+            PAD::IS_CONTROL_JUST_RELEASED(0, eControl::ControlFrontendRb)) {
             flags ^= 1u << flagIndex;
         }
     }
