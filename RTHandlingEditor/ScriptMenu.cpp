@@ -17,7 +17,8 @@
 #include <inc/natives.h>
 #include <fmt/format.h>
 
-extern VehicleExtensions g_ext;
+using VExt = VehicleExtensions;
+
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
 
 void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataItem);
@@ -52,12 +53,20 @@ void UpdateMainMenu() {
     if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
         if (menu.Option("Respawn vehicle")) {
             Utils::RespawnVehicle(vehicle, playerPed);
+            vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
+            RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(VExt::GetHandlingPtr(vehicle));
+            if (currentHandling) {
+                PHYSICS::SET_CGOFFSET(vehicle,
+                    currentHandling->vecCentreOfMassOffset.x,
+                    currentHandling->vecCentreOfMassOffset.y,
+                    currentHandling->vecCentreOfMassOffset.z);
+            }
         }
 
         menu.MenuOption("Load handling", "LoadMenu");
 
         if (menu.Option("Save")) {
-            RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(g_ext.GetHandlingPtr(vehicle));
+            RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(VExt::GetHandlingPtr(vehicle));
 
             PromptSave(vehicle, currentHandling->NameHash);
         }
@@ -305,7 +314,7 @@ void UpdateEditMenu() {
 
     RTHE::CHandlingData* currentHandling = nullptr;
 
-    uint64_t addr = g_ext.GetHandlingPtr(vehicle);
+    uint64_t addr = VExt::GetHandlingPtr(vehicle);
     currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
 
     if (currentHandling == nullptr) {
@@ -587,7 +596,7 @@ void UpdateEditMenu() {
         }
     }
 
-    {
+    if (1) {
         for(uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
             RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
 
@@ -632,7 +641,13 @@ void UpdateEditMenu() {
                     for (uint16_t iAdv = 0; iAdv < carHandling->pAdvancedData.GetCount(); ++iAdv) {
                         RTHE::CAdvancedData* advancedData = &carHandling->pAdvancedData.Get(iAdv);
 
-                        std::string slotName = AdvancedDataSlotIdName[advancedData->Slot];
+                        std::string slotName;
+                        if (advancedData->Slot >= AdvancedDataSlotIdName.size()) {
+                            slotName = fmt::format("Index ({}) out of bounds",advancedData->Slot);
+                        }
+                        else {
+                            slotName = AdvancedDataSlotIdName[advancedData->Slot];
+                        }
                         menu.IntOption(fmt::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1,
                             { fmt::format("Slot ID name: {}", slotName) });
                         

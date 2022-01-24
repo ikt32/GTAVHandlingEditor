@@ -235,6 +235,11 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
         localLog(fmt::format("Loaded SubHandlingData.Item[{}]<CCarHandlingData>.AdvancedData", idx));
     }
+
+    PHYSICS::SET_CGOFFSET(vehicle,
+        currentHandling->vecCentreOfMassOffset.x,
+        currentHandling->vecCentreOfMassOffset.y,
+        currentHandling->vecCentreOfMassOffset.z);
 }
 
 void UpdateHandlingDataItems() {
