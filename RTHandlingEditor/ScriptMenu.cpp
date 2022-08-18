@@ -289,7 +289,7 @@ void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>&
 
         DrawFlagsTable(flagsTable, flagIndex);
 
-        if (NativeMenu::IsKeyJustUp(VK_SPACE, true) ||
+        if (NativeMenu::IsKeyJustUp(VK_SPACE) ||
             PAD::IS_CONTROL_JUST_RELEASED(0, eControl::ControlFrontendRb)) {
             flags ^= 1u << flagIndex;
         }
