@@ -26,16 +26,30 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 void PromptSave(Vehicle vehicle, Hash handlingNameHash);
 
 namespace {
-NativeMenu::Menu menu;
-bool editStock = true;
+    NativeMenu::Menu menu;
+    bool editStock = true;
 
-const uint32_t tableRows = 8;
-const uint32_t rowCells = 4;
+    const uint32_t tableRows = 8;
+    const uint32_t rowCells = 4;
 
-uint8_t modelFlagsIndex = 0;
-uint8_t handlingFlagsIndex = 0;
-uint8_t damageFlagsIndex = 0;
-uint8_t advancedFlagsIndex = 0;
+    uint8_t modelFlagsIndex = 0;
+    uint8_t handlingFlagsIndex = 0;
+    uint8_t damageFlagsIndex = 0;
+    uint8_t advancedFlagsIndex = 0;
+
+    std::unordered_map<std::string, std::string> optionNoteMap{
+        { "vecCentreOfMassOffset.x", "vecCentreOfMassOffset" },
+        { "vecCentreOfMassOffset.y", "vecCentreOfMassOffset" },
+        { "vecCentreOfMassOffset.z", "vecCentreOfMassOffset" },
+
+        { "vecInertiaMultiplier.x", "vecInertiaMultiplier" },
+        { "vecInertiaMultiplier.y", "vecInertiaMultiplier" },
+        { "vecInertiaMultiplier.z", "vecInertiaMultiplier" },
+
+        { "vecSeatOffsetDistX", "vecSeatOffsetDist" },
+        { "vecSeatOffsetDistY", "vecSeatOffsetDist" },
+        { "vecSeatOffsetDistZ", "vecSeatOffsetDist" },
+    };
 }
 
 NativeMenu::Menu& GetMenu() {
@@ -298,8 +312,10 @@ void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>&
 }
 
 bool IntOptionExtra(const std::string& option, int& var, int min, int max, int step) {
+    auto optionNameAltIt = optionNoteMap.find(option);
+    std::string optionNameAlt = optionNameAltIt == optionNoteMap.end() ? option : optionNameAltIt->second;
     auto notes = Notes::GetHandlingNotes();
-    auto noteIt = notes.find(option);
+    auto noteIt = notes.find(optionNameAlt);
     std::vector<std::string> details;
     std::vector<std::string> extra;
     if (noteIt != notes.end()) {
@@ -316,8 +332,10 @@ bool IntOptionExtra(const std::string& option, int& var, int min, int max, int s
 }
 
 bool FloatOptionExtra(const std::string& option, float& var, float min, float max, float step) {
+    auto optionNameAltIt = optionNoteMap.find(option);
+    std::string optionNameAlt = optionNameAltIt == optionNoteMap.end() ? option : optionNameAltIt->second;
     auto notes = Notes::GetHandlingNotes();
-    auto noteIt = notes.find(option);
+    auto noteIt = notes.find(optionNameAlt);
     std::vector<std::string> details;
     std::vector<std::string> extra;
     if (noteIt != notes.end()) {
@@ -569,11 +587,11 @@ void UpdateEditMenu() {
 
     FloatOptionExtra("fSuspensionUpperLimit", currentHandling->fSuspensionUpperLimit, -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fSuspensionLowerLimit", currentHandling->fSuspensionLowerLimit, -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fSuspensionRaise_", currentHandling->fSuspensionRaise_, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSuspensionRaise", currentHandling->fSuspensionRaise_, -1000.0f, 1000.0f, 0.01f);
 
     {
         float fSuspensionBiasFront = currentHandling->fSuspensionBiasFront_ / 2.0f;
-        if (FloatOptionExtra("fSuspensionBiasFront_", fSuspensionBiasFront, -1000.0f, 1000.0f, 0.01f)) {
+        if (FloatOptionExtra("fSuspensionBiasFront", fSuspensionBiasFront, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fSuspensionBiasFront_ = fSuspensionBiasFront * 2.0f;
             currentHandling->fSuspensionBiasRear_ = 2.0f * (1.0f - (fSuspensionBiasFront));
         }
@@ -583,7 +601,7 @@ void UpdateEditMenu() {
 
     {
         float fAntiRollBarBiasFront = currentHandling->fAntiRollBarBiasFront_ / 2.0f;
-        if (FloatOptionExtra("fAntiRollBarBiasFront_", fAntiRollBarBiasFront, -1000.0f, 1000.0f, 0.01f)) {
+        if (FloatOptionExtra("fAntiRollBarBiasFront", fAntiRollBarBiasFront, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fAntiRollBarBiasFront_ = fAntiRollBarBiasFront * 2.0f;
             currentHandling->fAntiRollBarBiasRear_ = 2.0f * (1.0f - (fAntiRollBarBiasFront));
         }
