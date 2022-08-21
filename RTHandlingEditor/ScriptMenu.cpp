@@ -9,6 +9,7 @@
 #include "Constants.h"
 #include "Table.h"
 #include "HandlingFlags.h"
+#include "HandlingNotes.h"
 #include "AdvancedDataNames.h"
 
 #include <HandlingReplacement.h>
@@ -296,6 +297,42 @@ void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>&
     }
 }
 
+bool IntOptionExtra(const std::string& option, int& var, int min, int max, int step) {
+    auto notes = Notes::GetHandlingNotes();
+    auto noteIt = notes.find(option);
+    std::vector<std::string> details;
+    std::vector<std::string> extra;
+    if (noteIt != notes.end()) {
+        if (!noteIt->second.Details.empty())
+            details = { noteIt->second.Details };
+        extra = noteIt->second.ExtraLines;
+    }
+
+    auto result = menu.IntOption(option, var, min, max, step, {}, details);
+    if (result.Highlighted && extra.size() > 0) {
+        menu.OptionPlusPlus(extra);
+    }
+    return result.Triggered || result.ValueChanged;
+}
+
+bool FloatOptionExtra(const std::string& option, float& var, float min, float max, float step) {
+    auto notes = Notes::GetHandlingNotes();
+    auto noteIt = notes.find(option);
+    std::vector<std::string> details;
+    std::vector<std::string> extra;
+    if (noteIt != notes.end()) {
+        if (!noteIt->second.Details.empty())
+            details = { noteIt->second.Details };
+        extra = noteIt->second.ExtraLines;
+    }
+
+    auto result = menu.FloatOption(option, var, min, max, step, GetKbEntry, details);
+    if (result.Highlighted && extra.size() > 0) {
+        menu.OptionPlusPlus(extra);
+    }
+    return result.Triggered || result.ValueChanged;
+}
+
 void UpdateEditMenu() {
     menu.Title("Edit Handling");
 
@@ -348,24 +385,24 @@ void UpdateEditMenu() {
 
     Utils::DrawCOMAndRollCenters(vehicle, currentHandling);
 
-    menu.FloatOptionCb("fMass", currentHandling->fMass, 0.0f, 1000000000.0f, 5.0f, GetKbEntry);
+    FloatOptionExtra("fMass", currentHandling->fMass, 0.0f, 1000000000.0f, 5.0f);
 
     {
         float fInitialDragCoeff = currentHandling->fInitialDragCoeff * 10000.0f;
-        if (menu.FloatOptionCb("fInitialDragCoeff", fInitialDragCoeff, 0.0f, 100.0f, 0.05f, GetKbEntry)) {
+        if (FloatOptionExtra("fInitialDragCoeff", fInitialDragCoeff, 0.0f, 100.0f, 0.05f)) {
             currentHandling->fInitialDragCoeff = fInitialDragCoeff / 10000.0f;
         }
     }
-    menu.FloatOptionCb("fDownforceModifier", currentHandling->fDownforceModifier, 0.0f, 1000.0f, 0.5f, GetKbEntry);
+    FloatOptionExtra("fDownforceModifier", currentHandling->fDownforceModifier, 0.0f, 1000.0f, 0.5f);
 
-    if (menu.FloatOptionCb("fPercentSubmerged", currentHandling->fPercentSubmerged, 0.0f, 100.0f, 1.0f, GetKbEntry)) {
+    if (FloatOptionExtra("fPercentSubmerged", currentHandling->fPercentSubmerged, 0.0f, 100.0f, 1.0f)) {
         currentHandling->fSubmergedRatio_ = 100.0f / currentHandling->fPercentSubmerged;
     }
 
     bool comModified = false;
-    comModified |= menu.FloatOptionCb("vecCentreOfMassOffset.x", currentHandling->vecCentreOfMassOffset.x, -20.0f, 20.0f, 0.01f, GetKbEntry);
-    comModified |= menu.FloatOptionCb("vecCentreOfMassOffset.y", currentHandling->vecCentreOfMassOffset.y, -20.0f, 20.0f, 0.01f, GetKbEntry);
-    comModified |= menu.FloatOptionCb("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -20.0f, 20.0f, 0.01f, GetKbEntry);
+    comModified |= FloatOptionExtra("vecCentreOfMassOffset.x", currentHandling->vecCentreOfMassOffset.x, -20.0f, 20.0f, 0.01f);
+    comModified |= FloatOptionExtra("vecCentreOfMassOffset.y", currentHandling->vecCentreOfMassOffset.y, -20.0f, 20.0f, 0.01f);
+    comModified |= FloatOptionExtra("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -20.0f, 20.0f, 0.01f);
 
     if (comModified) {
         // Update COM.
@@ -375,9 +412,9 @@ void UpdateEditMenu() {
             currentHandling->vecCentreOfMassOffset.z);
     }
 
-    menu.FloatOptionCb("vecInertiaMultiplier.x", currentHandling->vecInertiaMultiplier.x, -100.0f, 100.0f, 0.1f, GetKbEntry);
-    menu.FloatOptionCb("vecInertiaMultiplier.y", currentHandling->vecInertiaMultiplier.y, -100.0f, 100.0f, 0.1f, GetKbEntry);
-    menu.FloatOptionCb("vecInertiaMultiplier.z", currentHandling->vecInertiaMultiplier.z, -100.0f, 100.0f, 0.1f, GetKbEntry);
+    FloatOptionExtra("vecInertiaMultiplier.x", currentHandling->vecInertiaMultiplier.x, -100.0f, 100.0f, 0.1f);
+    FloatOptionExtra("vecInertiaMultiplier.y", currentHandling->vecInertiaMultiplier.y, -100.0f, 100.0f, 0.1f);
+    FloatOptionExtra("vecInertiaMultiplier.z", currentHandling->vecInertiaMultiplier.z, -100.0f, 100.0f, 0.1f);
 
     {
         // FWD      F1.0 R0.0 XML_F 1.0
@@ -402,7 +439,7 @@ void UpdateEditMenu() {
             fDriveBiasFrontNorm = fDriveBiasFront / 2.0f;
         }
 
-        if (menu.FloatOptionCb("fDriveBiasFront", fDriveBiasFrontNorm, 0.0f, 1.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fDriveBiasFront", fDriveBiasFrontNorm, 0.0f, 1.0f, 0.01f)) {
             // Full FWD
             if (IsNear(fDriveBiasFrontNorm, 1.0f, 0.005f)) {
                 currentHandling->fDriveBiasFront = 1.0f;
@@ -420,39 +457,44 @@ void UpdateEditMenu() {
         }
     }
 
-    //menu.FloatOptionCb("fAcceleration", currentHandling->fAcceleration, -1000.0f, 1000.0f, 0.01f);
+    //FloatOptionExtra("fAcceleration", currentHandling->fAcceleration, -1000.0f, 1000.0f, 0.01f);
 
-    menu.UInt8Option("nInitialDriveGears", currentHandling->nInitialDriveGears, 1u, 10u, 1u);
-    menu.FloatOptionCb("fInitialDriveForce", currentHandling->fInitialDriveForce, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fDriveInertia", currentHandling->fDriveInertia, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    {
+        int nInitialDriveGears = static_cast<int>(currentHandling->nInitialDriveGears);
+        if (IntOptionExtra("nInitialDriveGears", nInitialDriveGears, 1, 10, 1)) {
+            currentHandling->nInitialDriveGears = static_cast<uint8_t>(nInitialDriveGears);
+        }
+    }
+    FloatOptionExtra("fInitialDriveForce", currentHandling->fInitialDriveForce, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDriveInertia", currentHandling->fDriveInertia, -1000.0f, 1000.0f, 0.01f);
 
-    menu.FloatOptionCb("fClutchChangeRateScaleUpShift", currentHandling->fClutchChangeRateScaleUpShift, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fClutchChangeRateScaleDownShift", currentHandling->fClutchChangeRateScaleDownShift, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fClutchChangeRateScaleUpShift", currentHandling->fClutchChangeRateScaleUpShift, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fClutchChangeRateScaleDownShift", currentHandling->fClutchChangeRateScaleDownShift, -1000.0f, 1000.0f, 0.01f);
 
     {
         float fInitialDriveMaxFlatVel = currentHandling->fInitialDriveMaxFlatVel_ * 3.6f;
-        if (menu.FloatOptionCb("fInitialDriveMaxFlatVel", fInitialDriveMaxFlatVel, 0.0f, 1000.0f, 0.5f, GetKbEntry)) {
+        if (FloatOptionExtra("fInitialDriveMaxFlatVel", fInitialDriveMaxFlatVel, 0.0f, 1000.0f, 0.5f)) {
             currentHandling->fInitialDriveMaxFlatVel_ = fInitialDriveMaxFlatVel / 3.6f;
             currentHandling->fDriveMaxFlatVel_ = fInitialDriveMaxFlatVel / 3.0f;
         }
     }
 
-    menu.FloatOptionCb("fBrakeForce", currentHandling->fBrakeForce, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fBrakeForce", currentHandling->fBrakeForce, -1000.0f, 1000.0f, 0.01f);
 
     {
         float fBrakeBiasFront = currentHandling->fBrakeBiasFront_ / 2.0f;
-        if (menu.FloatOptionCb("fBrakeBiasFront", fBrakeBiasFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fBrakeBiasFront", fBrakeBiasFront, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fBrakeBiasFront_ = fBrakeBiasFront * 2.0f;
             currentHandling->fBrakeBiasRear_ = 2.0f * (1.0f - fBrakeBiasFront);
         }
     }
     
-    menu.FloatOptionCb("fHandBrakeForce", currentHandling->fHandBrakeForce2, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fHandBrakeForce", currentHandling->fHandBrakeForce2, -1000.0f, 1000.0f, 0.01f);
 
     {
         // rad 2 deg
         float fSteeringLock = currentHandling->fSteeringLock_ / 0.017453292f;
-        if (menu.FloatOptionCb("fSteeringLock", fSteeringLock, 0.0f, 90.0f, 0.10f, GetKbEntry)) {
+        if (FloatOptionExtra("fSteeringLock", fSteeringLock, 0.0f, 90.0f, 0.10f)) {
             currentHandling->fSteeringLock_ = fSteeringLock * 0.017453292f;
             currentHandling->fSteeringLockRatio_ = 1.0f / (fSteeringLock * 0.017453292f);
         }
@@ -461,7 +503,7 @@ void UpdateEditMenu() {
     bool tcModified = false;
     {
         float fTractionCurveMax = currentHandling->fTractionCurveMax;
-        if (menu.FloatOptionCb("fTractionCurveMax", fTractionCurveMax, 0.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fTractionCurveMax", fTractionCurveMax, 0.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionCurveMax = fTractionCurveMax;
             currentHandling->fTractionCurveMaxRatio_ = 1.0f / fTractionCurveMax;
             tcModified = true;
@@ -470,7 +512,7 @@ void UpdateEditMenu() {
 
     {
         float fTractionCurveMin = currentHandling->fTractionCurveMin;
-        if (menu.FloatOptionCb("fTractionCurveMin", fTractionCurveMin, 0.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fTractionCurveMin", fTractionCurveMin, 0.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionCurveMin = fTractionCurveMin;
             tcModified = true;
         }
@@ -483,7 +525,7 @@ void UpdateEditMenu() {
     {
         // rad 2 deg
         float fTractionCurveLateral = currentHandling->fTractionCurveLateral_ / 0.017453292f;
-        if (menu.FloatOptionCb("fTractionCurveLateral", fTractionCurveLateral, -1000.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fTractionCurveLateral", fTractionCurveLateral, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionCurveLateral_ = fTractionCurveLateral * 0.017453292f;
             currentHandling->fTractionCurveLateralRatio_ = 1.0f / (fTractionCurveLateral * 0.017453292f);
         }
@@ -491,78 +533,78 @@ void UpdateEditMenu() {
 
     {
         float fTractionSpringDeltaMax = currentHandling->fTractionSpringDeltaMax;
-        if (menu.FloatOptionCb("fTractionSpringDeltaMax", fTractionSpringDeltaMax, -1000.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fTractionSpringDeltaMax", fTractionSpringDeltaMax, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fTractionSpringDeltaMax = fTractionSpringDeltaMax;
             currentHandling->fTractionSpringDeltaMaxRatio_ = 1.0f / fTractionSpringDeltaMax;
         }
     }
 
-    menu.FloatOptionCb("fLowSpeedTractionLossMult", currentHandling->fLowSpeedTractionLossMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fCamberStiffnesss", currentHandling->fCamberStiffness, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fLowSpeedTractionLossMult", currentHandling->fLowSpeedTractionLossMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fCamberStiffnesss", currentHandling->fCamberStiffness, -1000.0f, 1000.0f, 0.01f);
 
     { // todo: ???
         float fTractionBiasFront = currentHandling->fTractionBiasFront_ / 2.0f;
-        if (menu.FloatOptionCb("fTractionBiasFront", fTractionBiasFront, 0.0f, 1.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fTractionBiasFront", fTractionBiasFront, 0.0f, 1.0f, 0.01f)) {
             currentHandling->fTractionBiasFront_ = 2.0f * fTractionBiasFront;
             currentHandling->fTractionBiasRear = 2.0f * (1.0f - (fTractionBiasFront));
         }
     }
 
-    menu.FloatOptionCb("fTractionLossMult", currentHandling->fTractionLossMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fSuspensionForce", currentHandling->fSuspensionForce, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fTractionLossMult", currentHandling->fTractionLossMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSuspensionForce", currentHandling->fSuspensionForce, -1000.0f, 1000.0f, 0.01f);
 
     {
         float fSuspensionCompDamp = currentHandling->fSuspensionCompDamp * 10.0f;
-        if (menu.FloatOptionCb("fSuspensionCompDamp", fSuspensionCompDamp, -1000.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fSuspensionCompDamp", fSuspensionCompDamp, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fSuspensionCompDamp = fSuspensionCompDamp / 10.0f;
         }
     }
 
     {
         float fSuspensionReboundDamp = currentHandling->fSuspensionReboundDamp * 10.0f;
-        if (menu.FloatOptionCb("fSuspensionReboundDamp", fSuspensionReboundDamp, -1000.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fSuspensionReboundDamp", fSuspensionReboundDamp, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fSuspensionReboundDamp = fSuspensionReboundDamp / 10.0f;
         }
     }
 
-    menu.FloatOptionCb("fSuspensionUpperLimit", currentHandling->fSuspensionUpperLimit, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fSuspensionLowerLimit", currentHandling->fSuspensionLowerLimit, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fSuspensionRaise_", currentHandling->fSuspensionRaise_, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fSuspensionUpperLimit", currentHandling->fSuspensionUpperLimit, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSuspensionLowerLimit", currentHandling->fSuspensionLowerLimit, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSuspensionRaise_", currentHandling->fSuspensionRaise_, -1000.0f, 1000.0f, 0.01f);
 
     {
         float fSuspensionBiasFront = currentHandling->fSuspensionBiasFront_ / 2.0f;
-        if (menu.FloatOptionCb("fSuspensionBiasFront_", fSuspensionBiasFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fSuspensionBiasFront_", fSuspensionBiasFront, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fSuspensionBiasFront_ = fSuspensionBiasFront * 2.0f;
             currentHandling->fSuspensionBiasRear_ = 2.0f * (1.0f - (fSuspensionBiasFront));
         }
     }
 
-    menu.FloatOptionCb("fAntiRollBarForce", currentHandling->fAntiRollBarForce, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fAntiRollBarForce", currentHandling->fAntiRollBarForce, -1000.0f, 1000.0f, 0.01f);
 
     {
         float fAntiRollBarBiasFront = currentHandling->fAntiRollBarBiasFront_ / 2.0f;
-        if (menu.FloatOptionCb("fAntiRollBarBiasFront_", fAntiRollBarBiasFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry)) {
+        if (FloatOptionExtra("fAntiRollBarBiasFront_", fAntiRollBarBiasFront, -1000.0f, 1000.0f, 0.01f)) {
             currentHandling->fAntiRollBarBiasFront_ = fAntiRollBarBiasFront * 2.0f;
             currentHandling->fAntiRollBarBiasRear_ = 2.0f * (1.0f - (fAntiRollBarBiasFront));
         }
     }
 
-    menu.FloatOptionCb("fRollCentreHeightFront", currentHandling->fRollCentreHeightFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fRollCentreHeightRear", currentHandling->fRollCentreHeightRear, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fRollCentreHeightFront", currentHandling->fRollCentreHeightFront, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRollCentreHeightRear", currentHandling->fRollCentreHeightRear, -1000.0f, 1000.0f, 0.01f);
 
-    menu.FloatOptionCb("fCollisionDamageMult", currentHandling->fCollisionDamageMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fWeaponDamageMult", currentHandling->fWeaponDamageMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fDeformationDamageMult", currentHandling->fDeformationDamageMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fEngineDamageMult", currentHandling->fEngineDamageMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fCollisionDamageMult", currentHandling->fCollisionDamageMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fWeaponDamageMult", currentHandling->fWeaponDamageMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDeformationDamageMult", currentHandling->fDeformationDamageMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fEngineDamageMult", currentHandling->fEngineDamageMult, -1000.0f, 1000.0f, 0.01f);
 
-    menu.FloatOptionCb("fPetrolTankVolume", currentHandling->fPetrolTankVolume, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("fOilVolume", currentHandling->fOilVolume, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("fPetrolTankVolume", currentHandling->fPetrolTankVolume, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fOilVolume", currentHandling->fOilVolume, -1000.0f, 1000.0f, 0.01f);
 
-    menu.FloatOptionCb("vecSeatOffsetDistX", currentHandling->vecSeatOffsetDist.x, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("vecSeatOffsetDistY", currentHandling->vecSeatOffsetDist.y, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-    menu.FloatOptionCb("vecSeatOffsetDistZ", currentHandling->vecSeatOffsetDist.z, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+    FloatOptionExtra("vecSeatOffsetDistX", currentHandling->vecSeatOffsetDist.x, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecSeatOffsetDistY", currentHandling->vecSeatOffsetDist.y, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecSeatOffsetDistZ", currentHandling->vecSeatOffsetDist.z, -1000.0f, 1000.0f, 0.01f);
 
-    menu.IntOption("nMonetaryValue", currentHandling->nMonetaryValue, 0, 1000000, 1);
+    IntOptionExtra("nMonetaryValue", currentHandling->nMonetaryValue, 0, 1000000, 1);
 
     OptionFlags("strModelFlags", Flags::GetModelFlags(), currentHandling->strModelFlags, modelFlagsIndex);
     OptionFlags("strHandlingFlags", Flags::GetHandlingFlags(), currentHandling->strHandlingFlags, handlingFlagsIndex);
@@ -609,19 +651,19 @@ void UpdateEditMenu() {
 
                 if (type == RTHE::HANDLING_TYPE_CAR) {
                     RTHE::CCarHandlingData* carHandling = static_cast<RTHE::CCarHandlingData*>(subHandlingData);
-                    menu.FloatOptionCb("fBackEndPopUpCarImpulseMult", carHandling->fBackEndPopUpCarImpulseMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fBackEndPopUpBuildingImpulseMult", carHandling->fBackEndPopUpBuildingImpulseMult, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fBackEndPopUpMaxDeltaSpeed", carHandling->fBackEndPopUpMaxDeltaSpeed, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    FloatOptionExtra("fBackEndPopUpCarImpulseMult", carHandling->fBackEndPopUpCarImpulseMult, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fBackEndPopUpBuildingImpulseMult", carHandling->fBackEndPopUpBuildingImpulseMult, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fBackEndPopUpMaxDeltaSpeed", carHandling->fBackEndPopUpMaxDeltaSpeed, -1000.0f, 1000.0f, 0.01f);
 
-                    menu.FloatOptionCb("fToeFront", carHandling->fToeFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fToeRear", carHandling->fToeRear, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fCamberFront", carHandling->fCamberFront, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fCamberRear", carHandling->fCamberRear, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fCastor", carHandling->fCastor, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fEngineResistance", carHandling->fEngineResistance, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fMaxDriveBiasTransfer", carHandling->fMaxDriveBiasTransfer, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    menu.FloatOptionCb("fJumpForceScale", carHandling->fJumpForceScale, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
-                    //menu.FloatOptionCb("fUnk_0x034", carHandling->fUnk_0x034, -1000.0f, 1000.0f, 0.01f, GetKbEntry);
+                    FloatOptionExtra("fToeFront", carHandling->fToeFront, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fToeRear", carHandling->fToeRear, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fCamberFront", carHandling->fCamberFront, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fCamberRear", carHandling->fCamberRear, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fCastor", carHandling->fCastor, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fEngineResistance", carHandling->fEngineResistance, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fMaxDriveBiasTransfer", carHandling->fMaxDriveBiasTransfer, -1000.0f, 1000.0f, 0.01f);
+                    FloatOptionExtra("fJumpForceScale", carHandling->fJumpForceScale, -1000.0f, 1000.0f, 0.01f);
+                    //FloatOptionExtra("fUnk_0x034", carHandling->fUnk_0x034, -1000.0f, 1000.0f, 0.01f);
 
                     //{
                     //    std::string strUnk_0x038_Flags = fmt::format("{:X}", carHandling->Unk_0x038);
@@ -648,11 +690,11 @@ void UpdateEditMenu() {
                         else {
                             slotName = AdvancedDataSlotIdName[advancedData->Slot];
                         }
-                        menu.IntOption(fmt::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1,
+                        menu.IntOption(fmt::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1, {},
                             { fmt::format("Slot ID name: {}", slotName) });
                         
-                        menu.IntOption(fmt::format("[{}] Index", iAdv), advancedData->Index, 0, 255);
-                        menu.FloatOptionCb(fmt::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f, GetKbEntry);
+                        menu.IntOption(fmt::format("[{}] Index", iAdv), advancedData->Index, 0, 255, 1);
+                        FloatOptionExtra(fmt::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f);
                      }
                 }
             }

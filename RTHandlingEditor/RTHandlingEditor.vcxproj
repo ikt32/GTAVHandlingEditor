@@ -135,7 +135,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalIncludeDirectories>$(SolutionDir)thirdparty;$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\GTAVHandlingReplacement;$(SolutionDir)thirdparty\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -159,6 +159,7 @@
     <ClCompile Include="Compatibility.cpp" />
     <ClCompile Include="HandlingFlags.cpp" />
     <ClCompile Include="HandlingItem.cpp" />
+    <ClCompile Include="HandlingNotes.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="HandlingFlags.h" />
     <ClInclude Include="HandlingItem.h" />
+    <ClInclude Include="HandlingNotes.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="Memory\atArray.h" />
     <ClInclude Include="Memory\HandlingInfo.h" />

@@ -62,6 +62,7 @@
       <Filter>Utility</Filter>
     </ClCompile>
     <ClCompile Include="HandlingFlags.cpp" />
+    <ClCompile Include="HandlingNotes.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -192,6 +193,7 @@
     <ClInclude Include="..\thirdparty\curl\multi.h">
       <Filter>thirdparty\curl</Filter>
     </ClInclude>
+    <ClInclude Include="HandlingNotes.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">

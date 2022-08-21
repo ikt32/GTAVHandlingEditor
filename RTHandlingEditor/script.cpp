@@ -30,6 +30,7 @@
 #include "Compatibility.h"
 #include "Util/AddonSpawnerCache.h"
 #include "HandlingFlags.h"
+#include "HandlingNotes.h"
 
 namespace fs = std::filesystem;
 
@@ -538,6 +539,7 @@ void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
 
 void UpdateCheats() {
     if (MISC::_HAS_CHEAT_STRING_JUST_BEEN_ENTERED(StrUtil::joaat("rtherld"))) {
+        Notes::Load();
         Flags::Load();
     }
 }
@@ -561,6 +563,7 @@ void main() {
     GetMenu().Initialize();
     GetMenu().ReadSettings();
 
+    Notes::Load();
     Flags::Load();
     UpdateHandlingDataItems();
 
