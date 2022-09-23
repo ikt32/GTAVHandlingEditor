@@ -47,6 +47,10 @@ namespace Notes {
     std::size_t WriteCallback(char* data, size_t size, size_t nmemb, std::string* writerData);
 }
 
+std::string Notes::GetVersion() {
+    return fmt::format("{}.{}", g_AllNotes.Version.Major, g_AllNotes.Version.Minor);
+}
+
 const std::map<std::string, Notes::SHandlingParamInfo>& Notes::GetHandlingNotes() {
     return g_AllNotes.Notes;
 }

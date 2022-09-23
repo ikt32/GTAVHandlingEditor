@@ -10,6 +10,7 @@ namespace Flags {
 
     void Load();
 
+    std::string GetVersion();
     const std::vector<SFlag>& GetModelFlags();
     const std::vector<SFlag>& GetHandlingFlags();
     const std::vector<SFlag>& GetDamageFlags();

@@ -43,6 +43,10 @@ namespace {
     SAllFlags g_AllFlags;
 }
 
+std::string Flags::GetVersion() {
+    return fmt::format("{}.{}", g_AllFlags.Version.Major, g_AllFlags.Version.Minor);
+}
+
 const std::vector<Flags::SFlag>& Flags::GetModelFlags() {
     return g_AllFlags.ModelFlags;
 }

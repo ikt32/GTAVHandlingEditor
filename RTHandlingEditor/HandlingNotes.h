@@ -11,5 +11,6 @@ namespace Notes {
 
     void Load();
 
+    std::string GetVersion();
     const std::map<std::string, SHandlingParamInfo>& GetHandlingNotes();
 }
