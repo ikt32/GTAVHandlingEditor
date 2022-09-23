@@ -228,7 +228,7 @@ void DrawFlagsTable(const STable& flagsTable, uint8_t selectedIndex) {
                     if (word.size() == 0)
                         continue;
 
-                    if (word == "MF" || word == "HF" || word == "DF" || word == "AF")
+                    if (word == "MF" || word == "HF" || word == "DF" || word == "CF")
                         continue;
 
                     std::string withCapital = StrUtil::toLower(word);
