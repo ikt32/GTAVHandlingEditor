@@ -552,7 +552,7 @@ void onMenuClose() {
 
 }
 
-void main() {
+void ScriptMain() {
     setupCompatibility();
     mem::init();
     VExt::Init();
@@ -572,9 +572,4 @@ void main() {
         UpdateCheats();
         WAIT(0);
     }
-}
-
-void ScriptMain() {
-    srand(GetTickCount());
-    main();
 }
