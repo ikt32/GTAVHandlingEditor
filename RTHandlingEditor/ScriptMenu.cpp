@@ -37,7 +37,7 @@ namespace {
     uint8_t damageFlagsIndex = 0;
     uint8_t advancedFlagsIndex = 0;
 
-    std::unordered_map<std::string, std::string> optionNoteMap{
+    std::unordered_map<std::string, std::string> optionNoteMap {
         { "vecCentreOfMassOffset.x", "vecCentreOfMassOffset" },
         { "vecCentreOfMassOffset.y", "vecCentreOfMassOffset" },
         { "vecCentreOfMassOffset.z", "vecCentreOfMassOffset" },
@@ -66,7 +66,7 @@ void UpdateMainMenu() {
     Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
 
     if (ENTITY::DOES_ENTITY_EXIST(vehicle)) {
-        if (menu.Option("Respawn vehicle")) {
+        if (menu.Option("Respawn vehicle").Triggered) {
             Utils::RespawnVehicle(vehicle, playerPed);
             vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
             RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(VExt::GetHandlingPtr(vehicle));
@@ -80,7 +80,7 @@ void UpdateMainMenu() {
 
         menu.MenuOption("Load handling", "LoadMenu");
 
-        if (menu.Option("Save")) {
+        if (menu.Option("Save").Triggered) {
             RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(VExt::GetHandlingPtr(vehicle));
 
             PromptSave(vehicle, currentHandling->NameHash);
@@ -90,6 +90,17 @@ void UpdateMainMenu() {
         menu.Option("Unavailable", { "Only available while in a vehicle." });
     }
 
+    auto result = menu.Option("About", {
+        "Real Time Handling Editor",
+        "by ikt"
+    });
+    if (result.Highlighted) {
+        menu.OptionPlusPlus({
+            fmt::format("Parameter notes version: {}", Notes::GetVersion()),
+            fmt::format("Flags notes version: {}", Flags::GetVersion()),
+            "github.com/E66666666/GTAVHandlingInfo"
+        });
+    }
 }
 
 template <typename T>
@@ -278,7 +289,8 @@ void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>&
         &show,
         [&] { if (flagIndex < 31) ++flagIndex; },
         [&] { if (flagIndex > 0) --flagIndex; },
-        "", { "Move selection with Left and Right. Space (KB) or RB (Controller) to toggle. Enter to edit flags string." })) {
+        "", { "Move selection with Left and Right. Space (KB) or RB (Controller) to toggle. Enter to edit flags string." })
+            .Triggered) {
         std::string newFlags = GetKbEntryStr(strFlags);
         SetFlags(flags, newFlags);
     }
@@ -646,14 +658,12 @@ void UpdateEditMenu() {
             default:
                 AIHandling = fmt::format("{:X}", currentHandling->AIHandling);
         }
-        if (menu.Option(fmt::format("AIHandling: {}", AIHandling), 
-            {
-                fmt::format("AVERAGE: {:X}", StrUtil::joaat("AVERAGE")),
-                fmt::format("SPORTS_CAR: {:X}", StrUtil::joaat("SPORTS_CAR")),
-                fmt::format("TRUCK: {:X}", StrUtil::joaat("TRUCK")),
-                fmt::format("CRAP: {:X}", StrUtil::joaat("CRAP")),
-            })) {
-        }
+        menu.Option(fmt::format("AIHandling: {}", AIHandling), {
+            fmt::format("AVERAGE: {:X}", StrUtil::joaat("AVERAGE")),
+            fmt::format("SPORTS_CAR: {:X}", StrUtil::joaat("SPORTS_CAR")),
+            fmt::format("TRUCK: {:X}", StrUtil::joaat("TRUCK")),
+            fmt::format("CRAP: {:X}", StrUtil::joaat("CRAP")),
+        });
     }
 
     if (1) {
@@ -742,7 +752,7 @@ void UpdateLoadMenu() {
 
     for (const auto& handlingDataItem : g_handlingDataItems) {
         bool selected = false;
-        if (menu.OptionPlus(handlingDataItem.handlingName, {}, &selected)) {
+        if (menu.OptionPlus(handlingDataItem.handlingName, {}, &selected).Triggered) {
             setHandling(vehicle, handlingDataItem);
             UI::Notify(fmt::format("Applied {} handling", handlingDataItem.handlingName));
         }
