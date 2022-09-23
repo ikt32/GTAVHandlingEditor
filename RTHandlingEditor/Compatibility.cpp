@@ -23,6 +23,12 @@ T CheckAddr(HMODULE lib, const std::string& funcName) {
 
 void setupHandlingReplacement() {
     logger.Write(INFO, "[Compat] Setting up HandlingReplacement");
+    if (g_HandlingReplacementModule &&
+        g_HR_Enable && g_HR_Disable && g_HR_GetHandlingData) {
+        logger.Write(INFO, "[Compat] HandlingReplacement.asi already loaded");
+        return;
+    }
+
     g_HandlingReplacementModule = GetModuleHandle("HandlingReplacement.asi");
     if (!g_HandlingReplacementModule) {
         logger.Write(INFO, "[Compat] HandlingReplacement.asi not found");

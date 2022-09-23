@@ -554,7 +554,6 @@ void onMenuClose() {
 
 void ScriptMain() {
     setupCompatibility();
-    mem::init();
     VExt::Init();
 
     GetMenu().RegisterOnMain([] { onMenuInit(); });
