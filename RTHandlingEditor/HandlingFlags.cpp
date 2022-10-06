@@ -194,7 +194,7 @@ std::string GetRemoteText(const std::string& url) {
 }
 
 void Flags::Load() {
-    const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
+    const std::string absoluteModPath = Paths::GetModPath();
     const std::string flagsFilePath = absoluteModPath + "\\flags.json";
 
     const std::string remotePath = "https://raw.githubusercontent.com/E66666666/GTAVHandlingInfo/master/flags.json";
