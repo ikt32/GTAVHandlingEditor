@@ -14,12 +14,10 @@
 #endif
 
 namespace Constants {
-    static const char* const DisplayVersion = 
+    static const char* const DisplayVersion =
         "v" STR(VERSION_MAJOR) "."  STR(VERSION_MINOR) "." STR(VERSION_PATCH) VERSION_LABEL_TXT;
-    static const char* const NotificationPrefix = "~b~Handling Editor~w~";
 
-    static const char* const ModDir = "./HandlingEditor";
-    static const char* const SettingsFile = "./HandlingEditor/HandlingEditor.ini";
-    static const char* const LogFile = "./HandlingEditor/HandlingEditor.log";
-    static const char* const MenuFile = "./HandlingEditor/settings_menu.ini";
+    static const char* const iktDir = "ikt";
+    static const char* const ModDir = "HandlingEditor";
+    static const char* const NotificationPrefix = "~b~Handling Editor~w~";
 }

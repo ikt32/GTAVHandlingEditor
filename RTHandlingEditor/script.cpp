@@ -246,15 +246,18 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 void UpdateHandlingDataItems() {
     logger.Write(DEBUG, "[Files] Clearing and handling items...");
     g_handlingDataItems.clear();
-    const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
+    const std::string absoluteModPath = Paths::GetModPath();
     const std::string handlingsPath = absoluteModPath + "\\HandlingFiles";
 
     if (!(fs::exists(fs::path(handlingsPath)) && fs::is_directory(fs::path(handlingsPath)))) {
         logger.Write(WARN, "[Files] Directory [%s] not found!", handlingsPath.c_str());
         return;
     }
+    //else
+    //    logger.Write(DEBUG, "[Files] Directory [%s] found :)", handlingsPath.c_str());
 
     for (auto& file : fs::directory_iterator(handlingsPath)) {
+        // logger.Write(DEBUG, "[Files] Finding Handling Files...");
         // Only parse meta/xml files
         if (StrUtil::toLower(fs::path(file).extension().string()) != ".meta" &&
             StrUtil::toLower(fs::path(file).extension().string()) != ".xml")
@@ -514,7 +517,7 @@ void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
     uint32_t saveFileSuffix = 0;
     std::string outFile = fileName;
 
-    const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
+    const std::string absoluteModPath = Paths::GetModPath();
     const std::string handlingsPath = absoluteModPath + "\\HandlingFiles";
 
     bool duplicate;
@@ -558,7 +561,10 @@ void ScriptMain() {
 
     GetMenu().RegisterOnMain([] { onMenuInit(); });
     GetMenu().RegisterOnExit([] { onMenuClose(); });
-    GetMenu().SetFiles(Constants::MenuFile);
+
+    std::string absoluteModPath = Paths::GetModPath();
+    std::string settingsMenuFile = absoluteModPath + "\\settings_menu.ini";
+    GetMenu().SetFiles(settingsMenuFile);
     GetMenu().Initialize();
     GetMenu().ReadSettings();
 
