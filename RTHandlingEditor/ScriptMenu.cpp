@@ -83,7 +83,7 @@ void UpdateMainMenu() {
         if (menu.Option("Save").Triggered) {
             RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(VExt::GetHandlingPtr(vehicle));
 
-            PromptSave(vehicle, currentHandling->NameHash);
+            PromptSave(vehicle, currentHandling->handlingName);
         }
     }
     else {
@@ -502,9 +502,9 @@ void UpdateEditMenu() {
     FloatOptionExtra("fClutchChangeRateScaleDownShift", currentHandling->fClutchChangeRateScaleDownShift, -1000.0f, 1000.0f, 0.01f);
 
     {
-        float fInitialDriveMaxFlatVel = currentHandling->fInitialDriveMaxFlatVel_ * 3.6f;
+        float fInitialDriveMaxFlatVel = currentHandling->fInitialDriveMaxFlatVel * 3.6f;
         if (FloatOptionExtra("fInitialDriveMaxFlatVel", fInitialDriveMaxFlatVel, 0.0f, 1000.0f, 0.5f)) {
-            currentHandling->fInitialDriveMaxFlatVel_ = fInitialDriveMaxFlatVel / 3.6f;
+            currentHandling->fInitialDriveMaxFlatVel = fInitialDriveMaxFlatVel / 3.6f;
             currentHandling->fDriveMaxFlatVel_ = fInitialDriveMaxFlatVel / 3.0f;
         }
     }
@@ -512,20 +512,20 @@ void UpdateEditMenu() {
     FloatOptionExtra("fBrakeForce", currentHandling->fBrakeForce, -1000.0f, 1000.0f, 0.01f);
 
     {
-        float fBrakeBiasFront = currentHandling->fBrakeBiasFront_ / 2.0f;
+        float fBrakeBiasFront = currentHandling->fBrakeBiasFront / 2.0f;
         if (FloatOptionExtra("fBrakeBiasFront", fBrakeBiasFront, -1000.0f, 1000.0f, 0.01f)) {
-            currentHandling->fBrakeBiasFront_ = fBrakeBiasFront * 2.0f;
+            currentHandling->fBrakeBiasFront = fBrakeBiasFront * 2.0f;
             currentHandling->fBrakeBiasRear_ = 2.0f * (1.0f - fBrakeBiasFront);
         }
     }
     
-    FloatOptionExtra("fHandBrakeForce", currentHandling->fHandBrakeForce2, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fHandBrakeForce", currentHandling->fHandBrakeForce, -1000.0f, 1000.0f, 0.01f);
 
     {
         // rad 2 deg
-        float fSteeringLock = currentHandling->fSteeringLock_ / 0.017453292f;
+        float fSteeringLock = currentHandling->fSteeringLock / 0.017453292f;
         if (FloatOptionExtra("fSteeringLock", fSteeringLock, 0.0f, 90.0f, 0.10f)) {
-            currentHandling->fSteeringLock_ = fSteeringLock * 0.017453292f;
+            currentHandling->fSteeringLock = fSteeringLock * 0.017453292f;
             currentHandling->fSteeringLockRatio_ = 1.0f / (fSteeringLock * 0.017453292f);
         }
     }
@@ -554,9 +554,9 @@ void UpdateEditMenu() {
 
     {
         // rad 2 deg
-        float fTractionCurveLateral = currentHandling->fTractionCurveLateral_ / 0.017453292f;
+        float fTractionCurveLateral = currentHandling->fTractionCurveLateral / 0.017453292f;
         if (FloatOptionExtra("fTractionCurveLateral", fTractionCurveLateral, -1000.0f, 1000.0f, 0.01f)) {
-            currentHandling->fTractionCurveLateral_ = fTractionCurveLateral * 0.017453292f;
+            currentHandling->fTractionCurveLateral = fTractionCurveLateral * 0.017453292f;
             currentHandling->fTractionCurveLateralRatio_ = 1.0f / (fTractionCurveLateral * 0.017453292f);
         }
     }
@@ -570,12 +570,12 @@ void UpdateEditMenu() {
     }
 
     FloatOptionExtra("fLowSpeedTractionLossMult", currentHandling->fLowSpeedTractionLossMult, -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fCamberStiffnesss", currentHandling->fCamberStiffness, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fCamberStiffnesss", currentHandling->fCamberStiffnesss, -1000.0f, 1000.0f, 0.01f);
 
     { // todo: ???
-        float fTractionBiasFront = currentHandling->fTractionBiasFront_ / 2.0f;
+        float fTractionBiasFront = currentHandling->fTractionBiasFront / 2.0f;
         if (FloatOptionExtra("fTractionBiasFront", fTractionBiasFront, 0.0f, 1.0f, 0.01f)) {
-            currentHandling->fTractionBiasFront_ = 2.0f * fTractionBiasFront;
+            currentHandling->fTractionBiasFront = 2.0f * fTractionBiasFront;
             currentHandling->fTractionBiasRear = 2.0f * (1.0f - (fTractionBiasFront));
         }
     }
@@ -599,12 +599,12 @@ void UpdateEditMenu() {
 
     FloatOptionExtra("fSuspensionUpperLimit", currentHandling->fSuspensionUpperLimit, -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fSuspensionLowerLimit", currentHandling->fSuspensionLowerLimit, -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fSuspensionRaise", currentHandling->fSuspensionRaise_, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSuspensionRaise", currentHandling->fSuspensionRaise, -1000.0f, 1000.0f, 0.01f);
 
     {
-        float fSuspensionBiasFront = currentHandling->fSuspensionBiasFront_ / 2.0f;
+        float fSuspensionBiasFront = currentHandling->fSuspensionBiasFront / 2.0f;
         if (FloatOptionExtra("fSuspensionBiasFront", fSuspensionBiasFront, -1000.0f, 1000.0f, 0.01f)) {
-            currentHandling->fSuspensionBiasFront_ = fSuspensionBiasFront * 2.0f;
+            currentHandling->fSuspensionBiasFront = fSuspensionBiasFront * 2.0f;
             currentHandling->fSuspensionBiasRear_ = 2.0f * (1.0f - (fSuspensionBiasFront));
         }
     }
@@ -612,9 +612,9 @@ void UpdateEditMenu() {
     FloatOptionExtra("fAntiRollBarForce", currentHandling->fAntiRollBarForce, -1000.0f, 1000.0f, 0.01f);
 
     {
-        float fAntiRollBarBiasFront = currentHandling->fAntiRollBarBiasFront_ / 2.0f;
+        float fAntiRollBarBiasFront = currentHandling->fAntiRollBarBiasFront / 2.0f;
         if (FloatOptionExtra("fAntiRollBarBiasFront", fAntiRollBarBiasFront, -1000.0f, 1000.0f, 0.01f)) {
-            currentHandling->fAntiRollBarBiasFront_ = fAntiRollBarBiasFront * 2.0f;
+            currentHandling->fAntiRollBarBiasFront = fAntiRollBarBiasFront * 2.0f;
             currentHandling->fAntiRollBarBiasRear_ = 2.0f * (1.0f - (fAntiRollBarBiasFront));
         }
     }

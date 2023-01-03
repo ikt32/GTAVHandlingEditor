@@ -3,6 +3,7 @@
 #include "Util/Logger.hpp"
 #include "fmt/format.h"
 #include "Memory/HandlingInfo.h"
+#include "Memory/Vector.hpp"
 #include "Util/StrUtil.h"
 #include <filesystem>
 
@@ -261,7 +262,7 @@ void InsertElement(tinyxml2::XMLNode* rootNode, const char* elemName, int value)
 }
 
 // Contiguous for initializer list
-void InsertElement(tinyxml2::XMLNode* rootNode, const char* elemName, RTHE::Vector3 value) {
+void InsertElement(tinyxml2::XMLNode* rootNode, const char* elemName, rage::Vec3 value) {
     tinyxml2::XMLElement* element = rootNode->GetDocument()->NewElement(elemName);
     element->SetAttribute("x", fmt::format("{:.6f}", value.x).c_str());
     element->SetAttribute("y", fmt::format("{:.6f}", value.y).c_str());
