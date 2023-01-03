@@ -441,6 +441,6 @@ namespace RTHE
 		float fMinSpeedForThrustFalloff;       //0x00A8
 		float fBrakingThrustScale;             //0x00AC
 		int mode;                              //0x00B0
-		Hash strFlags;                         //0x00B4
+		uint32_t strFlags;                     //0x00B4
 	};
 }

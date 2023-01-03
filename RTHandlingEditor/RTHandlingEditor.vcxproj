@@ -160,6 +160,7 @@
     <ClCompile Include="HandlingFlags.cpp" />
     <ClCompile Include="HandlingItem.cpp" />
     <ClCompile Include="HandlingNotes.cpp" />
+    <ClCompile Include="HandlingUtils.cpp" />
     <ClCompile Include="keyboard.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory\NativeMemory.cpp" />
@@ -211,6 +212,7 @@
     <ClInclude Include="HandlingFlags.h" />
     <ClInclude Include="HandlingItem.h" />
     <ClInclude Include="HandlingNotes.h" />
+    <ClInclude Include="HandlingUtils.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="Memory\atArray.h" />
     <ClInclude Include="Memory\HandlingInfo.h" />

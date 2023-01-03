@@ -63,6 +63,7 @@
     </ClCompile>
     <ClCompile Include="HandlingFlags.cpp" />
     <ClCompile Include="HandlingNotes.cpp" />
+    <ClCompile Include="HandlingUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="script.h" />
@@ -197,6 +198,7 @@
     <ClInclude Include="Memory\Vector.hpp">
       <Filter>Memory</Filter>
     </ClInclude>
+    <ClInclude Include="HandlingUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">

@@ -11,6 +11,7 @@
 #include "HandlingFlags.h"
 #include "HandlingNotes.h"
 #include "AdvancedDataNames.h"
+#include "HandlingUtils.h"
 
 #include <HandlingReplacement.h>
 #include <menu.h>
@@ -364,41 +365,16 @@ bool FloatOptionExtra(const std::string& option, float& var, float min, float ma
 }
 
 void UpdateEditMenu() {
-    menu.Title("Edit Handling");
-
-    Ped playerPed = PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX());
-    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
-
-    if (!ENTITY::DOES_ENTITY_EXIST(vehicle)) {
-        menu.Subtitle("Unavailable");
-        menu.Option("Unavailable", { "Only available while in a vehicle." });
-        return;
-    }
-
-    std::string vehicleNameLabel = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    std::string vehicleName = HUD::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
-    menu.Subtitle(fmt::format("{}", vehicleName));
-
-    RTHE::CHandlingData* currentHandling = nullptr;
-
-    uint64_t addr = VExt::GetHandlingPtr(vehicle);
-    currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
-
-    if (currentHandling == nullptr) {
-        menu.Option("Could not find handling pointer!");
-        return;
-    }
-
-    void* handlingDataOrig = nullptr;
-    bool customHandling = false;
+    std::string vehicleName = "Unavailable";
     bool hrActive = false;
-    {
-        void* handlingDataReplace = nullptr;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
 
-        if (HR_GetHandlingData(vehicle, &handlingDataOrig, &handlingDataReplace)) {
-            customHandling = true;
-            hrActive = true;
-        }
+    menu.Title("Edit Handling");
+    menu.Subtitle(vehicleName);
+
+    if (!currentHandling) {
+        menu.Option("Unavailable", { "Only available while in a vehicle." });
     }
 
     if (hrActive) {
@@ -407,10 +383,6 @@ void UpdateEditMenu() {
               "If active, new vehicle instances spawn with the applied changes, but the current instance does not update.",
               "If not active, new vehicle instances spawn with the unedited original data.",
               "Recommended to enable if HandlingReplacement is active. Remember to respawn after edits!"});
-    }
-
-    if (customHandling && editStock && handlingDataOrig != nullptr) {
-        currentHandling = reinterpret_cast<RTHE::CHandlingData*>(handlingDataOrig);
     }
 
     Utils::DrawCOMAndRollCenters(vehicle, currentHandling);
@@ -666,71 +638,448 @@ void UpdateEditMenu() {
         });
     }
 
-    if (1) {
-        for(uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
-            RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
+    for (uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
+        RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
 
-            if (subHandlingData) {
-                menu.Option("SubHandlingData found",
-                    { "Only CCarHandlingData supported currently." });
+        if (!subHandlingData)
+            continue;
 
-                auto type = subHandlingData->GetHandlingType();
-                menu.Option(fmt::format("SHD[{}] {}", idx, type));
-
-                if (type == RTHE::HANDLING_TYPE_CAR) {
-                    RTHE::CCarHandlingData* carHandling = static_cast<RTHE::CCarHandlingData*>(subHandlingData);
-                    FloatOptionExtra("fBackEndPopUpCarImpulseMult", carHandling->fBackEndPopUpCarImpulseMult, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fBackEndPopUpBuildingImpulseMult", carHandling->fBackEndPopUpBuildingImpulseMult, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fBackEndPopUpMaxDeltaSpeed", carHandling->fBackEndPopUpMaxDeltaSpeed, -1000.0f, 1000.0f, 0.01f);
-
-                    FloatOptionExtra("fToeFront", carHandling->fToeFront, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fToeRear", carHandling->fToeRear, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fCamberFront", carHandling->fCamberFront, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fCamberRear", carHandling->fCamberRear, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fCastor", carHandling->fCastor, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fEngineResistance", carHandling->fEngineResistance, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fMaxDriveBiasTransfer", carHandling->fMaxDriveBiasTransfer, -1000.0f, 1000.0f, 0.01f);
-                    FloatOptionExtra("fJumpForceScale", carHandling->fJumpForceScale, -1000.0f, 1000.0f, 0.01f);
-                    //FloatOptionExtra("fUnk_0x034", carHandling->fUnk_0x034, -1000.0f, 1000.0f, 0.01f);
-
-                    //{
-                    //    std::string strUnk_0x038_Flags = fmt::format("{:X}", carHandling->Unk_0x038);
-                    //    if (menu.Option(fmt::format("Unk_0x038: {}", strUnk_0x038_Flags))) {
-                    //        std::string newFlags = GetKbEntryStr(strUnk_0x038_Flags);
-                    //        SetFlags(carHandling->Unk_0x038, newFlags);
-                    //    }
-                    //}
-
-                    OptionFlags("strAdvancedFlags", Flags::GetAdvancedFlags(), carHandling->strAdvancedFlags, advancedFlagsIndex);
-
-                    auto numAdvData = carHandling->pAdvancedData.GetCount();
-                    if (numAdvData > 0) {
-                        menu.Option(fmt::format("CAdvancedData found ({})", numAdvData));
-                    }
-
-                    for (uint16_t iAdv = 0; iAdv < carHandling->pAdvancedData.GetCount(); ++iAdv) {
-                        RTHE::CAdvancedData* advancedData = &carHandling->pAdvancedData.Get(iAdv);
-
-                        std::string slotName;
-                        if (advancedData->Slot >= AdvancedDataSlotIdName.size()) {
-                            slotName = fmt::format("Index ({}) out of bounds",advancedData->Slot);
-                        }
-                        else {
-                            slotName = AdvancedDataSlotIdName[advancedData->Slot];
-                        }
-                        menu.IntOption(fmt::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1, {},
-                            { fmt::format("Slot ID name: {}", slotName) });
-                        
-                        menu.IntOption(fmt::format("[{}] Index", iAdv), advancedData->Index, 0, 255, 1);
-                        FloatOptionExtra(fmt::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f);
-                     }
-                }
-            }
+        auto type = subHandlingData->GetHandlingType();
+        switch (type) {
+            case RTHE::HANDLING_TYPE_BIKE:
+                menu.MenuOption("CBikeHandlingData", "EditCBikeHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_FLYING:
+                menu.MenuOption("CFlyingHandlingData", "EditCFlyingHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_VERTICAL_FLYING:
+                menu.MenuOption("CSpecialFlightHandlingData", "EditCSpecialFlightHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_BOAT:
+                menu.MenuOption("CBoatHandlingData", "EditCBoatHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_SEAPLANE:
+                menu.MenuOption("CSeaPlaneHandlingData", "EditCSeaPlaneHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_SUBMARINE:
+                menu.MenuOption("CSubmarineHandlingData", "EditCSubmarineHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_TRAILER:
+                menu.MenuOption("CTrailerHandlingData", "EditCTrailerHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_CAR:
+                menu.MenuOption("CCarHandlingData", "EditCCarHandlingDataMenu");
+                break;
+            case RTHE::HANDLING_TYPE_WEAPON:
+                menu.Option("HANDLING_TYPE_WEAPON",
+                    { "Unsupported handling type" });
+                break;
+            case RTHE::HANDLING_TYPE_TRAIN:
+                menu.Option("HANDLING_TYPE_TRAIN",
+                    { "Unsupported handling type" });
+                break;
+            default:
+                menu.Option(fmt::format("Handling type: {}", static_cast<int>(type)),
+                    { "Unknown handling type" });
+                break;
         }
     }
 }
 
-bool onlyCurrent = true;
+void UpdateCBikeHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CBikeHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_BIKE);
+
+    if (!subHandlingData) {
+        menu.Option("No CCarHandlingData");
+        return;
+    }
+
+    RTHE::CBikeHandlingData* bikeHandlingData = static_cast<RTHE::CBikeHandlingData*>(subHandlingData);
+
+    FloatOptionExtra("fLeanFwdCOMMult",                  bikeHandlingData->floatfLeanFwdCOMMult,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLeanFwdForceMult",                bikeHandlingData->floatfLeanFwdForceMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLeanBakCOMMult",                  bikeHandlingData->floatfLeanBakCOMMult,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLeanBakForceMult",                bikeHandlingData->floatfLeanBakForceMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxBankAngle",                    bikeHandlingData->floatfMaxBankAngle,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fFullAnimAngle",                   bikeHandlingData->floatfFullAnimAngle,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDesLeanReturnFrac",               bikeHandlingData->floatfDesLeanReturnFrac,     -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fStickLeanMult",                   bikeHandlingData->floatfStickLeanMult,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBrakingStabilityMult",            bikeHandlingData->floatfBrakingStabilityMult,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInAirSteerMult",                  bikeHandlingData->floatfInAirSteerMult,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fWheelieBalancePoint",             bikeHandlingData->floatfWheelieBalancePoint,   -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fStoppieBalancePoint",             bikeHandlingData->floatfStoppieBalancePoint,   -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fWheelieSteerMult",                bikeHandlingData->floatfWheelieSteerMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRearBalanceMult",                 bikeHandlingData->floatfRearBalanceMult,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fFrontBalanceMult",                bikeHandlingData->floatfFrontBalanceMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBikeGroundSideFrictionMult",      bikeHandlingData->floatfBikeGroundSideFrictionMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBikeWheelGroundSideFrictionMult", bikeHandlingData->floatfBikeWheelGroundSideFrictionMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBikeOnStandLeanAngle",            bikeHandlingData->floatfBikeOnStandLeanAngle,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBikeOnStandSteerAngle",           bikeHandlingData->floatfBikeOnStandSteerAngle, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fJumpForce",                       bikeHandlingData->floatfJumpForce,             -1000.0f, 1000.0f, 0.01f);
+}
+
+void UpdateCFlyingHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CFlyingHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_FLYING);
+
+    if (!subHandlingData) {
+        menu.Option("No CCarHandlingData");
+        return;
+    }
+
+    RTHE::CFlyingHandlingData* flyingHandlingData = static_cast<RTHE::CFlyingHandlingData*>(subHandlingData);
+
+    FloatOptionExtra("fThrust",               flyingHandlingData->fThrust,               -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fThrustFallOff",        flyingHandlingData->fThrustFallOff,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fThrustVectoring",      flyingHandlingData->fThrustVectoring,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInitialThrust",        flyingHandlingData->fInitialThrust,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInitialThrustFallOff", flyingHandlingData->fInitialThrustFallOff, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fYawMult",              flyingHandlingData->fYawMult,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fYawStabilise",         flyingHandlingData->fYawStabilise,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSideSlipMult",         flyingHandlingData->fSideSlipMult,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInitialYawMult",       flyingHandlingData->fInitialYawMult,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRollMult",             flyingHandlingData->fRollMult,             -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRollStabilise",        flyingHandlingData->fRollStabilise,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInitialRollMult",      flyingHandlingData->fInitialRollMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPitchMult",            flyingHandlingData->fPitchMult,            -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPitchStabilise",       flyingHandlingData->fPitchStabilise,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInitialPitchMult",     flyingHandlingData->fInitialPitchMult,     -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fFormLiftMult",         flyingHandlingData->fFormLiftMult,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAttackLiftMult",       flyingHandlingData->fAttackLiftMult,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAttackDiveMult",       flyingHandlingData->fAttackDiveMult,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fGearDownDragV",        flyingHandlingData->fGearDownDragV,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fGearDownLiftMult",     flyingHandlingData->fGearDownLiftMult,     -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fWindMult",             flyingHandlingData->fWindMult,             -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMoveRes",              flyingHandlingData->fMoveRes,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecTurnRes.x",          flyingHandlingData->vecTurnRes.x,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecTurnRes.y",          flyingHandlingData->vecTurnRes.y,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecTurnRes.z",          flyingHandlingData->vecTurnRes.z,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecSpeedRes.x",         flyingHandlingData->vecSpeedRes.x,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecSpeedRes.y",         flyingHandlingData->vecSpeedRes.y,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecSpeedRes.z",         flyingHandlingData->vecSpeedRes.z,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fGearDoorFrontOpen",                 flyingHandlingData->fGearDoorFrontOpen,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fGearDoorRearOpen",                  flyingHandlingData->fGearDoorRearOpen,                  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fGearDoorRearOpen2",                 flyingHandlingData->fGearDoorRearOpen2,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fGearDoorRearMOpen",                 flyingHandlingData->fGearDoorRearMOpen,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fTurublenceMagnitudeMax",            flyingHandlingData->fTurublenceMagnitudeMax,            -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fTurublenceForceMulti",              flyingHandlingData->fTurublenceForceMulti,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fTurublenceRollTorqueMulti",         flyingHandlingData->fTurublenceRollTorqueMulti,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fTurublencePitchTorqueMulti",        flyingHandlingData->fTurublencePitchTorqueMulti,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBodyDamageControlEffectMult",       flyingHandlingData->fBodyDamageControlEffectMult,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInputSensitivityForDifficulty",     flyingHandlingData->fInputSensitivityForDifficulty,     -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fOnGroundYawBoostSpeedPeak",         flyingHandlingData->fOnGroundYawBoostSpeedPeak,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fOnGroundYawBoostSpeedCap",          flyingHandlingData->fOnGroundYawBoostSpeedCap,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fEngineOffGlideMulti",               flyingHandlingData->fEngineOffGlideMulti,               -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAfterburnerEffectRadius",           flyingHandlingData->fAfterburnerEffectRadius,           -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAfterburnerEffectDistance",         flyingHandlingData->fAfterburnerEffectDistance,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAfterburnerEffectForceMulti",       flyingHandlingData->fAfterburnerEffectForceMulti,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSubmergeLevelToPullHeliUnderwater", flyingHandlingData->fSubmergeLevelToPullHeliUnderwater, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fExtraLiftWithRoll",                 flyingHandlingData->fExtraLiftWithRoll,                 -1000.0f, 1000.0f, 0.01f);
+
+    std::string handlingTypeName;
+
+    switch (flyingHandlingData->handlingType) {
+        case RTHE::eHandlingType::HANDLING_TYPE_BIKE:            handlingTypeName = "HANDLING_TYPE_BIKE"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_FLYING:          handlingTypeName = "HANDLING_TYPE_FLYING"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_VERTICAL_FLYING: handlingTypeName = "HANDLING_TYPE_VERTICAL_FLYING"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_BOAT:            handlingTypeName = "HANDLING_TYPE_BOAT"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_SEAPLANE:        handlingTypeName = "HANDLING_TYPE_SEAPLANE"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_SUBMARINE:       handlingTypeName = "HANDLING_TYPE_SUBMARINE"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_TRAIN:           handlingTypeName = "HANDLING_TYPE_TRAIN"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_TRAILER:         handlingTypeName = "HANDLING_TYPE_TRAILER"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_CAR:             handlingTypeName = "HANDLING_TYPE_CAR"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_WEAPON:          handlingTypeName = "HANDLING_TYPE_WEAPON"; break;
+        default:
+            handlingTypeName = fmt::format("Unknown ({})", static_cast<int>(flyingHandlingData->handlingType));
+    }
+}
+
+void UpdateCSpecialFlightHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CSpecialFlightHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_VERTICAL_FLYING);
+
+    if (!subHandlingData) {
+        menu.Option("SubHandlingData not found");
+        return;
+    }
+
+    RTHE::CSpecialFlightHandlingData* flyingHandlingData = static_cast<RTHE::CSpecialFlightHandlingData*>(subHandlingData);
+
+    FloatOptionExtra("vecAngularDamping.x", flyingHandlingData->vecAngularDamping.x, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecAngularDamping.y", flyingHandlingData->vecAngularDamping.y, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecAngularDamping.z", flyingHandlingData->vecAngularDamping.z, -1000.0f, 1000.0f, 0.01f);
+
+    FloatOptionExtra("vecAngularDampingMin.x", flyingHandlingData->vecAngularDampingMin.x, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecAngularDampingMin.y", flyingHandlingData->vecAngularDampingMin.y, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecAngularDampingMin.z", flyingHandlingData->vecAngularDampingMin.z, -1000.0f, 1000.0f, 0.01f);
+
+    FloatOptionExtra("vecLinearDamping.x", flyingHandlingData->vecLinearDamping.x, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecLinearDamping.y", flyingHandlingData->vecLinearDamping.y, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecLinearDamping.z", flyingHandlingData->vecLinearDamping.z, -1000.0f, 1000.0f, 0.01f);
+
+    FloatOptionExtra("vecLinearDampingMin", flyingHandlingData->vecLinearDampingMin.x, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecLinearDampingMin", flyingHandlingData->vecLinearDampingMin.y, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecLinearDampingMin", flyingHandlingData->vecLinearDampingMin.z, -1000.0f, 1000.0f, 0.01f);
+
+    FloatOptionExtra("fLiftCoefficient",              flyingHandlingData->fLiftCoefficient,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fCriticalLiftAngle",            flyingHandlingData->fCriticalLiftAngle,            -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInitialLiftAngle",             flyingHandlingData->fInitialLiftAngle,             -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxLiftAngle",                 flyingHandlingData->fMaxLiftAngle,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDragCoefficient",              flyingHandlingData->fDragCoefficient,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBrakingDrag",                  flyingHandlingData->fBrakingDrag,                  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxLiftVelocity",              flyingHandlingData->fMaxLiftVelocity,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMinLiftVelocity",              flyingHandlingData->fMinLiftVelocity,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRollTorqueScale",              flyingHandlingData->fRollTorqueScale,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxTorqueVelocity",            flyingHandlingData->fMaxTorqueVelocity,            -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMinTorqueVelocity",            flyingHandlingData->fMinTorqueVelocity,            -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fYawTorqueScale",               flyingHandlingData->fYawTorqueScale,               -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSelfLevelingPitchTorqueScale", flyingHandlingData->fSelfLevelingPitchTorqueScale, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInitalOverheadAssist",         flyingHandlingData->fInitalOverheadAssist,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxPitchTorque",               flyingHandlingData->fMaxPitchTorque,               -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxSteeringRollTorque",        flyingHandlingData->fMaxSteeringRollTorque,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPitchTorqueScale",             flyingHandlingData->fPitchTorqueScale,             -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSteeringTorqueScale",          flyingHandlingData->fSteeringTorqueScale,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxThrust",                    flyingHandlingData->fMaxThrust,                    -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fTransitionDuration",           flyingHandlingData->fTransitionDuration,           -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fHoverVelocityScale",           flyingHandlingData->fHoverVelocityScale,           -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fStabilityAssist",              flyingHandlingData->fStabilityAssist,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMinSpeedForThrustFalloff",     flyingHandlingData->fMinSpeedForThrustFalloff,     -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBrakingThrustScale",           flyingHandlingData->fBrakingThrustScale,           -1000.0f, 1000.0f, 0.01f);
+
+    menu.Option(fmt::format("mode: {:X}", flyingHandlingData->mode));
+    menu.Option(fmt::format("strFlags: {:X}", flyingHandlingData->strFlags));
+}
+
+void UpdateCBoatHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CBoatHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_BOAT);
+
+    if (!subHandlingData) {
+        menu.Option("SubHandlingData not found");
+        return;
+    }
+
+    RTHE::CBoatHandlingData* boatHandlingData = static_cast<RTHE::CBoatHandlingData*>(subHandlingData);
+
+    FloatOptionExtra("fBoxFrontMult",                boatHandlingData->fBoxFrontMult,                -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBoxRearMult",                 boatHandlingData->fBoxRearMult,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBoxSideMult",                 boatHandlingData->fBoxSideMult,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSampleTop",                   boatHandlingData->fSampleTop,                   -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSampleBottom",                boatHandlingData->fSampleBottom,                -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fSampleBottomTestCorrection",  boatHandlingData->fSampleBottomTestCorrection,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAquaplaneForce",              boatHandlingData->fAquaplaneForce,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAquaplanePushWaterMult",      boatHandlingData->fAquaplanePushWaterMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAquaplanePushWaterCap",       boatHandlingData->fAquaplanePushWaterCap,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAquaplanePushWaterApply",     boatHandlingData->fAquaplanePushWaterApply,     -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRudderForce",                 boatHandlingData->fRudderForce,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRudderOffsetSubmerge",        boatHandlingData->fRudderOffsetSubmerge,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRudderOffsetForce",           boatHandlingData->fRudderOffsetForce,           -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRudderOffsetForceZMult",      boatHandlingData->fRudderOffsetForceZMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fWaveAudioMult",               boatHandlingData->fWaveAudioMult,               -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecMoveResistance.x",          boatHandlingData->vecMoveResistance.x,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecMoveResistance.y",          boatHandlingData->vecMoveResistance.y,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecMoveResistance.z",          boatHandlingData->vecMoveResistance.z,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecTurnResistance.x",          boatHandlingData->vecTurnResistance.x,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecTurnResistance.y",          boatHandlingData->vecTurnResistance.y,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vecTurnResistance.z",          boatHandlingData->vecTurnResistance.z,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLook_L_R_CamHeight",          boatHandlingData->fLook_L_R_CamHeight,          -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDragCoefficient",             boatHandlingData->fDragCoefficient,             -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fKeelSphereSize",              boatHandlingData->fKeelSphereSize,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPropRadius",                  boatHandlingData->fPropRadius,                  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLowLodAngOffset",             boatHandlingData->fLowLodAngOffset,             -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLowLodDraughtOffset",         boatHandlingData->fLowLodDraughtOffset,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fImpellerOffset",              boatHandlingData->fImpellerOffset,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fImpellerForceMult",           boatHandlingData->fImpellerForceMult,           -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDinghySphereBuoyConst",       boatHandlingData->fDinghySphereBuoyConst,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fProwRaiseMult",               boatHandlingData->fProwRaiseMult,               -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDeepWaterSampleBuoyancyMult", boatHandlingData->fDeepWaterSampleBuoyancyMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fTransmissionMultiplier",      boatHandlingData->fTransmissionMultiplier,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fTractionMultiplier",          boatHandlingData->fTractionMultiplier,          -1000.0f, 1000.0f, 0.01f);
+}
+
+void UpdateCSeaPlaneHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CSeaPlaneHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_SEAPLANE);
+
+    if (!subHandlingData) {
+        menu.Option("SubHandlingData not found");
+        return;
+    }
+
+    RTHE::CSeaPlaneHandlingData* seaPlaneHandlingData = static_cast<RTHE::CSeaPlaneHandlingData*>(subHandlingData);
+
+    IntOptionExtra("fLeftPontoonComponentId",  seaPlaneHandlingData->fLeftPontoonComponentId,  -1000, 1000, 1);
+    IntOptionExtra("fRightPontoonComponentId", seaPlaneHandlingData->fRightPontoonComponentId, -1000, 1000, 1);
+    FloatOptionExtra("fPontoonBuoyConst",                      seaPlaneHandlingData->fPontoonBuoyConst,                      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPontoonSampleSizeFront",                seaPlaneHandlingData->fPontoonSampleSizeFront,                -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPontoonSampleSizeMiddle",               seaPlaneHandlingData->fPontoonSampleSizeMiddle,               -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPontoonSampleSizeRear",                 seaPlaneHandlingData->fPontoonSampleSizeRear,                 -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPontoonLengthFractionForSamples",       seaPlaneHandlingData->fPontoonLengthFractionForSamples,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPontoonDragCoefficient",                seaPlaneHandlingData->fPontoonDragCoefficient,                -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPontoonVerticalDampingCoefficientUp",   seaPlaneHandlingData->fPontoonVerticalDampingCoefficientUp,   -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPontoonVerticalDampingCoefficientDown", seaPlaneHandlingData->fPontoonVerticalDampingCoefficientDown, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fKeelSphereSize",                        seaPlaneHandlingData->fKeelSphereSize,                        -1000.0f, 1000.0f, 0.01f);
+}
+
+void UpdateCSubmarineHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CSubmarineHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_SUBMARINE);
+
+    if (!subHandlingData) {
+        menu.Option("SubHandlingData not found");
+        return;
+    }
+
+    RTHE::CSubmarineHandlingData* submarineHandlingData = static_cast<RTHE::CSubmarineHandlingData*>(subHandlingData);
+
+    FloatOptionExtra("vTurnRes.x",  submarineHandlingData->vTurnRes.x,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vTurnRes.y",  submarineHandlingData->vTurnRes.y,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("vTurnRes.z",  submarineHandlingData->vTurnRes.z,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMoveResXY",  submarineHandlingData->fMoveResXY,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMoveResZ",   submarineHandlingData->fMoveResZ,   -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPitchMult",  submarineHandlingData->fPitchMult,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPitchAngle", submarineHandlingData->fPitchAngle, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fYawMult",    submarineHandlingData->fYawMult,    -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fDiveSpeed",  submarineHandlingData->fDiveSpeed,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRollMult",   submarineHandlingData->fRollMult,   -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRollStab",   submarineHandlingData->fRollStab,   -1000.0f, 1000.0f, 0.01f);
+}
+void UpdateCTrailerHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CTrailerHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_TRAILER);
+
+    if (!subHandlingData) {
+        menu.Option("SubHandlingData not found");
+        return;
+    }
+
+    RTHE::CTrailerHandlingData* trailerHandlingData = static_cast<RTHE::CTrailerHandlingData*>(subHandlingData);
+
+    FloatOptionExtra("fAttachLimitPitch",       trailerHandlingData->fAttachLimitPitch,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAttachLimitRoll",        trailerHandlingData->fAttachLimitRoll,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAttachLimitYaw",         trailerHandlingData->fAttachLimitYaw,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fUprightSpringConstant",  trailerHandlingData->fUprightSpringConstant,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fUprightDampingConstant", trailerHandlingData->fUprightDampingConstant, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAttachedMaxDistance",    trailerHandlingData->fAttachedMaxDistance,    -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAttachedMaxPenetration", trailerHandlingData->fAttachedMaxPenetration, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fAttachRaiseZ",           trailerHandlingData->fAttachRaiseZ,           -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fPosConstraintMassRatio", trailerHandlingData->fPosConstraintMassRatio, -1000.0f, 1000.0f, 0.01f);
+}
+
+void UpdateCCarHandlingDataMenu() {
+    std::string vehicleName = "Unavailable";
+    bool hrActive = false;
+    Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
+    RTHE::CHandlingData* currentHandling = GetEditHandlingData(editStock, hrActive, vehicleName);
+
+    menu.Title("CCarHandlingData");
+    menu.Subtitle(vehicleName);
+
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_CAR);
+
+    if (!subHandlingData) {
+        menu.Option("SubHandlingData not found");
+        return;
+    }
+
+    RTHE::CCarHandlingData* carHandling = static_cast<RTHE::CCarHandlingData*>(subHandlingData);
+
+    FloatOptionExtra("fBackEndPopUpCarImpulseMult", carHandling->fBackEndPopUpCarImpulseMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBackEndPopUpBuildingImpulseMult", carHandling->fBackEndPopUpBuildingImpulseMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBackEndPopUpMaxDeltaSpeed", carHandling->fBackEndPopUpMaxDeltaSpeed, -1000.0f, 1000.0f, 0.01f);
+
+    FloatOptionExtra("fToeFront", carHandling->fToeFront, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fToeRear", carHandling->fToeRear, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fCamberFront", carHandling->fCamberFront, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fCamberRear", carHandling->fCamberRear, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fCastor", carHandling->fCastor, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fEngineResistance", carHandling->fEngineResistance, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxDriveBiasTransfer", carHandling->fMaxDriveBiasTransfer, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fJumpForceScale", carHandling->fJumpForceScale, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fIncreasedRammingForceScale", carHandling->fIncreasedRammingForceScale, -1000.0f, 1000.0f, 0.01f);
+
+    //{
+    //    std::string strUnk_0x038_Flags = fmt::format("{:X}", carHandling->Unk_0x038);
+    //    if (menu.Option(fmt::format("Unk_0x038: {}", strUnk_0x038_Flags))) {
+    //        std::string newFlags = GetKbEntryStr(strUnk_0x038_Flags);
+    //        SetFlags(carHandling->Unk_0x038, newFlags);
+    //    }
+    //}
+
+    OptionFlags("strAdvancedFlags", Flags::GetAdvancedFlags(), carHandling->strAdvancedFlags, advancedFlagsIndex);
+
+    auto numAdvData = carHandling->pAdvancedData.GetCount();
+    if (numAdvData > 0) {
+        menu.Option(fmt::format("CAdvancedData found ({})", numAdvData));
+    }
+
+    for (uint16_t iAdv = 0; iAdv < carHandling->pAdvancedData.GetCount(); ++iAdv) {
+        RTHE::CAdvancedData* advancedData = &carHandling->pAdvancedData.Get(iAdv);
+
+        std::string slotName;
+        if (advancedData->Slot >= AdvancedDataSlotIdName.size()) {
+            slotName = fmt::format("Index ({}) out of bounds", advancedData->Slot);
+        }
+        else {
+            slotName = AdvancedDataSlotIdName[advancedData->Slot];
+        }
+        menu.IntOption(fmt::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1, {},
+            { fmt::format("Slot ID name: {}", slotName) });
+
+        menu.IntOption(fmt::format("[{}] Index", iAdv), advancedData->Index, 0, 255, 1);
+        FloatOptionExtra(fmt::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f);
+    }
+}
 
 void UpdateLoadMenu() {
     menu.Title("Load Handling");
@@ -779,6 +1128,30 @@ void UpdateMenu() {
 
     // MainMenu -> EditHandlingMenu
     if (menu.CurrentMenu("EditMenu")) { UpdateEditMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCBikeHandlingDataMenu
+    if (menu.CurrentMenu("EditCBikeHandlingDataMenu")) { UpdateCBikeHandlingDataMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCFlyingHandlingDataMenu
+    if (menu.CurrentMenu("EditCFlyingHandlingDataMenu")) { UpdateCFlyingHandlingDataMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCSpecialFlightHandlingDataMenu
+    if (menu.CurrentMenu("EditCSpecialFlightHandlingDataMenu")) { UpdateCSpecialFlightHandlingDataMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCBoatHandlingDataMenu
+    if (menu.CurrentMenu("EditCBoatHandlingDataMenu")) { UpdateCBoatHandlingDataMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCSeaPlaneHandlingDataMenu
+    if (menu.CurrentMenu("EditCSeaPlaneHandlingDataMenu")) { UpdateCSeaPlaneHandlingDataMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCSubmarineHandlingDataMenu
+    if (menu.CurrentMenu("EditCSubmarineHandlingDataMenu")) { UpdateCSubmarineHandlingDataMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCTrailerHandlingDataMenu
+    if (menu.CurrentMenu("EditCTrailerHandlingDataMenu")) { UpdateCTrailerHandlingDataMenu(); }
+
+    // MainMenu -> EditHandlingMenu -> EditCCarHandlingDataMenu
+    if (menu.CurrentMenu("EditCCarHandlingDataMenu")) { UpdateCCarHandlingDataMenu(); }
 
     // MainMenu -> LoadHandlingMenu
     if (menu.CurrentMenu("LoadMenu")) { UpdateLoadMenu(); }
