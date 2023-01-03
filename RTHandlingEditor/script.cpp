@@ -87,17 +87,17 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
     currentHandling->fClutchChangeRateScaleDownShift = handlingDataItem.fClutchChangeRateScaleDownShift;
 
-    currentHandling->fInitialDriveMaxFlatVel_ = handlingDataItem.fInitialDriveMaxFlatVel / 3.6f;
+    currentHandling->fInitialDriveMaxFlatVel = handlingDataItem.fInitialDriveMaxFlatVel / 3.6f;
     currentHandling->fDriveMaxFlatVel_ = handlingDataItem.fInitialDriveMaxFlatVel / 3.0f;
 
     currentHandling->fBrakeForce = handlingDataItem.fBrakeForce;
 
-    currentHandling->fBrakeBiasFront_ = handlingDataItem.fBrakeBiasFront * 2.0f;
+    currentHandling->fBrakeBiasFront = handlingDataItem.fBrakeBiasFront * 2.0f;
     currentHandling->fBrakeBiasRear_ = 2.0f * (1.0f - (handlingDataItem.fBrakeBiasFront));
 
-    currentHandling->fHandBrakeForce2 = handlingDataItem.fHandBrakeForce;
+    currentHandling->fHandBrakeForce = handlingDataItem.fHandBrakeForce;
 
-    currentHandling->fSteeringLock_ = handlingDataItem.fSteeringLock * 0.017453292f;
+    currentHandling->fSteeringLock = handlingDataItem.fSteeringLock * 0.017453292f;
     currentHandling->fSteeringLockRatio_ = 1.0f / (handlingDataItem.fSteeringLock * 0.017453292f);
 
     currentHandling->fTractionCurveMax = handlingDataItem.fTractionCurveMax;
@@ -107,7 +107,7 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
     currentHandling->fTractionCurveRatio_ = 1.0f / (currentHandling->fTractionCurveMax - currentHandling->fTractionCurveMin);
 
-    currentHandling->fTractionCurveLateral_ = handlingDataItem.fTractionCurveLateral * 0.017453292f;
+    currentHandling->fTractionCurveLateral = handlingDataItem.fTractionCurveLateral * 0.017453292f;
     currentHandling->fTractionCurveLateralRatio_ = 1.0f / (handlingDataItem.fTractionCurveLateral * 0.017453292f);
 
     currentHandling->fTractionSpringDeltaMax = handlingDataItem.fTractionSpringDeltaMax;
@@ -115,9 +115,9 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
     currentHandling->fLowSpeedTractionLossMult = handlingDataItem.fLowSpeedTractionLossMult;
 
-    currentHandling->fCamberStiffness = handlingDataItem.fCamberStiffness;
+    currentHandling->fCamberStiffnesss = handlingDataItem.fCamberStiffness;
 
-    currentHandling->fTractionBiasFront_ = handlingDataItem.fTractionBiasFront * 2.0f;
+    currentHandling->fTractionBiasFront = handlingDataItem.fTractionBiasFront * 2.0f;
     currentHandling->fTractionBiasRear = 2.0f * (1.0f - (handlingDataItem.fTractionBiasFront));
 
     currentHandling->fTractionLossMult = handlingDataItem.fTractionLossMult;
@@ -132,14 +132,14 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
     currentHandling->fSuspensionLowerLimit = handlingDataItem.fSuspensionLowerLimit;
 
-    currentHandling->fSuspensionRaise_ = handlingDataItem.fSuspensionRaise;
+    currentHandling->fSuspensionRaise = handlingDataItem.fSuspensionRaise;
 
-    currentHandling->fSuspensionBiasFront_ = handlingDataItem.fSuspensionBiasFront * 2.0f;
+    currentHandling->fSuspensionBiasFront = handlingDataItem.fSuspensionBiasFront * 2.0f;
     currentHandling->fSuspensionBiasRear_ = 2.0f * (1.0f - handlingDataItem.fSuspensionBiasFront);
 
     currentHandling->fAntiRollBarForce = handlingDataItem.fAntiRollBarForce;
 
-    currentHandling->fAntiRollBarBiasFront_ = handlingDataItem.fAntiRollBarBiasFront * 2.0f;
+    currentHandling->fAntiRollBarBiasFront = handlingDataItem.fAntiRollBarBiasFront * 2.0f;
     currentHandling->fAntiRollBarBiasRear_ = 2.0f * (1.0f - (handlingDataItem.fAntiRollBarBiasFront));
 
     currentHandling->fRollCentreHeightFront = handlingDataItem.fRollCentreHeightFront;
@@ -335,29 +335,29 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     handlingDataItem.fClutchChangeRateScaleDownShift = currentHandling->fClutchChangeRateScaleDownShift;
 
-    handlingDataItem.fInitialDriveMaxFlatVel = currentHandling->fInitialDriveMaxFlatVel_ * 3.6f;
+    handlingDataItem.fInitialDriveMaxFlatVel = currentHandling->fInitialDriveMaxFlatVel * 3.6f;
 
     handlingDataItem.fBrakeForce = currentHandling->fBrakeForce;
 
-    handlingDataItem.fBrakeBiasFront = currentHandling->fBrakeBiasFront_ / 2.0f;
+    handlingDataItem.fBrakeBiasFront = currentHandling->fBrakeBiasFront / 2.0f;
 
-    handlingDataItem.fHandBrakeForce = currentHandling->fHandBrakeForce2;
+    handlingDataItem.fHandBrakeForce = currentHandling->fHandBrakeForce;
 
-    handlingDataItem.fSteeringLock  = currentHandling->fSteeringLock_ / 0.017453292f;
+    handlingDataItem.fSteeringLock  = currentHandling->fSteeringLock / 0.017453292f;
 
     handlingDataItem.fTractionCurveMax = currentHandling->fTractionCurveMax;
 
     handlingDataItem.fTractionCurveMin = currentHandling->fTractionCurveMin;
 
-    handlingDataItem.fTractionCurveLateral = currentHandling->fTractionCurveLateral_ / 0.017453292f;
+    handlingDataItem.fTractionCurveLateral = currentHandling->fTractionCurveLateral / 0.017453292f;
 
     handlingDataItem.fTractionSpringDeltaMax = currentHandling->fTractionSpringDeltaMax;
 
     handlingDataItem.fLowSpeedTractionLossMult = currentHandling->fLowSpeedTractionLossMult;
 
-    handlingDataItem.fCamberStiffness = currentHandling->fCamberStiffness;
+    handlingDataItem.fCamberStiffness = currentHandling->fCamberStiffnesss;
 
-    handlingDataItem.fTractionBiasFront = currentHandling->fTractionBiasFront_ / 2.0f;
+    handlingDataItem.fTractionBiasFront = currentHandling->fTractionBiasFront / 2.0f;
 
     handlingDataItem.fTractionLossMult = currentHandling->fTractionLossMult;
 
@@ -371,13 +371,13 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     handlingDataItem.fSuspensionLowerLimit = currentHandling->fSuspensionLowerLimit;
 
-    handlingDataItem.fSuspensionRaise = currentHandling->fSuspensionRaise_;
+    handlingDataItem.fSuspensionRaise = currentHandling->fSuspensionRaise;
 
-    handlingDataItem.fSuspensionBiasFront = currentHandling->fSuspensionBiasFront_ / 2.0f;
+    handlingDataItem.fSuspensionBiasFront = currentHandling->fSuspensionBiasFront / 2.0f;
 
     handlingDataItem.fAntiRollBarForce = currentHandling->fAntiRollBarForce;
 
-    handlingDataItem.fAntiRollBarBiasFront = currentHandling->fAntiRollBarBiasFront_ / 2.0f;
+    handlingDataItem.fAntiRollBarBiasFront = currentHandling->fAntiRollBarBiasFront / 2.0f;
 
     handlingDataItem.fRollCentreHeightFront = currentHandling->fRollCentreHeightFront;
 
@@ -409,8 +409,8 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     auto localLog = [&](const std::string& arg) {
         auto& asCache = ASCache::Get();
-        auto it = asCache.find(currentHandling->NameHash);
-        std::string handlingName = (it != asCache.end()) ? it->second : fmt::format("{:08X}", currentHandling->NameHash);
+        auto it = asCache.find(currentHandling->handlingName);
+        std::string handlingName = (it != asCache.end()) ? it->second : fmt::format("{:08X}", currentHandling->handlingName);
         logger.Write(DEBUG, fmt::format("[Get handling] [{}] {}", handlingName, arg));
     };
 
