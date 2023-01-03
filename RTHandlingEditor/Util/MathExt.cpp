@@ -99,7 +99,7 @@ float GetAngleBetween(float h1, float h2, float separation) {
 float GetAngleBetween(Vector3 a, Vector3 b) {
     Vector3 normal{};
     normal.z = 1.0f;
-    float angle = acos(Dot(a, b) / (Length(a) * Length(b)));
+    float angle = (float)acos(Dot(a, b) / (Length(a) * Length(b)));
     if (Dot(normal, Cross(a, b)) < 0.0f)
         angle = -angle;
     return angle;

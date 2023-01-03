@@ -149,3 +149,43 @@ public:
         return Get(idx);
     }
 };
+
+#pragma pack(push)
+template <typename T, uint32_t Size>
+class atFixedArray // actually namespace rage...
+{
+public:
+    constexpr uint32_t size() const
+    {
+        return m_size;
+    }
+
+    T* begin() const
+    {
+        return &m_offset[0];
+    }
+
+    T* end() const
+    {
+        return &m_offset[m_size];
+    }
+
+    T* data() const
+    {
+        return m_offset;
+    }
+
+    T& at(uint16_t index)
+    {
+        return m_offset[index];
+    }
+
+    T& operator[](std::uint16_t index)
+    {
+        return m_offset[index];
+    }
+
+    T m_offset[Size];
+    uint32_t m_size = 0;
+};
+#pragma pack(pop)

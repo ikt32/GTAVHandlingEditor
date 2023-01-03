@@ -144,7 +144,7 @@ std::string Notes::GetRemoteText(const std::string& url) {
 }
 
 void Notes::Load() {
-    const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + Constants::ModDir;
+    const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + "\\" + Constants::ModDir;
     const std::string notesFilePath = absoluteModPath + "\\notes.json";
 
     const std::string remotePath = "https://raw.githubusercontent.com/E66666666/GTAVHandlingInfo/master/notes.json";
