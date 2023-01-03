@@ -194,6 +194,9 @@
       <Filter>thirdparty\curl</Filter>
     </ClInclude>
     <ClInclude Include="HandlingNotes.h" />
+    <ClInclude Include="Memory\Vector.hpp">
+      <Filter>Memory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="ScriptHookV">

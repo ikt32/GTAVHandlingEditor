@@ -34,7 +34,7 @@ namespace mem {
 
     void init() {
         auto addr = FindPattern("\x83\xF9\xFF\x74\x31\x4C\x8B\x0D\x00\x00\x00\x00\x44\x8B\xC1\x49\x8B\x41\x08",
-            "xxxxxxxx????xxxxxxx");
+                                                            "xxxxxxxx????xxxxxxx");
         if (!addr) logger.Write(ERROR, "Couldn't find GetAddressOfEntity");
         GetAddressOfEntity = reinterpret_cast<uintptr_t(*)(int)>(addr);
 
@@ -72,7 +72,7 @@ namespace mem {
         MODULEINFO modInfo = { nullptr };
         GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &modInfo, sizeof(MODULEINFO));
 
-        const char* start_offset = reinterpret_cast<const char*>(modInfo.lpBaseOfDll);
+        const char* start_offset = reinterpret_cast<const char *>(modInfo.lpBaseOfDll);
         const uintptr_t size = static_cast<uintptr_t>(modInfo.SizeOfImage);
 
         intptr_t pos = 0;
@@ -97,7 +97,7 @@ namespace mem {
         MODULEINFO modInfo = { nullptr };
         GetModuleInformation(GetCurrentProcess(), GetModuleHandle(nullptr), &modInfo, sizeof(MODULEINFO));
 
-        const char* start_offset = reinterpret_cast<const char*>(modInfo.lpBaseOfDll);
+        const char* start_offset = reinterpret_cast<const char *>(modInfo.lpBaseOfDll);
         const uintptr_t size = static_cast<uintptr_t>(modInfo.SizeOfImage);
 
         intptr_t pos = 0;
@@ -127,10 +127,16 @@ namespace mem {
 
         uintptr_t pos = 0;
         const uintptr_t searchLen = bytesStr.size();
+        std::vector<uint8_t> bytes;
+        // Thanks Zolika for the performance improvement!
+        for (const auto& str : bytesStr) {
+            if (str == "??" || str == "?") bytes.push_back(0);
+            else bytes.push_back(static_cast<uint8_t>(std::strtoul(str.c_str(), nullptr, 16)));
+        }
 
         for (auto* retAddress = start_offset; retAddress < start_offset + size; retAddress++) {
             if (bytesStr[pos] == "??" || bytesStr[pos] == "?" ||
-                *retAddress == static_cast<uint8_t>(std::strtoul(bytesStr[pos].c_str(), nullptr, 16))) {
+                *retAddress == bytes[pos]) {
                 if (pos + 1 == bytesStr.size())
                     return (reinterpret_cast<uintptr_t>(retAddress) - searchLen + 1);
                 pos++;

@@ -215,6 +215,7 @@
     <ClInclude Include="Memory\atArray.h" />
     <ClInclude Include="Memory\HandlingInfo.h" />
     <ClInclude Include="Memory\NativeMemory.hpp" />
+    <ClInclude Include="Memory\Vector.hpp" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
     <ClInclude Include="Memory\Versions.h" />
     <ClInclude Include="script.h" />
