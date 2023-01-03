@@ -93,8 +93,9 @@ void UpdateMainMenu() {
 
     auto result = menu.Option("About", {
         "Real Time Handling Editor",
-        "by ikt"
-    });
+        "by ikt",
+        "beta - SubHandlingData not saved yet",
+        });
     if (result.Highlighted) {
         menu.OptionPlusPlus({
             fmt::format("Parameter notes version: {}", Notes::GetVersion()),
