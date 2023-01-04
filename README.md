@@ -1,44 +1,58 @@
 # GTA V Real Time Handling Editor
 
-Using this script, you can edit the handling of vehicles in real-time.
+A real-time vehicle handling editor for Grand Theft Auto V, intended for vehicle (handling) developers,
+to easily adjust handling in-game and see the effects of the changes immediately.
 
 ## Features
 
-* In-game menu where you can edit handling entries in real-time
-* Loads XML/Meta files, starting from the `<Item />` level
-* Saves XML files of whatever vehicle you're editing
-* TODO: Handling dev tools:
-  * G-Force meter with lateral and longitudinal axes
-  * Acceleration timers
+* In-game menu for real-time handling entry editing
+* Load and save XML/meta files, starting from the `<Item />` level
+* Drawn COM, roll centre heights and more
+* Reload vehicle with all its modifications
+* Grabs additional parameter information from [GTAVHandlingInfo](https://github.com/E66666666/GTAVHandlingInfo)
+  * Automatically updates (on launch) if a newer version is present
+* Supports `SubHandlingData` (almost completely)
+  * `CCarHandlingData` (including AdvancedData)
+  * `CBikeHandlingData`
+  * `CFlyingHandlingData`
+  * `CSpecialFlightHandlingData`
+  * `CBoatHandlingData`
+  * `CSeaPlaneHandlingData`
+  * `CSubmarineHandlingData`
+  * `CTrailerHandlingData`
 
-## Requirements
+## Usage requirements
 
-* Grand Theft Auto V b1604+
+* Grand Theft Auto V (b1604+)
 * ScriptHookV
+
+Optional:
+
+* [Add-On Vehicle Spawner](https://www.gta5-mods.com/scripts/add-on-vehicle-spawner)
+(Uses its generated hash lookup, for automatic handling names)
 
 ## Installation
 
 Extract `RTHandlingEditor.asi` and the folder `HandlingEditor` into the main GTA V folder.
-TODO: ini/folder names subject to change, until v2.0.0 release.
 
-## Usage in-game
+Check the `settings_menu.ini` file in `HandlingEditor` to change menu hotkeys, if desired.
 
-Use the `rthe` cheat to open the menu. From there, follow the on-screen instructions.
+## Usage
 
-## Limitations
+Use the `rthe` cheat to open the menu.
 
-* Some values do not apply instantly. The game will need to reload the vehicle to apply these properly. Some examples:
-  * vecCentreOfMassOffset
-  * nInitialDriveGears
-  * fDriveBiasFront
-* Some values using radians internally have small rounding errors
+The menu itself should be straightforward - most options have a description.
 
-------------------------------
+Inside the editing menus every parameter can be manually entered by pressing
+Enter on that option.
+
+Certain parameters do not apply instantly - the vehicle needs to be reloaded.
+The main menu contains a trigger for this - the current vehicle will be reloaded
+with all its tuning modifications.
 
 ## Building
 
-### Requirements <!-- Building -->
-
+* Visual Studio 2022 (C++20 bits and pieces)
 * [ScriptHookV SDK by Alexander Blade](http://www.dev-c.com/gtav/scripthookv/)
 
 Clone this repository recursively, to pull in all the submodules.
