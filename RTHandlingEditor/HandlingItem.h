@@ -3,97 +3,98 @@
 #include <string>
 #include <vector>
 
+// No idea how the rage allocator thing works so I can't straight up
+// re-use the classes in HandlingInfo.h
+
+// Also keep in mind these *Item things are in degrees/kph and not rad or m/s
+// And contain other conversion factors before applying to game data.
+// So can't be used 1:1
 namespace RTHE {
-class CAdvancedDataItem {
+class CCarHandlingDataItem : public CCarHandlingData {
 public:
-    int Slot;
-    int Index;
-    float Value;
+    virtual eHandlingType GetHandlingType() override { return HANDLING_TYPE_CAR; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
+
+    std::vector<CAdvancedData> AdvancedData;
 };
 
-struct CBaseSubHandlingDataItem {
-    eHandlingType HandlingType = HANDLING_TYPE_MAX_TYPES;
-};
-class CCarHandlingDataItem : public CBaseSubHandlingDataItem {
+class CBoatHandlingDataItem : public CBoatHandlingData {
 public:
-    float fBackEndPopUpCarImpulseMult;
-    float fBackEndPopUpBuildingImpulseMult;
-    float fBackEndPopUpMaxDeltaSpeed;
-    float fToeFront;
-    float fToeRear;
-    float fCamberFront;
-    float fCamberRear;
-    float fCastor;
-    float fEngineResistance;
-    float fMaxDriveBiasTransfer;
-    float fJumpForceScale;
-    float fUnk_0x034;
-    uint32_t Unk_0x038;
-    uint32_t strAdvancedFlags;
-    std::vector<CAdvancedDataItem> pAdvancedData;
+    virtual eHandlingType GetHandlingType() override { return HANDLING_TYPE_BOAT; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
 };
 
-struct CHandlingDataItem {
-    struct MetaData {
-        std::string fileName;
-        std::string description;
-    } metaData;
-    std::string handlingName;
-    float fMass;
-    float fInitialDragCoeff;
-    float fDownforceModifier;
-    float fPercentSubmerged;
-    float vecCentreOfMassOffsetX;
-    float vecCentreOfMassOffsetY;
-    float vecCentreOfMassOffsetZ;
-    float vecInertiaMultiplierX;
-    float vecInertiaMultiplierY;
-    float vecInertiaMultiplierZ;
-    float fDriveBiasFront;
-    uint8_t nInitialDriveGears;
-    float fInitialDriveForce;
-    float fDriveInertia;
-    float fClutchChangeRateScaleUpShift;
-    float fClutchChangeRateScaleDownShift;
-    float fInitialDriveMaxFlatVel;
-    float fBrakeForce;
-    float fBrakeBiasFront;
-    float fHandBrakeForce;
-    float fSteeringLock;
-    float fTractionCurveMax;
-    float fTractionCurveMin;
-    float fTractionCurveLateral;
-    float fTractionSpringDeltaMax;
-    float fLowSpeedTractionLossMult;
-    float fCamberStiffness;
-    float fTractionBiasFront;
-    float fTractionLossMult;
-    float fSuspensionForce;
-    float fSuspensionCompDamp;
-    float fSuspensionReboundDamp;
-    float fSuspensionUpperLimit;
-    float fSuspensionLowerLimit;
-    float fSuspensionRaise;
-    float fSuspensionBiasFront;
-    float fAntiRollBarForce;
-    float fAntiRollBarBiasFront;
-    float fRollCentreHeightFront;
-    float fRollCentreHeightRear;
-    float fCollisionDamageMult;
-    float fWeaponDamageMult;
-    float fDeformationDamageMult;
-    float fEngineDamageMult;
-    float fPetrolTankVolume;
-    float fOilVolume;
-    float fSeatOffsetDistX;
-    float fSeatOffsetDistY;
-    float fSeatOffsetDistZ;
-    int   nMonetaryValue;
-    uint32_t strModelFlags;          // hex
-    uint32_t strHandlingFlags;       // hex
-    uint32_t strDamageFlags;         // hex
-    uint32_t AIHandling;             // joaat hash
-    std::vector<CCarHandlingDataItem> subHandlingData; // TODO: CBaseSubHandlingData
+class CBikeHandlingDataItem : public CBikeHandlingData
+{
+public:
+    virtual eHandlingType GetHandlingType() override { return HANDLING_TYPE_BIKE; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
+};
+
+class CFlyingHandlingDataItem : public CFlyingHandlingData
+{
+public:
+    virtual eHandlingType GetHandlingType() override { return handlingType; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
+};
+
+// I'm not gonna do CVehicleWeaponHandlingData
+
+class CSubmarineHandlingDataItem : public CSubmarineHandlingData
+{
+public:
+    virtual eHandlingType GetHandlingType() override { return HANDLING_TYPE_SUBMARINE; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
+};
+
+class CTrailerHandlingDataItem : public CTrailerHandlingData
+{
+public:
+    virtual eHandlingType GetHandlingType() override { return HANDLING_TYPE_TRAILER; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
+};
+
+class CSeaPlaneHandlingDataItem : public CSeaPlaneHandlingData
+{
+public:
+    virtual eHandlingType GetHandlingType() override { return HANDLING_TYPE_SEAPLANE; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
+};
+
+class CSpecialFlightHandlingDataItem : public CSpecialFlightHandlingData
+{
+public:
+    virtual eHandlingType GetHandlingType() override { return HANDLING_TYPE_SPECIALFLIGHT; }
+    virtual void OnPostLoad() override { /* _ */ }
+    virtual void* parser_GetStructure() override { return nullptr; }
+};
+
+class CHandlingDataItem : public CHandlingData {
+public:
+    virtual void* parser_GetStructure() override { return nullptr; }
+    struct Metadata {
+        std::string HandlingName;
+        std::string FileName;
+        std::string Description;
+    } Metadata;
+
+    struct {
+        std::vector<CBikeHandlingDataItem> CBikeHandlingData;
+        std::vector<CFlyingHandlingDataItem> CFlyingHandlingData;
+        std::vector<CSpecialFlightHandlingDataItem> CSpecialFlightHandlingData;
+        std::vector<CBoatHandlingDataItem> CBoatHandlingData;
+        std::vector<CSeaPlaneHandlingDataItem> CSeaPlaneHandlingData;
+        std::vector<CSubmarineHandlingDataItem> CSubmarineHandlingData;
+        std::vector<CTrailerHandlingDataItem> CTrailerHandlingData;
+        std::vector<CCarHandlingDataItem> CCarHandlingData;
+    } SubHandlingData;
 };
 
 // Returns {} on failure

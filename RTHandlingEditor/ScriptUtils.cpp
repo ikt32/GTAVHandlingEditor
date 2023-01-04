@@ -68,7 +68,8 @@ void Utils::RespawnVehicle(Vehicle oldVehicle, Ped ped) {
 
 // Draw lines for COM (red) and RollHeight (blue)
 void Utils::DrawCOMAndRollCenters(Vehicle vehicle, RTHE::CHandlingData* currentHandling) {
-    //Vector3 dims = GetEntityDimensions(vehicle);
+    if (!currentHandling)
+        return;
 
     Vector3 modelDimMin, modelDimMax;
     MISC::GET_MODEL_DIMENSIONS(ENTITY::GET_ENTITY_MODEL(vehicle), &modelDimMin, &modelDimMax);

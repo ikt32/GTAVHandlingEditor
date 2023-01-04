@@ -12,6 +12,8 @@
 #include "HandlingNotes.h"
 #include "AdvancedDataNames.h"
 #include "HandlingUtils.h"
+#include "HandlingConversion.h"
+#include "Util/MathExt.h"
 
 #include <HandlingReplacement.h>
 #include <menu.h>
@@ -23,7 +25,6 @@ using VExt = VehicleExtensions;
 
 extern std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
 
-void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataItem);
 void PromptSave(Vehicle vehicle, Hash handlingNameHash);
 
 namespace {
@@ -476,7 +477,7 @@ void UpdateEditMenu() {
 
     {
         float fInitialDriveMaxFlatVel = currentHandling->fInitialDriveMaxFlatVel * 3.6f;
-        if (FloatOptionExtra("fInitialDriveMaxFlatVel", fInitialDriveMaxFlatVel, 0.0f, 1000.0f, 0.5f)) {
+        if (FloatOptionExtra("fInitialDriveMaxFlatVel", fInitialDriveMaxFlatVel, 0.0f, 10000.0f, 0.5f)) {
             currentHandling->fInitialDriveMaxFlatVel = fInitialDriveMaxFlatVel / 3.6f;
             currentHandling->fDriveMaxFlatVel_ = fInitialDriveMaxFlatVel / 3.0f;
         }
@@ -495,11 +496,10 @@ void UpdateEditMenu() {
     FloatOptionExtra("fHandBrakeForce", currentHandling->fHandBrakeForce, -1000.0f, 1000.0f, 0.01f);
 
     {
-        // rad 2 deg
-        float fSteeringLock = currentHandling->fSteeringLock / 0.017453292f;
+        float fSteeringLock = rad2deg(currentHandling->fSteeringLock);
         if (FloatOptionExtra("fSteeringLock", fSteeringLock, 0.0f, 90.0f, 0.10f)) {
-            currentHandling->fSteeringLock = fSteeringLock * 0.017453292f;
-            currentHandling->fSteeringLockRatio_ = 1.0f / (fSteeringLock * 0.017453292f);
+            currentHandling->fSteeringLock = deg2rad(fSteeringLock);
+            currentHandling->fSteeringLockRatio_ = 1.0f / deg2rad(fSteeringLock);
         }
     }
 
@@ -526,11 +526,10 @@ void UpdateEditMenu() {
     }
 
     {
-        // rad 2 deg
-        float fTractionCurveLateral = currentHandling->fTractionCurveLateral / 0.017453292f;
+        float fTractionCurveLateral = rad2deg(currentHandling->fTractionCurveLateral);
         if (FloatOptionExtra("fTractionCurveLateral", fTractionCurveLateral, -1000.0f, 1000.0f, 0.01f)) {
-            currentHandling->fTractionCurveLateral = fTractionCurveLateral * 0.017453292f;
-            currentHandling->fTractionCurveLateralRatio_ = 1.0f / (fTractionCurveLateral * 0.017453292f);
+            currentHandling->fTractionCurveLateral = deg2rad(fTractionCurveLateral);
+            currentHandling->fTractionCurveLateralRatio_ = 1.0f / deg2rad(fTractionCurveLateral);
         }
     }
 
@@ -645,43 +644,53 @@ void UpdateEditMenu() {
         if (!subHandlingData)
             continue;
 
+        std::string shdPtr = fmt::format("{:p}", (void*)subHandlingData);
+
         auto type = subHandlingData->GetHandlingType();
         switch (type) {
             case RTHE::HANDLING_TYPE_BIKE:
-                menu.MenuOption("CBikeHandlingData", "EditCBikeHandlingDataMenu");
+                menu.MenuOption("CBikeHandlingData", "EditCBikeHandlingDataMenu", { shdPtr });
                 break;
             case RTHE::HANDLING_TYPE_FLYING:
-                menu.MenuOption("CFlyingHandlingData", "EditCFlyingHandlingDataMenu");
+                menu.MenuOption("CFlyingHandlingData", "EditCFlyingHandlingDataMenu",
+                    { "HANDLING_TYPE_FLYING", shdPtr});
                 break;
             case RTHE::HANDLING_TYPE_VERTICAL_FLYING:
-                menu.MenuOption("CSpecialFlightHandlingData", "EditCSpecialFlightHandlingDataMenu");
+                menu.MenuOption("CFlyingHandlingData", "EditCFlyingHandlingData2Menu",
+                    { "HANDLING_TYPE_VERTICAL_FLYING", shdPtr});
                 break;
             case RTHE::HANDLING_TYPE_BOAT:
-                menu.MenuOption("CBoatHandlingData", "EditCBoatHandlingDataMenu");
+                menu.MenuOption("CBoatHandlingData", "EditCBoatHandlingDataMenu", { shdPtr });
                 break;
             case RTHE::HANDLING_TYPE_SEAPLANE:
-                menu.MenuOption("CSeaPlaneHandlingData", "EditCSeaPlaneHandlingDataMenu");
+                menu.MenuOption("CSeaPlaneHandlingData", "EditCSeaPlaneHandlingDataMenu", { shdPtr });
                 break;
             case RTHE::HANDLING_TYPE_SUBMARINE:
-                menu.MenuOption("CSubmarineHandlingData", "EditCSubmarineHandlingDataMenu");
+                menu.MenuOption("CSubmarineHandlingData", "EditCSubmarineHandlingDataMenu", { shdPtr });
                 break;
             case RTHE::HANDLING_TYPE_TRAILER:
-                menu.MenuOption("CTrailerHandlingData", "EditCTrailerHandlingDataMenu");
+                menu.MenuOption("CTrailerHandlingData", "EditCTrailerHandlingDataMenu", { shdPtr });
                 break;
             case RTHE::HANDLING_TYPE_CAR:
-                menu.MenuOption("CCarHandlingData", "EditCCarHandlingDataMenu");
+                menu.MenuOption("CCarHandlingData", "EditCCarHandlingDataMenu", { shdPtr });
+                break;
+            case RTHE::HANDLING_TYPE_SPECIALFLIGHT:
+                menu.MenuOption("CSpecialFlightHandlingData", "EditCSpecialFlightHandlingDataMenu", { shdPtr });
                 break;
             case RTHE::HANDLING_TYPE_WEAPON:
                 menu.Option("HANDLING_TYPE_WEAPON",
-                    { "Unsupported handling type" });
+                    { "Unsupported handling type",
+                      shdPtr });
                 break;
             case RTHE::HANDLING_TYPE_TRAIN:
                 menu.Option("HANDLING_TYPE_TRAIN",
-                    { "Unsupported handling type" });
+                    { "Unsupported handling type",
+                      shdPtr });
                 break;
             default:
                 menu.Option(fmt::format("Handling type: {}", static_cast<int>(type)),
-                    { "Unknown handling type" });
+                    { "Unknown handling type",
+                      shdPtr });
                 break;
         }
     }
@@ -705,29 +714,62 @@ void UpdateCBikeHandlingDataMenu() {
 
     RTHE::CBikeHandlingData* bikeHandlingData = static_cast<RTHE::CBikeHandlingData*>(subHandlingData);
 
-    FloatOptionExtra("fLeanFwdCOMMult",                  bikeHandlingData->floatfLeanFwdCOMMult,        -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fLeanFwdForceMult",                bikeHandlingData->floatfLeanFwdForceMult,      -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fLeanBakCOMMult",                  bikeHandlingData->floatfLeanBakCOMMult,        -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fLeanBakForceMult",                bikeHandlingData->floatfLeanBakForceMult,      -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fMaxBankAngle",                    bikeHandlingData->floatfMaxBankAngle,          -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fFullAnimAngle",                   bikeHandlingData->floatfFullAnimAngle,         -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fDesLeanReturnFrac",               bikeHandlingData->floatfDesLeanReturnFrac,     -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fStickLeanMult",                   bikeHandlingData->floatfStickLeanMult,         -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fBrakingStabilityMult",            bikeHandlingData->floatfBrakingStabilityMult,  -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fInAirSteerMult",                  bikeHandlingData->floatfInAirSteerMult,        -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fWheelieBalancePoint",             bikeHandlingData->floatfWheelieBalancePoint,   -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fStoppieBalancePoint",             bikeHandlingData->floatfStoppieBalancePoint,   -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fWheelieSteerMult",                bikeHandlingData->floatfWheelieSteerMult,      -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fRearBalanceMult",                 bikeHandlingData->floatfRearBalanceMult,       -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fFrontBalanceMult",                bikeHandlingData->floatfFrontBalanceMult,      -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fBikeGroundSideFrictionMult",      bikeHandlingData->floatfBikeGroundSideFrictionMult, -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fBikeWheelGroundSideFrictionMult", bikeHandlingData->floatfBikeWheelGroundSideFrictionMult, -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fBikeOnStandLeanAngle",            bikeHandlingData->floatfBikeOnStandLeanAngle,  -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fBikeOnStandSteerAngle",           bikeHandlingData->floatfBikeOnStandSteerAngle, -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fJumpForce",                       bikeHandlingData->floatfJumpForce,             -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLeanFwdCOMMult",                  bikeHandlingData->fLeanFwdCOMMult,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLeanFwdForceMult",                bikeHandlingData->fLeanFwdForceMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLeanBakCOMMult",                  bikeHandlingData->fLeanBakCOMMult,        -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fLeanBakForceMult",                bikeHandlingData->fLeanBakForceMult,      -1000.0f, 1000.0f, 0.01f);
+
+    {
+        float degrees = rad2deg(bikeHandlingData->fMaxBankAngle);
+        if (FloatOptionExtra("fMaxBankAngle", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            bikeHandlingData->fMaxBankAngle = deg2rad(degrees);
+        }
+    }
+
+    {
+        float degrees = rad2deg(bikeHandlingData->fFullAnimAngle);
+        if (FloatOptionExtra("fFullAnimAngle", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            bikeHandlingData->fFullAnimAngle = deg2rad(degrees);
+        }
+    }
+
+    FloatOptionExtra("fDesLeanReturnFrac",               bikeHandlingData->fDesLeanReturnFrac,     -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fStickLeanMult",                   bikeHandlingData->fStickLeanMult,         -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBrakingStabilityMult",            bikeHandlingData->fBrakingStabilityMult,  -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fInAirSteerMult",                  bikeHandlingData->fInAirSteerMult,        -1000.0f, 1000.0f, 0.01f);
+
+    {
+        float degrees = rad2deg(bikeHandlingData->fWheelieBalancePoint);
+        if (FloatOptionExtra("fWheelieBalancePoint", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            bikeHandlingData->fWheelieBalancePoint = deg2rad(degrees);
+        }
+    }
+
+    {
+        float degrees = rad2deg(bikeHandlingData->fStoppieBalancePoint);
+        if (FloatOptionExtra("fStoppieBalancePoint", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            bikeHandlingData->fStoppieBalancePoint = deg2rad(degrees);
+        }
+    }
+
+    FloatOptionExtra("fWheelieSteerMult",                bikeHandlingData->fWheelieSteerMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fRearBalanceMult",                 bikeHandlingData->fRearBalanceMult,       -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fFrontBalanceMult",                bikeHandlingData->fFrontBalanceMult,      -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBikeGroundSideFrictionMult",      bikeHandlingData->fBikeGroundSideFrictionMult, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBikeWheelGroundSideFrictionMult", bikeHandlingData->fBikeWheelGroundSideFrictionMult, -1000.0f, 1000.0f, 0.01f);
+
+    {
+        float degrees = rad2deg(bikeHandlingData->fBikeOnStandLeanAngle);
+        if (FloatOptionExtra("fBikeOnStandLeanAngle", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            bikeHandlingData->fBikeOnStandLeanAngle = deg2rad(degrees);
+        }
+    }
+
+    FloatOptionExtra("fBikeOnStandSteerAngle",           bikeHandlingData->fBikeOnStandSteerAngle, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fJumpForce",                       bikeHandlingData->fJumpForce,             -1000.0f, 1000.0f, 0.01f);
 }
 
-void UpdateCFlyingHandlingDataMenu() {
+void UpdateCFlyingHandlingDataMenu(RTHE::eHandlingType handlingType) {
     std::string vehicleName = "Unavailable";
     bool hrActive = false;
     Vehicle vehicle = PED::GET_VEHICLE_PED_IS_IN(PLAYER::GET_PLAYER_PED(PLAYER::GET_PLAYER_INDEX()), false);
@@ -736,7 +778,7 @@ void UpdateCFlyingHandlingDataMenu() {
     menu.Title("CFlyingHandlingData");
     menu.Subtitle(vehicleName);
 
-    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_FLYING);
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, handlingType);
 
     if (!subHandlingData) {
         menu.Option("No CCarHandlingData");
@@ -773,10 +815,35 @@ void UpdateCFlyingHandlingDataMenu() {
     FloatOptionExtra("vecSpeedRes.x",         flyingHandlingData->vecSpeedRes.x,         -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("vecSpeedRes.y",         flyingHandlingData->vecSpeedRes.y,         -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("vecSpeedRes.z",         flyingHandlingData->vecSpeedRes.z,         -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fGearDoorFrontOpen",                 flyingHandlingData->fGearDoorFrontOpen,                 -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fGearDoorRearOpen",                  flyingHandlingData->fGearDoorRearOpen,                  -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fGearDoorRearOpen2",                 flyingHandlingData->fGearDoorRearOpen2,                 -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fGearDoorRearMOpen",                 flyingHandlingData->fGearDoorRearMOpen,                 -1000.0f, 1000.0f, 0.01f);
+
+    {
+        float degrees = rad2deg(flyingHandlingData->fGearDoorFrontOpen);
+        if (FloatOptionExtra("fGearDoorFrontOpen", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            flyingHandlingData->fGearDoorFrontOpen = deg2rad(degrees);
+        }
+    }
+
+    {
+        float degrees = rad2deg(flyingHandlingData->fGearDoorRearOpen);
+        if (FloatOptionExtra("fGearDoorRearOpen", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            flyingHandlingData->fGearDoorRearOpen = deg2rad(degrees);
+        }
+    }
+
+    {
+        float degrees = rad2deg(flyingHandlingData->fGearDoorRearOpen2);
+        if (FloatOptionExtra("fGearDoorRearOpen2", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            flyingHandlingData->fGearDoorRearOpen2 = deg2rad(degrees);
+        }
+    }
+
+    {
+        float degrees = rad2deg(flyingHandlingData->fGearDoorRearMOpen);
+        if (FloatOptionExtra("fGearDoorRearMOpen", degrees, -1000.0f, 1000.0f, 0.01f)) {
+            flyingHandlingData->fGearDoorRearMOpen = deg2rad(degrees);
+        }
+    }
+
     FloatOptionExtra("fTurublenceMagnitudeMax",            flyingHandlingData->fTurublenceMagnitudeMax,            -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fTurublenceForceMulti",              flyingHandlingData->fTurublenceForceMulti,              -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fTurublenceRollTorqueMulti",         flyingHandlingData->fTurublenceRollTorqueMulti,         -1000.0f, 1000.0f, 0.01f);
@@ -805,6 +872,7 @@ void UpdateCFlyingHandlingDataMenu() {
         case RTHE::eHandlingType::HANDLING_TYPE_TRAILER:         handlingTypeName = "HANDLING_TYPE_TRAILER"; break;
         case RTHE::eHandlingType::HANDLING_TYPE_CAR:             handlingTypeName = "HANDLING_TYPE_CAR"; break;
         case RTHE::eHandlingType::HANDLING_TYPE_WEAPON:          handlingTypeName = "HANDLING_TYPE_WEAPON"; break;
+        case RTHE::eHandlingType::HANDLING_TYPE_SPECIALFLIGHT:   handlingTypeName = "HANDLING_TYPE_SPECIALFLIGHT"; break;
         default:
             handlingTypeName = fmt::format("Unknown ({})", static_cast<int>(flyingHandlingData->handlingType));
     }
@@ -819,7 +887,7 @@ void UpdateCSpecialFlightHandlingDataMenu() {
     menu.Title("CSpecialFlightHandlingData");
     menu.Subtitle(vehicleName);
 
-    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_VERTICAL_FLYING);
+    RTHE::CBaseSubHandlingData* subHandlingData = GetSubHandlingData(currentHandling, RTHE::eHandlingType::HANDLING_TYPE_SPECIALFLIGHT);
 
     if (!subHandlingData) {
         menu.Option("SubHandlingData not found");
@@ -850,11 +918,11 @@ void UpdateCSpecialFlightHandlingDataMenu() {
     FloatOptionExtra("fMaxLiftAngle",                 flyingHandlingData->fMaxLiftAngle,                 -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fDragCoefficient",              flyingHandlingData->fDragCoefficient,              -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fBrakingDrag",                  flyingHandlingData->fBrakingDrag,                  -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fMaxLiftVelocity",              flyingHandlingData->fMaxLiftVelocity,              -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fMinLiftVelocity",              flyingHandlingData->fMinLiftVelocity,              -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxLiftVelocity",              flyingHandlingData->fMaxLiftVelocity,              -10000.0f, 10000.0f, 0.01f);
+    FloatOptionExtra("fMinLiftVelocity",              flyingHandlingData->fMinLiftVelocity,              -10000.0f, 10000.0f, 0.01f);
     FloatOptionExtra("fRollTorqueScale",              flyingHandlingData->fRollTorqueScale,              -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fMaxTorqueVelocity",            flyingHandlingData->fMaxTorqueVelocity,            -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fMinTorqueVelocity",            flyingHandlingData->fMinTorqueVelocity,            -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxTorqueVelocity",            flyingHandlingData->fMaxTorqueVelocity,            -1000000.0f, 1000000.0f, 0.01f);
+    FloatOptionExtra("fMinTorqueVelocity",            flyingHandlingData->fMinTorqueVelocity,            -1000000.0f, 1000000.0f, 0.01f);
     FloatOptionExtra("fYawTorqueScale",               flyingHandlingData->fYawTorqueScale,               -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fSelfLevelingPitchTorqueScale", flyingHandlingData->fSelfLevelingPitchTorqueScale, -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fInitalOverheadAssist",         flyingHandlingData->fInitalOverheadAssist,         -1000.0f, 1000.0f, 0.01f);
@@ -862,7 +930,7 @@ void UpdateCSpecialFlightHandlingDataMenu() {
     FloatOptionExtra("fMaxSteeringRollTorque",        flyingHandlingData->fMaxSteeringRollTorque,        -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fPitchTorqueScale",             flyingHandlingData->fPitchTorqueScale,             -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fSteeringTorqueScale",          flyingHandlingData->fSteeringTorqueScale,          -1000.0f, 1000.0f, 0.01f);
-    FloatOptionExtra("fMaxThrust",                    flyingHandlingData->fMaxThrust,                    -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fMaxThrust",                    flyingHandlingData->fMaxThrust,                    -1000000.0f, 1000000.0f, 0.01f);
     FloatOptionExtra("fTransitionDuration",           flyingHandlingData->fTransitionDuration,           -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fHoverVelocityScale",           flyingHandlingData->fHoverVelocityScale,           -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fStabilityAssist",              flyingHandlingData->fStabilityAssist,              -1000.0f, 1000.0f, 0.01f);
@@ -1102,16 +1170,16 @@ void UpdateLoadMenu() {
 
     for (const auto& handlingDataItem : g_handlingDataItems) {
         bool selected = false;
-        if (menu.OptionPlus(handlingDataItem.handlingName, {}, &selected).Triggered) {
+        if (menu.OptionPlus(handlingDataItem.Metadata.HandlingName, {}, &selected).Triggered) {
             setHandling(vehicle, handlingDataItem);
-            UI::Notify(fmt::format("Applied {} handling", handlingDataItem.handlingName));
+            UI::Notify(fmt::format("Applied {} handling", handlingDataItem.Metadata.HandlingName));
         }
         if (selected) {
             float maxKph = handlingDataItem.fInitialDriveMaxFlatVel / 0.75f;
             float maxMph = maxKph / 1.609344f;
             std::vector<std::string> extra{
-                fmt::format("File: {}", handlingDataItem.metaData.fileName),
-                fmt::format("Description: {}", handlingDataItem.metaData.description),
+                fmt::format("File: {}", handlingDataItem.Metadata.FileName),
+                fmt::format("Description: {}", handlingDataItem.Metadata.Description),
                 fmt::format("Top speed: {:.2f} kph / {:.2f} mph", maxKph, maxMph),
                 fmt::format("Drive bias (front): {:.2f}", handlingDataItem.fDriveBiasFront),
                 fmt::format("Traction: max {:.2f}, min {:.2f}", handlingDataItem.fTractionCurveMax, handlingDataItem.fTractionCurveMin),
@@ -1134,7 +1202,10 @@ void UpdateMenu() {
     if (menu.CurrentMenu("EditCBikeHandlingDataMenu")) { UpdateCBikeHandlingDataMenu(); }
 
     // MainMenu -> EditHandlingMenu -> EditCFlyingHandlingDataMenu
-    if (menu.CurrentMenu("EditCFlyingHandlingDataMenu")) { UpdateCFlyingHandlingDataMenu(); }
+    if (menu.CurrentMenu("EditCFlyingHandlingDataMenu")) { UpdateCFlyingHandlingDataMenu(RTHE::eHandlingType::HANDLING_TYPE_FLYING); }
+
+    // MainMenu -> EditHandlingMenu -> EditCFlyingHandlingData2Menu
+    if (menu.CurrentMenu("EditCFlyingHandlingData2Menu")) { UpdateCFlyingHandlingDataMenu(RTHE::eHandlingType::HANDLING_TYPE_VERTICAL_FLYING); }
 
     // MainMenu -> EditHandlingMenu -> EditCSpecialFlightHandlingDataMenu
     if (menu.CurrentMenu("EditCSpecialFlightHandlingDataMenu")) { UpdateCSpecialFlightHandlingDataMenu(); }

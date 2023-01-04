@@ -140,7 +140,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>No</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
@@ -157,6 +157,7 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp" />
     <ClCompile Include="..\thirdparty\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="Compatibility.cpp" />
+    <ClCompile Include="HandlingConversion.cpp" />
     <ClCompile Include="HandlingFlags.cpp" />
     <ClCompile Include="HandlingItem.cpp" />
     <ClCompile Include="HandlingNotes.cpp" />
@@ -209,6 +210,7 @@
     <ClInclude Include="AdvancedDataNames.h" />
     <ClInclude Include="Compatibility.h" />
     <ClInclude Include="Constants.h" />
+    <ClInclude Include="HandlingConversion.h" />
     <ClInclude Include="HandlingFlags.h" />
     <ClInclude Include="HandlingItem.h" />
     <ClInclude Include="HandlingNotes.h" />
