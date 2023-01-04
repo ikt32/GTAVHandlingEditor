@@ -1,24 +1,28 @@
 #include "script.h"
 
+#include "AdvancedDataNames.h"
+#include "Constants.h"
+#include "HandlingConversion.h"
+#include "HandlingFlags.h"
+#include "HandlingItem.h"
+#include "HandlingNotes.h"
+#include "HandlingUtils.h"
+#include "ScriptUtils.h"
+#include "Table.h"
+
 #include "Memory/HandlingInfo.h"
 #include "Memory/VehicleExtensions.hpp"
-#include "ScriptUtils.h"
-#include "HandlingItem.h"
+
+#include "Util/MathExt.h"
 #include "Util/StrUtil.h"
 #include "Util/UI.h"
-#include "Constants.h"
-#include "Table.h"
-#include "HandlingFlags.h"
-#include "HandlingNotes.h"
-#include "AdvancedDataNames.h"
-#include "HandlingUtils.h"
-#include "HandlingConversion.h"
-#include "Util/MathExt.h"
 
 #include <HandlingReplacement.h>
 #include <menu.h>
 #include <menukeyboard.h>
+
 #include <inc/natives.h>
+
 #include <fmt/format.h>
 
 using VExt = VehicleExtensions;

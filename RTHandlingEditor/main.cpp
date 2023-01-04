@@ -1,17 +1,15 @@
-/*
-THIS FILE IS A PART OF GTA V SCRIPT HOOK SDK
-http://dev-c.com
-(C) Alexander Blade 2015
-*/
-
-#include "inc\main.h"
 #include "script.h"
+
+#include "Constants.h"
 #include "keyboard.h"
+
+#include "Memory/Versions.h"
+
 #include "Util/FileVersion.h"
 #include "Util/Logger.hpp"
 #include "Util/Paths.h"
-#include "Constants.h"
-#include "Memory/Versions.h"
+
+#include <inc/main.h>
 
 namespace fs = std::filesystem;
 

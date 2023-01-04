@@ -5,7 +5,7 @@
 #define VERSION_MAJOR 3
 #define VERSION_MINOR 0
 #define VERSION_PATCH 0
-#define VERSION_LABEL "beta1"
+//#define VERSION_LABEL ""
 
 #ifdef VERSION_LABEL
 #define VERSION_LABEL_TXT "-" VERSION_LABEL

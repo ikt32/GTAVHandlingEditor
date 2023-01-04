@@ -1,9 +1,9 @@
 #pragma once
 #include "atArray.h"
-#include <cstdint>
+
 #include "Vector.hpp"
 #include <inc/types.h>
-#include "atArray.h"
+#include <cstdint>
 
 // https://alexguirre.github.io/rage-parser-dumps/
 // Alignment - 16!

@@ -7,31 +7,32 @@
 
 #include "script.h"
 
-#include "Memory/HandlingInfo.h"
-
-#include "keyboard.h"
-#include "Memory/NativeMemory.hpp"
-#include "Util/Logger.hpp"
-
-#include "inc/natives.h"
-#include "inc/types.h"
-#include "inc/enums.h"
-#include "inc/main.h"
-
-#include "tinyxml2.h"
-#include "Memory/VehicleExtensions.hpp"
-#include "HandlingItem.h"
-#include "Constants.h"
-#include "Util/Paths.h"
-#include <filesystem>
-#include "Util/StrUtil.h"
-#include "fmt/format.h"
-#include "Util/UI.h"
 #include "Compatibility.h"
-#include "Util/AddonSpawnerCache.h"
-#include "HandlingFlags.h"
-#include "HandlingNotes.h"
+#include "Constants.h"
+
 #include "HandlingConversion.h"
+#include "HandlingFlags.h"
+#include "HandlingItem.h"
+#include "HandlingNotes.h"
+
+#include "Memory/HandlingInfo.h"
+#include "Memory/NativeMemory.hpp"
+#include "Memory/VehicleExtensions.hpp"
+
+#include "Util/AddonSpawnerCache.h"
+#include "Util/Logger.hpp"
+#include "Util/Paths.h"
+#include "Util/StrUtil.h"
+#include "Util/UI.h"
+
+#include <inc/natives.h>
+#include <inc/types.h>
+#include <inc/enums.h>
+#include <inc/main.h>
+
+#include <fmt/format.h>
+
+#include <filesystem>
 
 namespace fs = std::filesystem;
 

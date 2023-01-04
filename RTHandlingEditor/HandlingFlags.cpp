@@ -1,15 +1,17 @@
 #include "HandlingFlags.h"
-#include "Util/Paths.h"
-#include "Util/Logger.hpp"
+
 #include "Constants.h"
 
-#include <curl/curl.h>
+#include "Util/Logger.hpp"
+#include "Util/Paths.h"
 
-#include <nlohmann/json.hpp>
+#include <curl/curl.h>
 #include <fmt/format.h>
+#include <nlohmann/json.hpp>
+
+#include <filesystem>
 #include <fstream>
 #include <sstream>
-#include <filesystem>
 
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "GDI32.LIB")

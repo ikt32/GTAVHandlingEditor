@@ -1,10 +1,13 @@
 #include "HandlingItem.h"
-#include "tinyxml2.h"
-#include "Util/Logger.hpp"
-#include "fmt/format.h"
 #include "Memory/HandlingInfo.h"
 #include "Memory/Vector.hpp"
+
+#include "Util/Logger.hpp"
 #include "Util/StrUtil.h"
+
+#include <tinyxml2.h>
+#include <fmt/format.h>
+
 #include <filesystem>
 
 namespace fs = std::filesystem;
