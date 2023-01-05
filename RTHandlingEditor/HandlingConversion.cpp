@@ -452,10 +452,10 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
         }
     }
 
-    PHYSICS::SET_CGOFFSET(vehicle,
+    PHYSICS::SET_CGOFFSET(vehicle, {
         currentHandling->vecCentreOfMassOffset.x,
         currentHandling->vecCentreOfMassOffset.y,
-        currentHandling->vecCentreOfMassOffset.z);
+        currentHandling->vecCentreOfMassOffset.z });
 }
 
 void storeCBikeHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {

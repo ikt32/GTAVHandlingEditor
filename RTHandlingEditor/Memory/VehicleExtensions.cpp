@@ -691,9 +691,9 @@ std::vector<Vector3> VehicleExtensions::GetWheelOffsets(Vehicle handle) {
     positions.reserve(wheels.size());
     for (auto wheelAddr : wheels) {
         positions.emplace_back(Vector3{
-            *reinterpret_cast<float*>(wheelAddr + offPosX), 0,
-            *reinterpret_cast<float*>(wheelAddr + offPosY), 0,
-            *reinterpret_cast<float*>(wheelAddr + offPosZ), 0,
+            *reinterpret_cast<float*>(wheelAddr + offPosX),
+            *reinterpret_cast<float*>(wheelAddr + offPosY),
+            *reinterpret_cast<float*>(wheelAddr + offPosZ),
             });
     }
     return positions;
@@ -716,9 +716,9 @@ std::vector<Vector3> VehicleExtensions::GetWheelLastContactCoords(Vehicle handle
     positions.reserve(wheels.size());
     for (auto wheelAddr : wheels) {
         positions.emplace_back(Vector3{
-            *reinterpret_cast<float*>(wheelAddr + offPosX), 0,
-            *reinterpret_cast<float*>(wheelAddr + offPosY), 0,
-            *reinterpret_cast<float*>(wheelAddr + offPosZ), 0,
+            *reinterpret_cast<float*>(wheelAddr + offPosX),
+            *reinterpret_cast<float*>(wheelAddr + offPosY),
+            *reinterpret_cast<float*>(wheelAddr + offPosZ),
             });
     }
     return positions;

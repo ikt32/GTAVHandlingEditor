@@ -153,7 +153,7 @@ void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
 }
 
 void UpdateCheats() {
-    if (MISC::_HAS_CHEAT_STRING_JUST_BEEN_ENTERED(StrUtil::joaat("rtherld"))) {
+    if (MISC::HAS_PC_CHEAT_WITH_HASH_BEEN_ACTIVATED(StrUtil::joaat("rtherld"))) {
         Notes::Load();
         Flags::Load();
     }

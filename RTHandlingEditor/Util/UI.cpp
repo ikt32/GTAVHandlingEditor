@@ -21,7 +21,7 @@ void UI::ShowText(float x, float y, float scale, const std::string& text, SColor
     if (outline) HUD::SET_TEXT_OUTLINE();
     HUD::BEGIN_TEXT_COMMAND_DISPLAY_TEXT("STRING");
     HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
-    HUD::END_TEXT_COMMAND_DISPLAY_TEXT(x, y, 0);
+    HUD::END_TEXT_COMMAND_DISPLAY_TEXT({ x, y }, 0);
 }
 
 void showNotification(const std::string& message, int* prevNotification) {

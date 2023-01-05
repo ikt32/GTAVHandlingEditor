@@ -70,19 +70,19 @@
     <ClInclude Include="script.h" />
     <ClInclude Include="keyboard.h" />
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\enums.h">
-      <Filter>ScriptHookV</Filter>
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\main.h">
-      <Filter>ScriptHookV</Filter>
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\nativeCaller.h">
-      <Filter>ScriptHookV</Filter>
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\natives.h">
-      <Filter>ScriptHookV</Filter>
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
     <ClInclude Include="..\thirdparty\ScriptHookV_SDK\inc\types.h">
-      <Filter>ScriptHookV</Filter>
+      <Filter>thirdparty\ScriptHookV</Filter>
     </ClInclude>
     <ClInclude Include="VehicleData.h" />
     <ClInclude Include="..\thirdparty\tinyxml2\tinyxml2.h">
@@ -203,9 +203,6 @@
     <ClInclude Include="HandlingConversion.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="ScriptHookV">
-      <UniqueIdentifier>{a7d3c671-b757-46b1-8bf5-0fb30ce6dfb8}</UniqueIdentifier>
-    </Filter>
     <Filter Include="thirdparty">
       <UniqueIdentifier>{59333e37-297d-4e9b-b8d3-031786c2c8ea}</UniqueIdentifier>
     </Filter>
@@ -236,10 +233,13 @@
     <Filter Include="thirdparty\curl">
       <UniqueIdentifier>{48d24f3a-9847-4c2e-b77a-8270039c4dcc}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty\ScriptHookV">
+      <UniqueIdentifier>{a7d3c671-b757-46b1-8bf5-0fb30ce6dfb8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib">
-      <Filter>ScriptHookV</Filter>
+      <Filter>thirdparty\ScriptHookV</Filter>
     </Library>
     <Library Include="..\thirdparty\curl\libcurl.lib">
       <Filter>thirdparty\curl</Filter>

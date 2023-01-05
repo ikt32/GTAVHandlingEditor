@@ -14,7 +14,7 @@ RTHE::CHandlingData* GetEditHandlingData(bool editStock, bool& hrActive, std::st
     }
 
     std::string vehicleNameLabel = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    vehicleName = HUD::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
+    vehicleName = HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(vehicleNameLabel.c_str());
 
     RTHE::CHandlingData* currentHandling = nullptr;
 

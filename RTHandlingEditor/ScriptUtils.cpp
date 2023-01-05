@@ -28,7 +28,7 @@ Vehicle spawnVehicle(Hash hash, Vector3 velocity, Ped playerPed) {
         ENTITY::SET_ENTITY_AS_MISSION_ENTITY(oldVeh, true, true);
         VEHICLE::DELETE_VEHICLE(&oldVeh);
 
-        Vehicle veh = VEHICLE::CREATE_VEHICLE(hash, pos.x, pos.y, pos.z, heading, 0, 1, false);
+        Vehicle veh = VEHICLE::CREATE_VEHICLE(hash, pos, heading, 0, 1, false);
 
         VEHICLE::SET_VEHICLE_DIRT_LEVEL(veh, 0.0f);
         ENTITY::SET_ENTITY_ROTATION(veh, rot.x, rot.y, rot.z, 0, false);
@@ -38,7 +38,7 @@ Vehicle spawnVehicle(Hash hash, Vector3 velocity, Ped playerPed) {
         VEHICLE::SET_VEHICLE_ENGINE_ON(veh, true, true, false);
 
         STREAMING::SET_MODEL_AS_NO_LONGER_NEEDED(hash);
-        ENTITY::SET_ENTITY_VELOCITY(veh, velocity.x, velocity.y, velocity.z);
+        ENTITY::SET_ENTITY_VELOCITY(veh, velocity);
 
         if (persist) {
             ENTITY::SET_ENTITY_AS_MISSION_ENTITY(veh, true, false);
@@ -74,62 +74,60 @@ void Utils::DrawCOMAndRollCenters(Vehicle vehicle, RTHE::CHandlingData* currentH
     Vector3 modelDimMin, modelDimMax;
     MISC::GET_MODEL_DIMENSIONS(ENTITY::GET_ENTITY_MODEL(vehicle), &modelDimMin, &modelDimMax);
 
-    Vector3 lfd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMin.x, modelDimMax.y, modelDimMin.z);
-    Vector3 lfu = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMin.x, modelDimMax.y, modelDimMax.z);
-    Vector3 rfd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMax.x, modelDimMax.y, modelDimMin.z);
-    Vector3 rfu = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMax.x, modelDimMax.y, modelDimMax.z);
-    Vector3 lrd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMin.x, -modelDimMax.y, modelDimMin.z);
-    Vector3 lru = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMin.x, -modelDimMax.y, modelDimMax.z);
-    Vector3 rrd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMax.x, -modelDimMax.y, modelDimMin.z);
-    Vector3 rru = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, modelDimMax.x, -modelDimMax.y, modelDimMax.z);
+    Vector3 lfd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMin.x, modelDimMax.y, modelDimMin.z });
+    Vector3 lfu = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMin.x, modelDimMax.y, modelDimMax.z });
+    Vector3 rfd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMax.x, modelDimMax.y, modelDimMin.z });
+    Vector3 rfu = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMax.x, modelDimMax.y, modelDimMax.z });
+    Vector3 lrd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMin.x, -modelDimMax.y, modelDimMin.z });
+    Vector3 lru = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMin.x, -modelDimMax.y, modelDimMax.z });
+    Vector3 rrd = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMax.x, -modelDimMax.y, modelDimMin.z });
+    Vector3 rru = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(vehicle, { modelDimMax.x, -modelDimMax.y, modelDimMax.z });
 
-    GRAPHICS::DRAW_LINE(lfd.x, lfd.y, lfd.z, rfd.x, rfd.y, rfd.z, 255, 255, 255, 255); // Front low
-    GRAPHICS::DRAW_LINE(lfu.x, lfu.y, lfu.z, rfu.x, rfu.y, rfu.z, 255, 255, 255, 255); // Front high
-    GRAPHICS::DRAW_LINE(lfd.x, lfd.y, lfd.z, lfu.x, lfu.y, lfu.z, 255, 255, 255, 255); // Front left
-    GRAPHICS::DRAW_LINE(rfd.x, rfd.y, rfd.z, rfu.x, rfu.y, rfu.z, 255, 255, 255, 255); // Front right
+    GRAPHICS::DRAW_LINE(lfd, rfd, 255, 255, 255, 255); // Front low
+    GRAPHICS::DRAW_LINE(lfu, rfu, 255, 255, 255, 255); // Front high
+    GRAPHICS::DRAW_LINE(lfd, lfu, 255, 255, 255, 255); // Front left
+    GRAPHICS::DRAW_LINE(rfd, rfu, 255, 255, 255, 255); // Front right
 
-    GRAPHICS::DRAW_LINE(lrd.x, lrd.y, lrd.z, rrd.x, rrd.y, rrd.z, 255, 255, 255, 255); // Rear low
-    GRAPHICS::DRAW_LINE(lru.x, lru.y, lru.z, rru.x, rru.y, rru.z, 255, 255, 255, 255); // Rear high
-    GRAPHICS::DRAW_LINE(lrd.x, lrd.y, lrd.z, lru.x, lru.y, lru.z, 255, 255, 255, 255); // Rear left
-    GRAPHICS::DRAW_LINE(rrd.x, rrd.y, rrd.z, rru.x, rru.y, rru.z, 255, 255, 255, 255); // Rear right
+    GRAPHICS::DRAW_LINE(lrd, rrd, 255, 255, 255, 255); // Rear low
+    GRAPHICS::DRAW_LINE(lru, rru, 255, 255, 255, 255); // Rear high
+    GRAPHICS::DRAW_LINE(lrd, lru, 255, 255, 255, 255); // Rear left
+    GRAPHICS::DRAW_LINE(rrd, rru, 255, 255, 255, 255); // Rear right
 
-    GRAPHICS::DRAW_LINE(lfu.x, lfu.y, lfu.z, lru.x, lru.y, lru.z, 255, 255, 255, 255); // Left up
-    GRAPHICS::DRAW_LINE(rfu.x, rfu.y, rfu.z, rru.x, rru.y, rru.z, 255, 255, 255, 255); // Right up
-    GRAPHICS::DRAW_LINE(lfd.x, lfd.y, lfd.z, lrd.x, lrd.y, lrd.z, 255, 255, 255, 255); // Left down
-    GRAPHICS::DRAW_LINE(rfd.x, rfd.y, rfd.z, rrd.x, rrd.y, rrd.z, 255, 255, 255, 255); // Right down
+    GRAPHICS::DRAW_LINE(lfu, lru, 255, 255, 255, 255); // Left up
+    GRAPHICS::DRAW_LINE(rfu, rru, 255, 255, 255, 255); // Right up
+    GRAPHICS::DRAW_LINE(lfd, lrd, 255, 255, 255, 255); // Left down
+    GRAPHICS::DRAW_LINE(rfd, rrd, 255, 255, 255, 255); // Right down
 
     Vector3 comFrontProjection = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
-        vehicle,
+        vehicle, {
         currentHandling->vecCentreOfMassOffset.x,
         modelDimMax.y + 0.5f,
-        currentHandling->vecCentreOfMassOffset.z);
+        currentHandling->vecCentreOfMassOffset.z });
 
     Vector3 comRearProjection = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
-        vehicle,
+        vehicle, {
         currentHandling->vecCentreOfMassOffset.x,
         modelDimMin.y - 0.5f,
-        currentHandling->vecCentreOfMassOffset.z);
+        currentHandling->vecCentreOfMassOffset.z });
 
     GRAPHICS::DRAW_LINE(
-        comFrontProjection.x, comFrontProjection.y, comFrontProjection.z,
-        comRearProjection.x, comRearProjection.y, comRearProjection.z,
+        comFrontProjection, comRearProjection,
         255, 0, 0, 255);
 
     Vector3 comLeftProjection = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
         vehicle,
-        modelDimMin.x - 0.5f,
+        { modelDimMin.x - 0.5f,
         currentHandling->vecCentreOfMassOffset.y,
-        currentHandling->vecCentreOfMassOffset.z);
+        currentHandling->vecCentreOfMassOffset.z });
 
     Vector3 comRightProjection = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
         vehicle,
-        modelDimMax.x + 0.5f,
+        { modelDimMax.x + 0.5f,
         currentHandling->vecCentreOfMassOffset.y,
-        currentHandling->vecCentreOfMassOffset.z);
+        currentHandling->vecCentreOfMassOffset.z });
 
     GRAPHICS::DRAW_LINE(
-        comLeftProjection.x, comLeftProjection.y, comLeftProjection.z,
-        comRightProjection.x, comRightProjection.y, comRightProjection.z,
+        comLeftProjection, comRightProjection,
         255, 0, 0, 255);
 
     auto lfBoneCoord = ENTITY::GET_WORLD_POSITION_OF_ENTITY_BONE(
@@ -157,54 +155,48 @@ void Utils::DrawCOMAndRollCenters(Vehicle vehicle, RTHE::CHandlingData* currentH
             "wheel_rr"));
 
     Vector3 lfBoneCoordRel = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
-        vehicle,
-        lfBoneCoord.x, lfBoneCoord.y, lfBoneCoord.z);
+        vehicle, lfBoneCoord);
 
     Vector3 rfBoneCoordRel = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
-        vehicle,
-        rfBoneCoord.x, rfBoneCoord.y, rfBoneCoord.z);
+        vehicle, rfBoneCoord);
 
     Vector3 lrBoneCoordRel = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
-        vehicle,
-        lrBoneCoord.x, lrBoneCoord.y, lrBoneCoord.z);
+        vehicle, lrBoneCoord);
 
     Vector3 rrBoneCoordRel = ENTITY::GET_OFFSET_FROM_ENTITY_GIVEN_WORLD_COORDS(
-        vehicle,
-        rrBoneCoord.x, rrBoneCoord.y, rrBoneCoord.z);
+        vehicle, rrBoneCoord);
 
     Vector3 rollFrontL = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
-        vehicle,
+        vehicle, {
         lfBoneCoordRel.x - 0.15f,
         lfBoneCoordRel.y,
-        modelDimMin.z + currentHandling->fRollCentreHeightFront);
+        modelDimMin.z + currentHandling->fRollCentreHeightFront });
 
     Vector3 rollFrontR = ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
-        vehicle,
+        vehicle, {
         rfBoneCoordRel.x + 0.15f,
         rfBoneCoordRel.y,
-        modelDimMin.z + currentHandling->fRollCentreHeightFront);
+        modelDimMin.z + currentHandling->fRollCentreHeightFront });
 
     Vector3 rollRearL =
         ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
-            vehicle,
+            vehicle, {
             lrBoneCoordRel.x - 0.15f,
             lrBoneCoordRel.y,
-            modelDimMin.z + currentHandling->fRollCentreHeightRear);
+            modelDimMin.z + currentHandling->fRollCentreHeightRear });
 
     Vector3 rollRearR =
         ENTITY::GET_OFFSET_FROM_ENTITY_IN_WORLD_COORDS(
-            vehicle,
+            vehicle, {
             rrBoneCoordRel.x + 0.15f,
             rrBoneCoordRel.y,
-            modelDimMin.z + currentHandling->fRollCentreHeightRear);
+            modelDimMin.z + currentHandling->fRollCentreHeightRear });
 
     GRAPHICS::DRAW_LINE(
-        rollFrontL.x, rollFrontL.y, rollFrontL.z,
-        rollFrontR.x, rollFrontR.y, rollFrontR.z,
+        rollFrontL, rollFrontR,
         0, 255, 0, 255);
 
     GRAPHICS::DRAW_LINE(
-        rollRearL.x, rollRearL.y, rollRearL.z,
-        rollRearR.x, rollRearR.y, rollRearR.z,
+        rollRearL, rollRearR,
         255, 0, 0, 255);
 }

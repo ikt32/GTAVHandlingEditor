@@ -29,13 +29,11 @@ void VehicleData::UpdateValues(Vehicle vehicle) {
 Vector3 VehicleData::getAccelerationVectors(Vector3 velocities) {
     long long time = std::chrono::steady_clock::now().time_since_epoch().count(); // 1ns
 
-    Vector3 result;
-    result.x = (velocities.x - prevVelocities.x) / ((time - prevAccelTime) / 1e9f);
-    result.y = (velocities.y - prevVelocities.y) / ((time - prevAccelTime) / 1e9f);
-    result.z = (velocities.z - prevVelocities.z) / ((time - prevAccelTime) / 1e9f);
-    result._paddingx = 0;
-    result._paddingy = 0;
-    result._paddingz = 0;
+    Vector3 result{
+        (velocities.x - prevVelocities.x) / ((time - prevAccelTime) / 1e9f),
+        (velocities.y - prevVelocities.y) / ((time - prevAccelTime) / 1e9f),
+        (velocities.z - prevVelocities.z) / ((time - prevAccelTime) / 1e9f)
+    };
 
     prevAccelTime = time;
     prevVelocities = velocities;
@@ -47,10 +45,7 @@ Vector3 VehicleData::getAccelerationVectors(Vector3 velocities) {
 }
 
 Vector3 VehicleData::getAccelerationVectorsAverage() const {
-    Vector3 result;
-    result.x = 0;
-    result.y = 0;
-    result.z = 0;
+    Vector3 result{};
 
     for (int i = 0; i < SAMPLES; i++) {
         result.x += accelSamples[i].x;

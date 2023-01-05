@@ -77,10 +77,10 @@ void UpdateMainMenu() {
             vehicle = PED::GET_VEHICLE_PED_IS_IN(playerPed, false);
             RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(VExt::GetHandlingPtr(vehicle));
             if (currentHandling) {
-                PHYSICS::SET_CGOFFSET(vehicle,
+                PHYSICS::SET_CGOFFSET(vehicle, {
                     currentHandling->vecCentreOfMassOffset.x,
                     currentHandling->vecCentreOfMassOffset.y,
-                    currentHandling->vecCentreOfMassOffset.z);
+                    currentHandling->vecCentreOfMassOffset.z });
             }
         }
 
@@ -190,15 +190,15 @@ void SetFlags(unsigned& flagArea, std::string& newFlags) {
 }
 
 float GetStringWidth(const std::string& text, float scale, int font) {
-    HUD::_BEGIN_TEXT_COMMAND_GET_WIDTH("STRING");
+    HUD::BEGIN_TEXT_COMMAND_GET_SCREEN_WIDTH_OF_DISPLAY_TEXT("STRING");
     HUD::ADD_TEXT_COMPONENT_SUBSTRING_PLAYER_NAME(text.c_str());
     HUD::SET_TEXT_FONT(font);
     HUD::SET_TEXT_SCALE(scale, scale);
-    return HUD::_END_TEXT_COMMAND_GET_WIDTH(true);
+    return HUD::END_TEXT_COMMAND_GET_SCREEN_WIDTH_OF_DISPLAY_TEXT(true);
 }
 
 void DrawRect(float x, float y, float w, float h, UI::SColor color) {
-    GRAPHICS::DRAW_RECT(x, y, w, h, color.R, color.G, color.B, color.A, false);
+    GRAPHICS::DRAW_RECT({ x, y }, w, h, color.R, color.G, color.B, color.A, false);
 }
 
 void DrawFlagsTable(const STable& flagsTable, uint8_t selectedIndex) {
@@ -218,7 +218,7 @@ void DrawFlagsTable(const STable& flagsTable, uint8_t selectedIndex) {
     const float offsetY = 0.0f;
 
     GRAPHICS::SET_SCRIPT_GFX_ALIGN('L', 'T');
-    GRAPHICS::SET_SCRIPT_GFX_ALIGN_PARAMS(0, 0, 0, 0);
+    GRAPHICS::SET_SCRIPT_GFX_ALIGN_PARAMS({ 0, 0 }, 0, 0);
     for (uint32_t row = 0; row < tableRows; ++row) {
         for (uint32_t cell = 0; cell < rowCells; ++cell) {
             bool selected = selectedIndex == row * rowCells + cell;
@@ -418,10 +418,10 @@ void UpdateEditMenu() {
     comModified |= FloatOptionExtra("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -20.0f, 20.0f, 0.01f);
 
     if (comModified) {
-        PHYSICS::SET_CGOFFSET(vehicle,
+        PHYSICS::SET_CGOFFSET(vehicle, {
             currentHandling->vecCentreOfMassOffset.x,
             currentHandling->vecCentreOfMassOffset.y,
-            currentHandling->vecCentreOfMassOffset.z);
+            currentHandling->vecCentreOfMassOffset.z });
     }
 
     FloatOptionExtra("vecInertiaMultiplier.x", currentHandling->vecInertiaMultiplier.x, -100.0f, 100.0f, 0.1f);
@@ -1174,7 +1174,7 @@ void UpdateLoadMenu() {
     }
 
     std::string vehicleNameLabel = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
-    std::string vehicleName = HUD::_GET_LABEL_TEXT(vehicleNameLabel.c_str());
+    std::string vehicleName = HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(vehicleNameLabel.c_str());
     menu.Subtitle(fmt::format("{}", vehicleName));
 
     // TODO: Filter option
