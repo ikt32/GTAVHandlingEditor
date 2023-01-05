@@ -300,8 +300,8 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
     currentHandling->fSubmergedRatio_ = 100.0f / handlingDataItem.fPercentSubmerged;
 
     currentHandling->vecCentreOfMassOffset.x = handlingDataItem.vecCentreOfMassOffset.x;
-    currentHandling->vecCentreOfMassOffset.y = handlingDataItem.vecCentreOfMassOffset.x;
-    currentHandling->vecCentreOfMassOffset.z = handlingDataItem.vecCentreOfMassOffset.x;
+    currentHandling->vecCentreOfMassOffset.y = handlingDataItem.vecCentreOfMassOffset.y;
+    currentHandling->vecCentreOfMassOffset.z = handlingDataItem.vecCentreOfMassOffset.z;
 
     currentHandling->vecInertiaMultiplier.x = handlingDataItem.vecInertiaMultiplier.x;
     currentHandling->vecInertiaMultiplier.y = handlingDataItem.vecInertiaMultiplier.y;
