@@ -86,7 +86,11 @@ void UpdateMainMenu() {
 
         menu.MenuOption("Load handling", "LoadMenu");
 
-        if (menu.Option("Save").Triggered) {
+        std::vector<std::string> saveDetails = {
+            "Save current handling to file.",
+            "Note: All known values are saved. Nonrelevant or default values are also written."
+        };
+        if (menu.Option("Save", saveDetails).Triggered) {
             RTHE::CHandlingData* currentHandling = reinterpret_cast<RTHE::CHandlingData*>(VExt::GetHandlingPtr(vehicle));
 
             PromptSave(vehicle, currentHandling->handlingName);
@@ -402,6 +406,7 @@ void UpdateEditMenu() {
         }
     }
     FloatOptionExtra("fDownforceModifier", currentHandling->fDownforceModifier, 0.0f, 1000.0f, 0.5f);
+    FloatOptionExtra("fPopUpLightRotation", currentHandling->fPopUpLightRotation, -360.0f, 360.0f, 0.5f);
 
     if (FloatOptionExtra("fPercentSubmerged", currentHandling->fPercentSubmerged, 0.0f, 100.0f, 1.0f)) {
         currentHandling->fSubmergedRatio_ = 100.0f / currentHandling->fPercentSubmerged;
@@ -413,7 +418,6 @@ void UpdateEditMenu() {
     comModified |= FloatOptionExtra("vecCentreOfMassOffset.z", currentHandling->vecCentreOfMassOffset.z, -20.0f, 20.0f, 0.01f);
 
     if (comModified) {
-        // Update COM.
         PHYSICS::SET_CGOFFSET(vehicle,
             currentHandling->vecCentreOfMassOffset.x,
             currentHandling->vecCentreOfMassOffset.y,
@@ -611,6 +615,9 @@ void UpdateEditMenu() {
     FloatOptionExtra("vecSeatOffsetDistZ", currentHandling->vecSeatOffsetDist.z, -1000.0f, 1000.0f, 0.01f);
 
     IntOptionExtra("nMonetaryValue", currentHandling->nMonetaryValue, 0, 1000000, 1);
+
+    FloatOptionExtra("fRocketBoostCapacity", currentHandling->fRocketBoostCapacity, -1000.0f, 1000.0f, 0.01f);
+    FloatOptionExtra("fBoostMaxSpeed", currentHandling->fBoostMaxSpeed, -1000.0f, 1000.0f, 0.01f);
 
     OptionFlags("strModelFlags", Flags::GetModelFlags(), currentHandling->strModelFlags, modelFlagsIndex);
     OptionFlags("strHandlingFlags", Flags::GetHandlingFlags(), currentHandling->strHandlingFlags, handlingFlagsIndex);

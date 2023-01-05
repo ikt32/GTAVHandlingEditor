@@ -295,6 +295,7 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
     currentHandling->fMass = handlingDataItem.fMass;
     currentHandling->fInitialDragCoeff = handlingDataItem.fInitialDragCoeff / 10000.0f;
     currentHandling->fDownforceModifier = handlingDataItem.fDownforceModifier;
+    currentHandling->fPopUpLightRotation = handlingDataItem.fPopUpLightRotation;
 
     currentHandling->fPercentSubmerged = handlingDataItem.fPercentSubmerged;
     currentHandling->fSubmergedRatio_ = 100.0f / handlingDataItem.fPercentSubmerged;
@@ -406,6 +407,8 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
     currentHandling->vecSeatOffsetDist.z = handlingDataItem.vecSeatOffsetDist.z;
 
     currentHandling->nMonetaryValue = handlingDataItem.nMonetaryValue;
+    currentHandling->fRocketBoostCapacity = handlingDataItem.fRocketBoostCapacity;
+    currentHandling->fBoostMaxSpeed = handlingDataItem.fBoostMaxSpeed;
 
     currentHandling->strModelFlags = handlingDataItem.strModelFlags;
     currentHandling->strHandlingFlags = handlingDataItem.strHandlingFlags;
@@ -457,7 +460,7 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
 
 void storeCBikeHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CBikeHandlingData* subHandlingData = reinterpret_cast<RTHE::CBikeHandlingData*>(baseSubHandlingData);
-    RTHE::CBikeHandlingDataItem subHandlingDataItem;
+    RTHE::CBikeHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.fLeanFwdCOMMult = subHandlingData->fLeanFwdCOMMult;
     subHandlingDataItem.fLeanFwdForceMult = subHandlingData->fLeanFwdForceMult;
@@ -485,7 +488,7 @@ void storeCBikeHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTH
 
 void storeCFlyingHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CFlyingHandlingData* subHandlingData = reinterpret_cast<RTHE::CFlyingHandlingData*>(baseSubHandlingData);
-    RTHE::CFlyingHandlingDataItem subHandlingDataItem;
+    RTHE::CFlyingHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.fThrust = subHandlingData->fThrust;
     subHandlingDataItem.fThrustFallOff = subHandlingData->fThrustFallOff;
@@ -536,7 +539,7 @@ void storeCFlyingHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, R
 
 void storeCSpecialFlightHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CSpecialFlightHandlingData* subHandlingData = reinterpret_cast<RTHE::CSpecialFlightHandlingData*>(baseSubHandlingData);
-    RTHE::CSpecialFlightHandlingDataItem subHandlingDataItem;
+    RTHE::CSpecialFlightHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.vecAngularDamping = subHandlingData->vecAngularDamping;
     subHandlingDataItem.vecAngularDampingMin = subHandlingData->vecAngularDampingMin;
@@ -574,7 +577,7 @@ void storeCSpecialFlightHandlingData(RTHE::CBaseSubHandlingData* baseSubHandling
 
 void storeCBoatHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CBoatHandlingData* subHandlingData = reinterpret_cast<RTHE::CBoatHandlingData*>(baseSubHandlingData);
-    RTHE::CBoatHandlingDataItem subHandlingDataItem;
+    RTHE::CBoatHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.fBoxFrontMult = subHandlingData->fBoxFrontMult;
     subHandlingDataItem.fBoxRearMult = subHandlingData->fBoxRearMult;
@@ -612,7 +615,7 @@ void storeCBoatHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTH
 
 void storeCSeaPlaneHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CSeaPlaneHandlingData* subHandlingData = reinterpret_cast<RTHE::CSeaPlaneHandlingData*>(baseSubHandlingData);
-    RTHE::CSeaPlaneHandlingDataItem subHandlingDataItem;
+    RTHE::CSeaPlaneHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.fLeftPontoonComponentId = subHandlingData->fLeftPontoonComponentId;
     subHandlingDataItem.fRightPontoonComponentId = subHandlingData->fRightPontoonComponentId;
@@ -631,7 +634,7 @@ void storeCSeaPlaneHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData,
 
 void storeCSubmarineHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CSubmarineHandlingData* subHandlingData = reinterpret_cast<RTHE::CSubmarineHandlingData*>(baseSubHandlingData);
-    RTHE::CSubmarineHandlingDataItem subHandlingDataItem;
+    RTHE::CSubmarineHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.vTurnRes = subHandlingData->vTurnRes;
     subHandlingDataItem.fMoveResXY = subHandlingData->fMoveResXY;
@@ -648,7 +651,7 @@ void storeCSubmarineHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData
 
 void storeCTrailerHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CTrailerHandlingData* subHandlingData = reinterpret_cast<RTHE::CTrailerHandlingData*>(baseSubHandlingData);
-    RTHE::CTrailerHandlingDataItem subHandlingDataItem;
+    RTHE::CTrailerHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.fAttachLimitPitch = subHandlingData->fAttachLimitPitch;
     subHandlingDataItem.fAttachLimitRoll = subHandlingData->fAttachLimitRoll;
@@ -665,7 +668,7 @@ void storeCTrailerHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, 
 
 void storeCCarHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, RTHE::CHandlingDataItem& handlingDataItem) {
     RTHE::CCarHandlingData* subHandlingData = reinterpret_cast<RTHE::CCarHandlingData*>(baseSubHandlingData);
-    RTHE::CCarHandlingDataItem subHandlingDataItem;
+    RTHE::CCarHandlingDataItem subHandlingDataItem{};
 
     subHandlingDataItem.fBackEndPopUpCarImpulseMult = subHandlingData->fBackEndPopUpCarImpulseMult;
     subHandlingDataItem.fBackEndPopUpBuildingImpulseMult = subHandlingData->fBackEndPopUpBuildingImpulseMult;
@@ -706,6 +709,7 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
     handlingDataItem.fMass = currentHandling->fMass;
     handlingDataItem.fInitialDragCoeff = currentHandling->fInitialDragCoeff * 10000.0f;
     handlingDataItem.fDownforceModifier = currentHandling->fDownforceModifier;
+    handlingDataItem.fPopUpLightRotation = currentHandling->fPopUpLightRotation;
 
     handlingDataItem.fPercentSubmerged = currentHandling->fPercentSubmerged;
     handlingDataItem.fPercentSubmerged = 100.0f / currentHandling->fSubmergedRatio_;
@@ -813,6 +817,8 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
     handlingDataItem.vecSeatOffsetDist.z = currentHandling->vecSeatOffsetDist.z;
 
     handlingDataItem.nMonetaryValue = currentHandling->nMonetaryValue;
+    handlingDataItem.fRocketBoostCapacity = currentHandling->fRocketBoostCapacity;
+    handlingDataItem.fBoostMaxSpeed = currentHandling->fBoostMaxSpeed;
 
     handlingDataItem.strModelFlags = currentHandling->strModelFlags;
     handlingDataItem.strHandlingFlags = currentHandling->strHandlingFlags;

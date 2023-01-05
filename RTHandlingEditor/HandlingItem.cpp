@@ -42,25 +42,26 @@ void GetAttribute(
         err = element->QueryAttribute(attributeName, &result);
 
     if (!element || err != tinyxml2::XMLError::XML_SUCCESS) {
-        auto errLvl = ERROR;
-        if (tolerateMissing)
-            errLvl = DEBUG;
-        logger.Write(errLvl, "[Parse] Error reading element [%s]", elementName);
-        logger.Write(errLvl, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+        if (!tolerateMissing) {
+            logger.Write(ERROR, "[Parse] Error reading element [%s]", elementName);
+            logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+        }
         out = result;
         return;
     }
-
+    logger.Write(DEBUG, fmt::format("[Parse] {}: {}", elementName, result));
     out = result;
 }
 
-std::string GetElementStr(tinyxml2::XMLNode* node, const char* elementName) {
+std::string GetElementStr(tinyxml2::XMLNode* node, const char* elementName, bool tolerateMissing = false) {
     const auto& doc = *node->GetDocument();
     std::string result;
     auto* element = node->FirstChildElement(elementName);
     if (!element) {
-        logger.Write(ERROR, "[Parse] Error reading element [%s]", elementName);
-        logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+        if (!tolerateMissing) {
+            logger.Write(ERROR, "[Parse] Error reading element [%s]", elementName);
+            logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+        }
         return result;
     }
     return element->GetText();
@@ -155,7 +156,7 @@ void ParseCFlyingHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemE
     GetAttribute(shdItemElement, "fSubmergeLevelToPullHeliUnderwater", "value", subHandlingDataItem.fSubmergeLevelToPullHeliUnderwater, true);
     GetAttribute(shdItemElement, "fExtraLiftWithRoll", "value", subHandlingDataItem.fExtraLiftWithRoll, true);
 
-    auto typeStr = GetElementStr(shdItemElement, "handlingType");
+    auto typeStr = GetElementStr(shdItemElement, "handlingType", true);
 
     if (typeStr == "HANDLING_TYPE_BIKE") subHandlingDataItem.handlingType = RTHE::HANDLING_TYPE_BIKE;
     else if (typeStr == "HANDLING_TYPE_FLYING") subHandlingDataItem.handlingType = RTHE::HANDLING_TYPE_FLYING;
@@ -216,7 +217,7 @@ void ParseCSpecialFlightHandlingData(std::string& fileName, tinyxml2::XMLNode* s
     GetAttribute(shdItemElement, "fBrakingThrustScale", "value", subHandlingDataItem.fBrakingThrustScale, true);
 
     GetAttribute(shdItemElement, "mode", "value", subHandlingDataItem.mode, true);
-    subHandlingDataItem.strFlags = StoU32(GetElementStr(shdItemElement, "strFlags"), 16);
+    subHandlingDataItem.strFlags = StoU32(GetElementStr(shdItemElement, "strFlags", true), 16);
 
     handlingDataItem.SubHandlingData.CSpecialFlightHandlingData.push_back(subHandlingDataItem);
 }
@@ -340,7 +341,7 @@ void ParseCCarHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElem
     GetAttribute(shdItemElement, "fJumpForceScale", "value", carHandlingDataItem.fJumpForceScale, true);
     GetAttribute(shdItemElement, "fIncreasedRammingForceScale", "value", carHandlingDataItem.fIncreasedRammingForceScale, true);
 
-    carHandlingDataItem.strAdvancedFlags = StoU32(GetElementStr(shdItemElement, "strAdvancedFlags"), 16);
+    carHandlingDataItem.strAdvancedFlags = StoU32(GetElementStr(shdItemElement, "strAdvancedFlags", true), 16);
 
     tinyxml2::XMLNode* advancedDataNode = shdItemElement->FirstChildElement("AdvancedData");
     if (advancedDataNode != nullptr) {
@@ -405,6 +406,7 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
     GetAttribute(itemNode, "fMass", "value", handlingDataItem.fMass);
     GetAttribute(itemNode, "fInitialDragCoeff", "value", handlingDataItem.fInitialDragCoeff);
     GetAttribute(itemNode, "fDownforceModifier", "value", handlingDataItem.fDownforceModifier, true);
+    GetAttribute(itemNode, "fPopUpLightRotation", "value", handlingDataItem.fPopUpLightRotation, true);
     GetAttribute(itemNode, "fPercentSubmerged", "value", handlingDataItem.fPercentSubmerged);
     GetAttribute(itemNode, "vecCentreOfMassOffset", "x", handlingDataItem.vecCentreOfMassOffset.x);
     GetAttribute(itemNode, "vecCentreOfMassOffset", "y", handlingDataItem.vecCentreOfMassOffset.y);
@@ -456,6 +458,8 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
     GetAttribute(itemNode, "fSeatOffsetDistY", "value", handlingDataItem.vecSeatOffsetDist.y);
     GetAttribute(itemNode, "fSeatOffsetDistZ", "value", handlingDataItem.vecSeatOffsetDist.z);
     GetAttribute(itemNode, "nMonetaryValue", "value", handlingDataItem.nMonetaryValue);
+    GetAttribute(itemNode, "fRocketBoostCapacity", "value", handlingDataItem.fRocketBoostCapacity, true);
+    GetAttribute(itemNode, "fBoostMaxSpeed", "value", handlingDataItem.fBoostMaxSpeed, true);
 
     handlingDataItem.strModelFlags = StoU32(GetElementStr(itemNode, "strModelFlags"), 16);
     handlingDataItem.strHandlingFlags = StoU32(GetElementStr(itemNode, "strHandlingFlags"), 16);
@@ -494,6 +498,9 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
             }
             else if (std::string("CCarHandlingData") == type) {
                 ParseCCarHandlingData(fileName, shdItemElement, handlingDataItem);
+            }
+            else if (std::string("NULL") == type) {
+                // Skip dummy Item
             }
             else {
                 const char* type_ = type != nullptr ? type : "nullptr";
@@ -909,6 +916,8 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     InsertElement(itemNode, "fInitialDragCoeff", handlingDataItem.fInitialDragCoeff);
     if (handlingDataItem.fDownforceModifier != 0.0f)
         InsertElement(itemNode, "fDownforceModifier", handlingDataItem.fDownforceModifier);
+    if (handlingDataItem.fPopUpLightRotation != 0.0f)
+        InsertElement(itemNode, "fPopUpLightRotation", handlingDataItem.fPopUpLightRotation);
     InsertElement(itemNode, "fPercentSubmerged", handlingDataItem.fPercentSubmerged);
     InsertElement(itemNode, "vecCentreOfMassOffset", {
         handlingDataItem.vecCentreOfMassOffset.x,
@@ -960,6 +969,8 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     InsertElement(itemNode, "fSeatOffsetDistY", handlingDataItem.vecSeatOffsetDist.y);
     InsertElement(itemNode, "fSeatOffsetDistZ", handlingDataItem.vecSeatOffsetDist.z);
     InsertElement(itemNode, "nMonetaryValue", handlingDataItem.nMonetaryValue);
+    InsertElement(itemNode, "fRocketBoostCapacity", handlingDataItem.fRocketBoostCapacity);
+    InsertElement(itemNode, "fBoostMaxSpeed", handlingDataItem.fBoostMaxSpeed);
 
     // flags
     InsertElement(itemNode, "strModelFlags", fmt::format("{:08X}", handlingDataItem.strModelFlags).c_str());
