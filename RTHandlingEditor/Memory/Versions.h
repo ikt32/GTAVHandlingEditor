@@ -101,6 +101,36 @@ static std::vector<std::string> GameVersionString = {
 
     "VER_1_0_2060_1_STEAM",     // 61
     "VER_1_0_2060_1_NOSTEAM",   // 62
+
+    "VER_1_0_2189_0_STEAM",     // 63
+    "VER_1_0_2189_0_NOSTEAM",   // 64
+
+    "VER_1_0_2215_0_STEAM",     // 65
+    "VER_1_0_2215_0_NOSTEAM",   // 66
+
+    "VER_1_0_2245_0_STEAM",     // 67
+    "VER_1_0_2245_0_NOSTEAM",   // 68
+
+    "VER_1_0_2372_0_STEAM",     // 69
+    "VER_1_0_2372_0_NOSTEAM",   // 70
+
+    "VER_1_0_2545_0_STEAM",     // 71
+    "VER_1_0_2545_0_NOSTEAM",   // 72
+
+    "VER_1_0_2612_1_STEAM",     // 73
+    "VER_1_0_2612_1_NOSTEAM",   // 74
+
+    "VER_1_0_2628_2_STEAM",     // 75
+    "VER_1_0_2628_2_NOSTEAM",   // 76
+
+    "VER_1_0_2699_0_STEAM",     // 77
+    "VER_1_0_2699_0_NOSTEAM",   // 78
+
+    "VER_1_0_2699_16",          // 79
+    "VER_1_0_2802_0",           // 80
+
+    "VER_SIZE",                 // 81
+    "VER_UNK"                   // -1
 };
 
 enum G_GameVersion : int {
@@ -201,6 +231,37 @@ enum G_GameVersion : int {
 
     G_VER_1_0_2060_1_STEAM,     // 61
     G_VER_1_0_2060_1_NOSTEAM,   // 62
+
+    G_VER_1_0_2189_0_STEAM,     // 63
+    G_VER_1_0_2189_0_NOSTEAM,   // 64
+
+    G_VER_1_0_2215_0_STEAM,     // 65
+    G_VER_1_0_2215_0_NOSTEAM,   // 66
+
+    G_VER_1_0_2245_0_STEAM,     // 67
+    G_VER_1_0_2245_0_NOSTEAM,   // 68
+
+    G_VER_1_0_2372_0_STEAM,     // 69
+    G_VER_1_0_2372_0_NOSTEAM,   // 70
+
+    G_VER_1_0_2545_0_STEAM,     // 71
+    G_VER_1_0_2545_0_NOSTEAM,   // 72
+
+    G_VER_1_0_2612_1_STEAM,     // 73
+    G_VER_1_0_2612_1_NOSTEAM,   // 74
+
+    G_VER_1_0_2628_2_STEAM,     // 75
+    G_VER_1_0_2628_2_NOSTEAM,   // 76
+
+    G_VER_1_0_2699_0_STEAM,     // 77
+    G_VER_1_0_2699_0_NOSTEAM,   // 78
+
+    G_VER_1_0_2699_16,          // 79
+
+    G_VER_1_0_2802_0,           // 80
+
+    G_VER_SIZE,                 // 81
+    G_VER_UNK = -1              // -1
 };
 
 static std::string eGameVersionToString(int version) {
@@ -208,13 +269,4 @@ static std::string eGameVersionToString(int version) {
         return std::to_string(version);
     }
     return GameVersionString[version];
-}
-
-template < typename K, typename V >
-V findNextLowest(const std::vector<std::pair<K, V>>& map, const K& key) {
-    for (auto it = map.rbegin(); it != map.rend(); ++it) {
-        if (it->first <= key)
-            return it->second;
-    }
-    return map.begin()->second;
 }
