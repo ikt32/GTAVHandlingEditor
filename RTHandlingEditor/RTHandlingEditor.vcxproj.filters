@@ -201,6 +201,7 @@
     </ClInclude>
     <ClInclude Include="HandlingUtils.h" />
     <ClInclude Include="HandlingConversion.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="thirdparty">
@@ -244,5 +245,8 @@
     <Library Include="..\thirdparty\curl\libcurl.lib">
       <Filter>thirdparty\curl</Filter>
     </Library>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RTHandlingEditor.rc" />
   </ItemGroup>
 </Project>

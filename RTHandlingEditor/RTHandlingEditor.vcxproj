@@ -222,6 +222,7 @@
     <ClInclude Include="Memory\Vector.hpp" />
     <ClInclude Include="Memory\VehicleExtensions.hpp" />
     <ClInclude Include="Memory\Versions.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="script.h" />
     <ClInclude Include="ScriptUtils.h" />
     <ClInclude Include="Table.h" />
@@ -238,6 +239,9 @@
   <ItemGroup>
     <Library Include="..\thirdparty\curl\libcurl.lib" />
     <Library Include="..\thirdparty\ScriptHookV_SDK\lib\ScriptHookV.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="RTHandlingEditor.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
