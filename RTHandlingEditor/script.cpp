@@ -30,7 +30,7 @@
 #include <inc/enums.h>
 #include <inc/main.h>
 
-#include <fmt/format.h>
+#include <format>
 
 #include <filesystem>
 
@@ -40,20 +40,20 @@ using VExt = VehicleExtensions;
 std::vector<RTHE::CHandlingDataItem> g_handlingDataItems;
 
 void UpdateHandlingDataItems() {
-    logger.Write(DEBUG, "[Files] Clearing and handling items...");
+    LOG(Debug, "[Files] Clearing and handling items...");
     g_handlingDataItems.clear();
     const std::string absoluteModPath = Paths::GetModPath();
     const std::string handlingsPath = absoluteModPath + "\\HandlingFiles";
 
     if (!(fs::exists(fs::path(handlingsPath)) && fs::is_directory(fs::path(handlingsPath)))) {
-        logger.Write(WARN, "[Files] Directory [%s] not found!", handlingsPath.c_str());
+        LOG(Warning, "[Files] Directory [{}] not found!", handlingsPath);
         return;
     }
     //else
-    //    logger.Write(DEBUG, "[Files] Directory [%s] found :)", handlingsPath.c_str());
+    //    LOG(Debug, "[Files] Directory [%s] found :)", handlingsPath.c_str());
 
     for (auto& file : fs::directory_iterator(handlingsPath)) {
-        // logger.Write(DEBUG, "[Files] Finding Handling Files...");
+        // LOG(Debug, "[Files] Finding Handling Files...");
         // Only parse meta/xml files
         if (StrUtil::toLower(fs::path(file).extension().string()) != ".meta" &&
             StrUtil::toLower(fs::path(file).extension().string()) != ".xml")
@@ -61,15 +61,15 @@ void UpdateHandlingDataItems() {
 
         RTHE::CHandlingDataItem handling = RTHE::ParseXMLItem(file.path().string());
         if (handling.Metadata.HandlingName.empty()) {
-            logger.Write(WARN,
-                "[Files] Handling file [%s] failed to parse, skipping...",
-                file.path().string().c_str());
+            LOG(Warning,
+                "[Files] Handling file [{}] failed to parse, skipping...",
+                file.path().string());
             continue;
         }
         g_handlingDataItems.push_back(handling);
-        logger.Write(DEBUG, "[Files] Added handling [%s]", handling.Metadata.HandlingName.c_str());
+        LOG(Debug, "[Files] Added handling [{}]", handling.Metadata.HandlingName);
     }
-    logger.Write(INFO, "[Files] Configs loaded: %d", g_handlingDataItems.size());
+    LOG(Info, "[Files] Configs loaded: {}", g_handlingDataItems.size());
 }
 
 void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
@@ -138,7 +138,7 @@ void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
         for (auto& p : std::filesystem::directory_iterator(handlingsPath)) {
             if (StrUtil::toLower(p.path().stem().string()) == StrUtil::toLower(outFile)) {
                 duplicate = true;
-                outFile = fmt::format("{}_{:02d}", fileName.c_str(), saveFileSuffix++);
+                outFile = std::format("{}_{:02d}", fileName, saveFileSuffix++);
                 break;
             }
         }
@@ -146,10 +146,10 @@ void PromptSave(Vehicle vehicle, Hash handlingNameHash) {
 
     auto h = getHandling(vehicle);
     h.Metadata.HandlingName = handlingName;
-    std::string outPath = fmt::format("{}/{}.xml", handlingsPath, outFile);
+    std::string outPath = std::format("{}/{}.xml", handlingsPath, outFile);
     std::replace(outPath.begin(), outPath.end(), '\\', '/');
     RTHE::SaveXMLItem(h, outPath);
-    UI::Notify(fmt::format("Saved as {}", outFile));
+    UI::Notify(std::format("Saved as {}", outFile));
 }
 
 void UpdateCheats() {

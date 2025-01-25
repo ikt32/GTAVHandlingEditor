@@ -23,7 +23,7 @@
 
 #include <inc/natives.h>
 
-#include <fmt/format.h>
+#include <format>
 
 using VExt = VehicleExtensions;
 
@@ -107,9 +107,9 @@ void UpdateMainMenu() {
         });
     if (result.Highlighted) {
         menu.OptionPlusPlus({
-            fmt::format("Parameter notes version: {}", Notes::GetVersion()),
-            fmt::format("Flags notes version: {}", Flags::GetVersion()),
-            "github.com/E66666666/GTAVHandlingInfo"
+            std::format("Parameter notes version: {}", Notes::GetVersion()),
+            std::format("Flags notes version: {}", Flags::GetVersion()),
+            "github.com/ikt32/GTAVHandlingInfo"
         });
     }
 }
@@ -122,7 +122,7 @@ bool IsNear(T a, T b, T x) {
 bool GetKbEntry(float& val) {
     UI::Notify("Enter value");
     MISC::DISPLAY_ONSCREEN_KEYBOARD(LOCALIZATION::GET_CURRENT_LANGUAGE() == 0, "FMMC_KEY_TIP8", "", 
-        fmt::format("{:f}", val).c_str(), "", "", "", 64);
+        std::format("{:f}", val).c_str(), "", "", "", 64);
     while (MISC::UPDATE_ONSCREEN_KEYBOARD() == 0) {
         WAIT(0);
     }
@@ -294,8 +294,8 @@ STable CreateFlagsTable(const std::vector<Flags::SFlag>& flagDefinitions, uint32
 
 void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>& flagList, uint32_t& flags, uint8_t& flagIndex) {
     bool show = false;
-    std::string strFlags = fmt::format("{:X}", flags);
-    if (menu.OptionPlus(fmt::format("{}: {}", optionName, strFlags),
+    std::string strFlags = std::format("{:X}", flags);
+    if (menu.OptionPlus(std::format("{}: {}", optionName, strFlags),
         {},
         &show,
         [&] { if (flagIndex < 31) ++flagIndex; },
@@ -320,9 +320,9 @@ void OptionFlags(const std::string& optionName, const std::vector<Flags::SFlag>&
 
         STable flagsTable = CreateFlagsTable(flagList, flags);
 
-        extra.push_back(fmt::format("Flag 0x{:08X}:", 1u << flagIndex));
-        extra.push_back(fmt::format("Name: {}", flagList[flagIndex].Name));
-        extra.push_back(fmt::format("Description: {}", flagList[flagIndex].Description));
+        extra.push_back(std::format("Flag 0x{:08X}:", 1u << flagIndex));
+        extra.push_back(std::format("Name: {}", flagList[flagIndex].Name));
+        extra.push_back(std::format("Description: {}", flagList[flagIndex].Description));
         menu.OptionPlusPlus(extra, "Flags");
 
         DrawFlagsTable(flagsTable, flagIndex);
@@ -639,13 +639,13 @@ void UpdateEditMenu() {
                 AIHandling = "CRAP";
                 break;
             default:
-                AIHandling = fmt::format("{:X}", currentHandling->AIHandling);
+                AIHandling = std::format("{:X}", currentHandling->AIHandling);
         }
-        menu.Option(fmt::format("AIHandling: {}", AIHandling), {
-            fmt::format("AVERAGE: {:X}", StrUtil::joaat("AVERAGE")),
-            fmt::format("SPORTS_CAR: {:X}", StrUtil::joaat("SPORTS_CAR")),
-            fmt::format("TRUCK: {:X}", StrUtil::joaat("TRUCK")),
-            fmt::format("CRAP: {:X}", StrUtil::joaat("CRAP")),
+        menu.Option(std::format("AIHandling: {}", AIHandling), {
+            std::format("AVERAGE: {:X}", StrUtil::joaat("AVERAGE")),
+            std::format("SPORTS_CAR: {:X}", StrUtil::joaat("SPORTS_CAR")),
+            std::format("TRUCK: {:X}", StrUtil::joaat("TRUCK")),
+            std::format("CRAP: {:X}", StrUtil::joaat("CRAP")),
         });
     }
 
@@ -655,7 +655,7 @@ void UpdateEditMenu() {
         if (!subHandlingData)
             continue;
 
-        std::string shdPtr = fmt::format("{:p}", (void*)subHandlingData);
+        std::string shdPtr = std::format("{:p}", (void*)subHandlingData);
 
         auto type = subHandlingData->GetHandlingType();
         switch (type) {
@@ -699,7 +699,7 @@ void UpdateEditMenu() {
                       shdPtr });
                 break;
             default:
-                menu.Option(fmt::format("Handling type: {}", static_cast<int>(type)),
+                menu.Option(std::format("Handling type: {}", static_cast<int>(type)),
                     { "Unknown handling type",
                       shdPtr });
                 break;
@@ -885,7 +885,7 @@ void UpdateCFlyingHandlingDataMenu(RTHE::eHandlingType handlingType) {
         case RTHE::eHandlingType::HANDLING_TYPE_WEAPON:          handlingTypeName = "HANDLING_TYPE_WEAPON"; break;
         case RTHE::eHandlingType::HANDLING_TYPE_SPECIALFLIGHT:   handlingTypeName = "HANDLING_TYPE_SPECIALFLIGHT"; break;
         default:
-            handlingTypeName = fmt::format("Unknown ({})", static_cast<int>(flyingHandlingData->handlingType));
+            handlingTypeName = std::format("Unknown ({})", static_cast<int>(flyingHandlingData->handlingType));
     }
 }
 
@@ -948,8 +948,8 @@ void UpdateCSpecialFlightHandlingDataMenu() {
     FloatOptionExtra("fMinSpeedForThrustFalloff",     flyingHandlingData->fMinSpeedForThrustFalloff,     -1000.0f, 1000.0f, 0.01f);
     FloatOptionExtra("fBrakingThrustScale",           flyingHandlingData->fBrakingThrustScale,           -1000.0f, 1000.0f, 0.01f);
 
-    menu.Option(fmt::format("mode: {:X}", flyingHandlingData->mode));
-    menu.Option(fmt::format("strFlags: {:X}", flyingHandlingData->strFlags));
+    menu.Option(std::format("mode: {:X}", flyingHandlingData->mode));
+    menu.Option(std::format("strFlags: {:X}", flyingHandlingData->strFlags));
 }
 
 void UpdateCBoatHandlingDataMenu() {
@@ -1129,8 +1129,8 @@ void UpdateCCarHandlingDataMenu() {
     FloatOptionExtra("fIncreasedRammingForceScale", carHandling->fIncreasedRammingForceScale, -1000.0f, 1000.0f, 0.01f);
 
     //{
-    //    std::string strUnk_0x038_Flags = fmt::format("{:X}", carHandling->Unk_0x038);
-    //    if (menu.Option(fmt::format("Unk_0x038: {}", strUnk_0x038_Flags))) {
+    //    std::string strUnk_0x038_Flags = std::format("{:X}", carHandling->Unk_0x038);
+    //    if (menu.Option(std::format("Unk_0x038: {}", strUnk_0x038_Flags))) {
     //        std::string newFlags = GetKbEntryStr(strUnk_0x038_Flags);
     //        SetFlags(carHandling->Unk_0x038, newFlags);
     //    }
@@ -1140,7 +1140,7 @@ void UpdateCCarHandlingDataMenu() {
 
     auto numAdvData = carHandling->pAdvancedData.GetCount();
     if (numAdvData > 0) {
-        menu.Option(fmt::format("CAdvancedData found ({})", numAdvData));
+        menu.Option(std::format("CAdvancedData found ({})", numAdvData));
     }
 
     for (uint16_t iAdv = 0; iAdv < carHandling->pAdvancedData.GetCount(); ++iAdv) {
@@ -1148,16 +1148,16 @@ void UpdateCCarHandlingDataMenu() {
 
         std::string slotName;
         if (advancedData->Slot >= AdvancedDataSlotIdName.size()) {
-            slotName = fmt::format("Index ({}) out of bounds", advancedData->Slot);
+            slotName = std::format("Index ({}) out of bounds", advancedData->Slot);
         }
         else {
             slotName = AdvancedDataSlotIdName[advancedData->Slot];
         }
-        menu.IntOption(fmt::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1, {},
-            { fmt::format("Slot ID name: {}", slotName) });
+        menu.IntOption(std::format("[{}] Slot ID", iAdv), advancedData->Slot, 0, 255, 1, {},
+            { std::format("Slot ID name: {}", slotName) });
 
-        menu.IntOption(fmt::format("[{}] Index", iAdv), advancedData->Index, 0, 255, 1);
-        FloatOptionExtra(fmt::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f);
+        menu.IntOption(std::format("[{}] Index", iAdv), advancedData->Index, 0, 255, 1);
+        FloatOptionExtra(std::format("[{}] Value", iAdv), advancedData->Value, -1000.0f, 1000.0f, 0.1f);
     }
 }
 
@@ -1175,7 +1175,7 @@ void UpdateLoadMenu() {
 
     std::string vehicleNameLabel = VEHICLE::GET_DISPLAY_NAME_FROM_VEHICLE_MODEL(ENTITY::GET_ENTITY_MODEL(vehicle));
     std::string vehicleName = HUD::GET_FILENAME_FOR_AUDIO_CONVERSATION(vehicleNameLabel.c_str());
-    menu.Subtitle(fmt::format("{}", vehicleName));
+    menu.Subtitle(std::format("{}", vehicleName));
 
     // TODO: Filter option
 
@@ -1183,17 +1183,17 @@ void UpdateLoadMenu() {
         bool selected = false;
         if (menu.OptionPlus(handlingDataItem.Metadata.HandlingName, {}, &selected).Triggered) {
             setHandling(vehicle, handlingDataItem);
-            UI::Notify(fmt::format("Applied {} handling", handlingDataItem.Metadata.HandlingName));
+            UI::Notify(std::format("Applied {} handling", handlingDataItem.Metadata.HandlingName));
         }
         if (selected) {
             float maxKph = handlingDataItem.fInitialDriveMaxFlatVel / 0.75f;
             float maxMph = maxKph / 1.609344f;
             std::vector<std::string> extra{
-                fmt::format("File: {}", handlingDataItem.Metadata.FileName),
-                fmt::format("Description: {}", handlingDataItem.Metadata.Description),
-                fmt::format("Top speed: {:.2f} kph / {:.2f} mph", maxKph, maxMph),
-                fmt::format("Drive bias (front): {:.2f}", handlingDataItem.fDriveBiasFront),
-                fmt::format("Traction: max {:.2f}, min {:.2f}", handlingDataItem.fTractionCurveMax, handlingDataItem.fTractionCurveMin),
+                std::format("File: {}", handlingDataItem.Metadata.FileName),
+                std::format("Description: {}", handlingDataItem.Metadata.Description),
+                std::format("Top speed: {:.2f} kph / {:.2f} mph", maxKph, maxMph),
+                std::format("Drive bias (front): {:.2f}", handlingDataItem.fDriveBiasFront),
+                std::format("Traction: max {:.2f}, min {:.2f}", handlingDataItem.fTractionCurveMax, handlingDataItem.fTractionCurveMin),
             };
             menu.OptionPlusPlus(extra, "Handling overview");
         }

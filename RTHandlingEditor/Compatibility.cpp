@@ -14,24 +14,24 @@ template <typename T>
 T CheckAddr(HMODULE lib, const std::string& funcName) {
     FARPROC func = GetProcAddress(lib, funcName.c_str());
     if (!func) {
-        logger.Write(ERROR, "[Compat] Couldn't get function [%s]", funcName.c_str());
+        LOG(Error, "[Compat] Couldn't get function [{}]", funcName.c_str());
         return nullptr;
     }
-    logger.Write(DEBUG, "[Compat] Found function [%s]", funcName.c_str());
+    LOG(Debug, "[Compat] Found function [{}]", funcName.c_str());
     return reinterpret_cast<T>(func);
 }
 
 void setupHandlingReplacement() {
-    logger.Write(INFO, "[Compat] Setting up HandlingReplacement");
+    LOG(Info, "[Compat] Setting up HandlingReplacement");
     if (g_HandlingReplacementModule &&
         g_HR_Enable && g_HR_Disable && g_HR_GetHandlingData) {
-        logger.Write(INFO, "[Compat] HandlingReplacement.asi already loaded");
+        LOG(Info, "[Compat] HandlingReplacement.asi already loaded");
         return;
     }
 
     g_HandlingReplacementModule = GetModuleHandle("HandlingReplacement.asi");
     if (!g_HandlingReplacementModule) {
-        logger.Write(INFO, "[Compat] HandlingReplacement.asi not found");
+        LOG(Info, "[Compat] HandlingReplacement.asi not found");
         return;
     }
 

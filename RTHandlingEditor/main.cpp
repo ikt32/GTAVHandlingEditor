@@ -45,16 +45,16 @@ void InitializePaths(HMODULE hInstance) {
         fs::create_directories(modPath);
     }
 
-    logger.SetFile(logFile);
-    logger.Clear();
+    gLogger.SetPath(logFile);
+    gLogger.Clear();
 
-    if (logger.Error()) {
+    if (gLogger.IsInError()) {
         modPath = localAppDataModPath.string();
         logFile = (localAppDataModPath / (Paths::GetModuleNameWithoutExtension(hInstance) + ".log")).string();
         fs::create_directories(modPath);
 
         Paths::SetModPath(modPath);
-        logger.SetFile(logFile);
+        gLogger.SetPath(logFile);
 
         fs::copy(fs::path(originalModPath), localAppDataModPath, fs::copy_options::update_existing | fs::copy_options::recursive);
 
@@ -64,30 +64,30 @@ void InitializePaths(HMODULE hInstance) {
                 fs::permissions(path, fs::perms::all);
             }
             catch (std::exception& e) {
-                logger.Write(ERROR, "Failed to set permissions on [%s]: %s.", path.path().string().c_str(), e.what());
+                LOG(Error, "Failed to set permissions on [{}]: {}.", path.path().string(), e.what());
             }
         }
 
-        logger.ClearError();
-        logger.Clear();
-        logger.Write(WARN, "Copied to [%s] from [%s] due to read/write issues.", modPath.c_str(), originalModPath.c_str());
+        gLogger.ClearError();
+        gLogger.Clear();
+        LOG(Warning, "Copied to [{}] from [{}] due to read/write issues.", modPath, originalModPath);
     }
 }
 
 BOOL APIENTRY DllMain(HMODULE hInstance, DWORD reason, LPVOID lpReserved)
 {
-    logger.SetMinLevel(LogLevel::DEBUG);
+    gLogger.SetLogLevel(ELogLevel::Debug);
     
     switch (reason)
     {
         case DLL_PROCESS_ATTACH: {
             InitializePaths(hInstance);
             int scriptingVersion = getGameVersion();
-            logger.Clear();
-            logger.Write(INFO, "Handling Editor %s (built %s %s)", Constants::DisplayVersion, __DATE__, __TIME__);
-            logger.Write(INFO, "Game version " + eGameVersionToString(scriptingVersion));
+            gLogger.Clear();
+            LOG(Info, "Handling Editor {} (built {} {})", Constants::DisplayVersion, __DATE__, __TIME__);
+            LOG(Info, "Game version " + eGameVersionToString(scriptingVersion));
             if (scriptingVersion < G_VER_1_0_1604_0_STEAM) {
-                logger.Write(WARN, "Unsupported game version! Update your game.");
+                LOG(Warning, "Unsupported game version! Update your game.");
             }
             scriptRegister(hInstance, ScriptMain);
             keyboardHandlerRegister(OnKeyboardMessage);

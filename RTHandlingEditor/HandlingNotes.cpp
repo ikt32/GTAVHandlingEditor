@@ -5,7 +5,7 @@
 #include "Util/Paths.h"
 
 #include <curl/curl.h>
-#include <fmt/format.h>
+#include <format>
 #include <nlohmann/json.hpp>
 
 #include <filesystem>
@@ -49,7 +49,7 @@ namespace Notes {
 }
 
 std::string Notes::GetVersion() {
-    return fmt::format("{}.{}", g_AllNotes.Version.Major, g_AllNotes.Version.Minor);
+    return std::format("{}.{}", g_AllNotes.Version.Major, g_AllNotes.Version.Minor);
 }
 
 const std::map<std::string, Notes::SHandlingParamInfo>& Notes::GetHandlingNotes() {
@@ -64,14 +64,14 @@ SAllNotes Notes::ReadJson(const std::string& jsonContent) {
         json notesDoc = json::parse(jsonContent);
 
         auto version = notesDoc.value("version", "0.0");
-        logger.Write(INFO, fmt::format("[Notes] Version '{}'", version));
+        LOG(Info, "[Notes] Version '{}'", version);
 
         int major, minor;
 
         // Parse version.
         int argsScanned = sscanf_s(version.c_str(), "%d.%d", &major, &minor);
         if (argsScanned != 2) {
-            logger.Write(ERROR, fmt::format("[Notes] File version unknown: '{}'", version));
+            LOG(Error, "[Notes] File version unknown: '{}'", version);
             return {};
         }
         allNotes.Version = { major, minor };
@@ -88,11 +88,11 @@ SAllNotes Notes::ReadJson(const std::string& jsonContent) {
             allNotes.Notes.emplace(noteItem.key(), paramInfo);
         }
 
-        logger.Write(INFO, "[Notes] Finished reading notes info");
+        LOG(Info, "[Notes] Finished reading notes info");
     }
     catch (std::exception& ex) {
-        logger.Write(ERROR, fmt::format("[Notes] Failed to parse notes file. Error: '{}'", ex.what()));
-        logger.Write(ERROR, fmt::format("[Notes] Raw json content: {}", jsonContent));
+        LOG(Error, "[Notes] Failed to parse notes file. Error: '{}'", ex.what());
+        LOG(Error, "[Notes] Raw json content: {}", jsonContent);
     }
     return allNotes;
 }
@@ -100,7 +100,7 @@ SAllNotes Notes::ReadJson(const std::string& jsonContent) {
 std::string Notes::GetText(const std::string& fileName) {
     std::ifstream notesFile(fileName);
     if (!notesFile.is_open()) {
-        logger.Write(ERROR, fmt::format("[Notes] Failed to open file '{}'", fileName));
+        LOG(Error, "[Notes] Failed to open file '{}'", fileName);
         return {};
     }
 
@@ -133,11 +133,11 @@ std::string Notes::GetRemoteText(const std::string& url) {
         curl_easy_cleanup(curl);
 
         if (httpCode == 200) {
-            logger.Write(INFO, fmt::format("[Notes] Successfully got json file"));
+            LOG(Info, "[Notes] Successfully got json file");
             return httpData;
         }
         else {
-            logger.Write(ERROR, fmt::format("[Notes] Failed to get json file, status code: {}", httpCode));
+            LOG(Error, "[Notes] Failed to get json file, status code: {}", httpCode);
         }
     }
 
@@ -148,7 +148,7 @@ void Notes::Load() {
     const std::string absoluteModPath = Paths::GetModuleFolder(Paths::GetOurModuleHandle()) + "\\" + Constants::ModDir;
     const std::string notesFilePath = absoluteModPath + "\\notes.json";
 
-    const std::string remotePath = "https://raw.githubusercontent.com/E66666666/GTAVHandlingInfo/master/notes.json";
+    const std::string remotePath = "https://raw.githubusercontent.com/ikt32/GTAVHandlingInfo/master/notes.json";
 
     // TODO: Update enable/disable in a ScriptSettings or something.
     bool enableUpdate = true;
@@ -160,32 +160,32 @@ void Notes::Load() {
         auto remoteNotes = ReadJson(remoteText);
 
         if (remoteNotes.Version > localNotes.Version) {
-            logger.Write(INFO, fmt::format("[Notes] Remote '{}.{}' was newer than local '{}.{}', using remote",
-                remoteNotes.Version.Major, remoteNotes.Version.Minor, localNotes.Version.Major, localNotes.Version.Minor));
+            LOG(Info, "[Notes] Remote '{}.{}' was newer than local '{}.{}', using remote",
+                remoteNotes.Version.Major, remoteNotes.Version.Minor, localNotes.Version.Major, localNotes.Version.Minor);
 
             bool localExists = std::filesystem::exists(std::filesystem::path{ notesFilePath });
-            int renameResult = rename(notesFilePath.c_str(), fmt::format("{}.{}.{}.bak", notesFilePath, localNotes.Version.Major, localNotes.Version.Minor).c_str());
+            int renameResult = rename(notesFilePath.c_str(), std::format("{}.{}.{}.bak", notesFilePath, localNotes.Version.Major, localNotes.Version.Minor).c_str());
             if (!localExists || renameResult == 0) {
                 std::ofstream out(notesFilePath, std::ios::out | std::ios::binary);
                 out << remoteText;
                 out.close();
-                logger.Write(INFO, "[Notes] Downloaded new notes file");
+                LOG(Info, "[Notes] Downloaded new notes file");
             }
             else {
-                logger.Write(ERROR, "[Notes] Failed to rename old notes file, not replacing it. Error: %d", renameResult);
+                LOG(Error, "[Notes] Failed to rename old notes file, not replacing it. Error: {}", renameResult);
             }
 
             g_AllNotes = remoteNotes;
         }
         else {
-            logger.Write(INFO, fmt::format("[Notes] Remote '{}.{}' was older than or same as local '{}.{}', ignoring remote",
-                remoteNotes.Version.Major, remoteNotes.Version.Minor, localNotes.Version.Major, localNotes.Version.Minor));
+            LOG(Info, "[Notes] Remote '{}.{}' was older than or same as local '{}.{}', ignoring remote",
+                remoteNotes.Version.Major, remoteNotes.Version.Minor, localNotes.Version.Major, localNotes.Version.Minor);
 
             g_AllNotes = localNotes;
         }
     }
     else {
-        logger.Write(INFO, fmt::format("[Notes] Using local version"));
+        LOG(Info, std::format("[Notes] Using local version"));
 
         g_AllNotes = localNotes;
     }

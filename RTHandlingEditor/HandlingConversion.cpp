@@ -6,7 +6,7 @@
 #include "Util/MathExt.h"
 
 #include <inc/natives.h>
-#include <fmt/format.h>
+#include <format>
 
 using VExt = VehicleExtensions;
 
@@ -263,10 +263,10 @@ void setCCarHandlingData(RTHE::CBaseSubHandlingData* baseSubHandlingData, const 
     auto numAdvData = subHandlingData->pAdvancedData.GetCount();
     auto numAdvDataFile = handlingDataItem.SubHandlingData.CCarHandlingData[0].AdvancedData.size();
     if (numAdvData != numAdvDataFile) {
-        logger.Write(WARN, fmt::format("[Set handling] [{}] {}",
+        LOG(Warning, "[Set handling] [{}] {}",
             handlingDataItem.handlingName,
-            fmt::format("Skipped SubHandlingData.<CCarHandlingData>.AdvancedData, size mismatch. "
-                "Vehicle has {}, handling has {}", numAdvData, numAdvDataFile)));
+            std::format("Skipped SubHandlingData.<CCarHandlingData>.AdvancedData, size mismatch. "
+                "Vehicle has {}, handling has {}", numAdvData, numAdvDataFile));
         return;
     }
 
@@ -288,7 +288,7 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
     currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
 
     if (currentHandling == nullptr) {
-        logger.Write(ERROR, "[Set handling] Couldn't find handling ptr?");
+        LOG(Error, "[Set handling] Couldn't find handling ptr?");
         return;
     }
 
@@ -438,16 +438,16 @@ void setHandling(Vehicle vehicle, const RTHE::CHandlingDataItem& handlingDataIte
             case RTHE::HANDLING_TYPE_CAR:               setCCarHandlingData(subHandlingData, handlingDataItem); break;
             case RTHE::HANDLING_TYPE_SPECIALFLIGHT:     setCSpecialFlightHandlingData(subHandlingData, handlingDataItem); break;
             case RTHE::HANDLING_TYPE_WEAPON:
-                logger.Write(WARN, fmt::format("[Set handling] [{}] Unsupported subhandling type: {}",
-                    handlingDataItem.handlingName, "HANDLING_TYPE_WEAPON"));
+                LOG(Warning, "[Set handling] [{}] Unsupported subhandling type: {}",
+                    handlingDataItem.handlingName, "HANDLING_TYPE_WEAPON");
                 break;
             case RTHE::HANDLING_TYPE_TRAIN:
-                logger.Write(WARN, fmt::format("[Set handling] [{}] Unsupported subhandling type: {}",
-                    handlingDataItem.handlingName, "HANDLING_TYPE_TRAIN"));
+                LOG(Warning, "[Set handling] [{}] Unsupported subhandling type: {}",
+                    handlingDataItem.handlingName, "HANDLING_TYPE_TRAIN");
                 break;
             default:
-                logger.Write(WARN, fmt::format("[Set handling] [{}] Unknown subhandling type: {}",
-                    handlingDataItem.handlingName, static_cast<int>(type)));
+                LOG(Warning, "[Set handling] [{}] Unknown subhandling type: {}",
+                    handlingDataItem.handlingName, static_cast<int>(type));
                 break;
         }
     }
@@ -702,7 +702,7 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
     currentHandling = reinterpret_cast<RTHE::CHandlingData*>(addr);
 
     if (currentHandling == nullptr) {
-        logger.Write(ERROR, "[Get handling] Couldn't find handling ptr?");
+        LOG(Error, "[Get handling] Couldn't find handling ptr?");
         return {};
     }
 
@@ -828,7 +828,7 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
 
     auto& asCache = ASCache::Get();
     auto it = asCache.find(currentHandling->handlingName);
-    std::string handlingName = (it != asCache.end()) ? it->second : fmt::format("{:08X}", currentHandling->handlingName);
+    std::string handlingName = (it != asCache.end()) ? it->second : std::format("{:08X}", currentHandling->handlingName);
 
     for (uint16_t idx = 0; idx < currentHandling->m_subHandlingData.GetCount(); ++idx) {
         RTHE::CBaseSubHandlingData* subHandlingData = currentHandling->m_subHandlingData.Get(idx);
@@ -848,16 +848,16 @@ RTHE::CHandlingDataItem getHandling(Vehicle vehicle) {
             case RTHE::HANDLING_TYPE_CAR:               storeCCarHandlingData(subHandlingData, handlingDataItem); break;
             case RTHE::HANDLING_TYPE_SPECIALFLIGHT:     storeCSpecialFlightHandlingData(subHandlingData, handlingDataItem); break;
             case RTHE::HANDLING_TYPE_WEAPON:
-                logger.Write(WARN, fmt::format("[Get handling] [{}] Unsupported subhandling type: {}",
-                    handlingName, "HANDLING_TYPE_WEAPON"));
+                LOG(Warning, "[Get handling] [{}] Unsupported subhandling type: {}",
+                    handlingName, "HANDLING_TYPE_WEAPON");
                 break;
             case RTHE::HANDLING_TYPE_TRAIN:
-                logger.Write(WARN, fmt::format("[Get handling] [{}] Unsupported subhandling type: {}",
-                    handlingName, "HANDLING_TYPE_TRAIN"));
+                LOG(Warning, "[Get handling] [{}] Unsupported subhandling type: {}",
+                    handlingName, "HANDLING_TYPE_TRAIN");
                 break;
             default:
-                logger.Write(WARN, fmt::format("[Get handling] [{}] Unknown subhandling type: {}",
-                    handlingName, static_cast<int>(type)));
+                LOG(Warning, "[Get handling] [{}] Unknown subhandling type: {}",
+                    handlingName, static_cast<int>(type));
                 break;
         }
     }

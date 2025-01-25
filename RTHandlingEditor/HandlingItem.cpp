@@ -6,7 +6,7 @@
 #include "Util/StrUtil.h"
 
 #include <tinyxml2.h>
-#include <fmt/format.h>
+#include <format>
 
 #include <filesystem>
 
@@ -14,12 +14,12 @@ namespace fs = std::filesystem;
 
 std::string GetXMLError(const tinyxml2::XMLDocument& doc) {
     if (doc.Error()) {
-        return fmt::format("tinyxml2 encountered an error:\n"
+        return std::format("tinyxml2 encountered an error:\n"
             "Error ID: {}\n"
             "Error line: {}\n"
             "Error name: {}\n"
             "Error text: {}\n",
-            doc.ErrorID(),
+            static_cast<int>(doc.ErrorID()),
             doc.ErrorLineNum(),
             doc.ErrorName(),
             doc.ErrorStr());
@@ -43,13 +43,13 @@ void GetAttribute(
 
     if (!element || err != tinyxml2::XMLError::XML_SUCCESS) {
         if (!tolerateMissing) {
-            logger.Write(ERROR, "[Parse] Error reading element [%s]", elementName);
-            logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+            LOG(Error, "[Parse] Error reading element [{}]", elementName);
+            LOG(Error, "[Parse] Error details: {}", GetXMLError(doc));
         }
         out = result;
         return;
     }
-    logger.Write(DEBUG, fmt::format("[Parse] {}: {}", elementName, result));
+    LOG(Debug, "[Parse] {}: {}", elementName, result);
     out = result;
 }
 
@@ -59,8 +59,8 @@ std::string GetElementStr(tinyxml2::XMLNode* node, const char* elementName, bool
     auto* element = node->FirstChildElement(elementName);
     if (!element) {
         if (!tolerateMissing) {
-            logger.Write(ERROR, "[Parse] Error reading element [%s]", elementName);
-            logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+            LOG(Error, "[Parse] Error reading element [{}]", elementName);
+            LOG(Error, "[Parse] Error details: {}", GetXMLError(doc));
         }
         return result;
     }
@@ -72,13 +72,13 @@ uint32_t StoU32(const std::string& str, int base = 10) {
         return std::stoul(str, nullptr, base);
     }
     catch(...) {
-        logger.Write(WARN, "    Failed to convert hex value.");
+        LOG(Warning, "    Failed to convert hex value.");
         return 0;
     }
 }
 
 void ParseCBikeHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CBikeHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CBikeHandlingData");
 
     RTHE::CBikeHandlingDataItem subHandlingDataItem{};
     GetAttribute(shdItemElement, "fLeanFwdCOMMult", "value", subHandlingDataItem.fLeanFwdCOMMult, true);
@@ -105,7 +105,7 @@ void ParseCBikeHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemEle
 }
 
 void ParseCFlyingHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CFlyingHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CFlyingHandlingData");
 
     RTHE::CFlyingHandlingDataItem subHandlingDataItem{};
 
@@ -169,13 +169,13 @@ void ParseCFlyingHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemE
     else if (typeStr == "HANDLING_TYPE_CAR") subHandlingDataItem.handlingType = RTHE::HANDLING_TYPE_CAR;
     else if (typeStr == "HANDLING_TYPE_WEAPON") subHandlingDataItem.handlingType = RTHE::HANDLING_TYPE_WEAPON;
     else if (typeStr == "HANDLING_TYPE_SPECIALFLIGHT") subHandlingDataItem.handlingType = RTHE::HANDLING_TYPE_SPECIALFLIGHT;
-    else logger.Write(ERROR, fmt::format("[Parse] [{}] Unrecognized handlingType '{}'", fileName, typeStr));
+    else LOG(Error, "[Parse] [{}] Unrecognized handlingType '{}'", fileName, typeStr);
 
     handlingDataItem.SubHandlingData.CFlyingHandlingData.push_back(subHandlingDataItem);
 }
 
 void ParseCSpecialFlightHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CSpecialFlightHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CSpecialFlightHandlingData");
 
     RTHE::CSpecialFlightHandlingDataItem subHandlingDataItem{};
 
@@ -223,7 +223,7 @@ void ParseCSpecialFlightHandlingData(std::string& fileName, tinyxml2::XMLNode* s
 }
 
 void ParseCBoatHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CBoatHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CBoatHandlingData");
 
     RTHE::CBoatHandlingDataItem subHandlingDataItem{};
 
@@ -266,7 +266,7 @@ void ParseCBoatHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemEle
 }
 
 void ParseCSeaPlaneHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CSeaPlaneHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CSeaPlaneHandlingData");
 
     RTHE::CSeaPlaneHandlingDataItem subHandlingDataItem{};
 
@@ -286,7 +286,7 @@ void ParseCSeaPlaneHandlingData(std::string& fileName, tinyxml2::XMLNode* shdIte
 }
 
 void ParseCSubmarineHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CSubmarineHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CSubmarineHandlingData");
 
     RTHE::CSubmarineHandlingDataItem subHandlingDataItem{};
 
@@ -306,7 +306,7 @@ void ParseCSubmarineHandlingData(std::string& fileName, tinyxml2::XMLNode* shdIt
 }
 
 void ParseCTrailerHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CTrailerHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CTrailerHandlingData");
 
     RTHE::CTrailerHandlingDataItem subHandlingDataItem{};
 
@@ -324,7 +324,7 @@ void ParseCTrailerHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItem
 }
 
 void ParseCCarHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElement, RTHE::CHandlingDataItem& handlingDataItem) {
-    logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CCarHandlingData"));
+    LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CCarHandlingData");
 
     RTHE::CCarHandlingDataItem carHandlingDataItem{};
     GetAttribute(shdItemElement, "fBackEndPopUpCarImpulseMult", "value", carHandlingDataItem.fBackEndPopUpCarImpulseMult, true);
@@ -345,7 +345,7 @@ void ParseCCarHandlingData(std::string& fileName, tinyxml2::XMLNode* shdItemElem
 
     tinyxml2::XMLNode* advancedDataNode = shdItemElement->FirstChildElement("AdvancedData");
     if (advancedDataNode != nullptr) {
-        logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing CCarHandlingData->AdvancedData"));
+        LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing CCarHandlingData->AdvancedData");
 
         tinyxml2::XMLNode* advDataItemElement = advancedDataNode->FirstChildElement("Item");
         while (advDataItemElement != nullptr) {
@@ -370,20 +370,20 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
     tinyxml2::XMLError err = tinyxml2::XMLError::XML_SUCCESS;
 
     std::string fileName = fs::path(sourceFile).filename().string();
-    logger.Write(DEBUG, "[Parse] Reading handling file [%s]", fileName.c_str());
+    LOG(Debug, "[Parse] Reading handling file [{}]", fileName);
 
     err = doc.LoadFile(sourceFile.c_str());
     
     if (err != tinyxml2::XMLError::XML_SUCCESS) {
-        logger.Write(ERROR, "[Parse] Can't load file [%s]",  sourceFile.c_str());
-        logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+        LOG(Error, "[Parse] Can't load file [{}]",  sourceFile);
+        LOG(Error, "[Parse] Error details: {}", GetXMLError(doc));
         return {};
     }
 
     tinyxml2::XMLNode* itemNode = doc.FirstChildElement("Item");
     if (!itemNode) {
-        logger.Write(ERROR, "[Parse] Error during reading file [%s]", sourceFile.c_str());
-        logger.Write(ERROR, "[Parse] Error details: %s", GetXMLError(doc).c_str());
+        LOG(Error, "[Parse] Error during reading file [{}]", sourceFile);
+        LOG(Error, "[Parse] Error details: {}", GetXMLError(doc));
         return {};
     }
 
@@ -401,7 +401,7 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
         handlingDataItem.Metadata.Description = GetElementStr(rtheNode, "description");
     }
 
-    logger.Write(DEBUG, "[Parse] Reading handling [%s]", handlingDataItem.Metadata.HandlingName.c_str());
+    LOG(Debug, "[Parse] Reading handling [{}]", handlingDataItem.Metadata.HandlingName);
 
     GetAttribute(itemNode, "fMass", "value", handlingDataItem.fMass);
     GetAttribute(itemNode, "fInitialDragCoeff", "value", handlingDataItem.fInitialDragCoeff);
@@ -468,7 +468,7 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
 
     tinyxml2::XMLNode* shdNode = itemNode->FirstChildElement("SubHandlingData");
     if (shdNode) {
-        logger.Write(DEBUG, fmt::format("[Parse] [{}] {}", fileName, "Parsing SubHandlingData"));
+        LOG(Debug, "[Parse] [{}] {}", fileName, "Parsing SubHandlingData");
 
         tinyxml2::XMLNode* shdItemElement = shdNode->FirstChildElement("Item");
         while (shdItemElement != nullptr) {
@@ -504,13 +504,13 @@ RTHE::CHandlingDataItem RTHE::ParseXMLItem(const std::string& sourceFile) {
             }
             else {
                 const char* type_ = type != nullptr ? type : "nullptr";
-                logger.Write(DEBUG, fmt::format("[Parse] [{}] {} {}", fileName, "Unknown SubHandlingData member", type_));
+                LOG(Debug, "[Parse] [{}] {} {}", fileName, "Unknown SubHandlingData member", type_);
             }
             shdItemElement = shdItemElement->NextSibling();
         }
     }
 
-    logger.Write(DEBUG, "[Parse] Finished parsing [%s]", fileName.c_str());
+    LOG(Debug, "[Parse] Finished parsing [{}]", fileName.c_str());
 
     return handlingDataItem;
 }
@@ -523,7 +523,7 @@ void InsertElement(tinyxml2::XMLNode* rootNode, const char* elemName, const char
 
 void InsertElement(tinyxml2::XMLNode* rootNode, const char* elemName, float value) {
     tinyxml2::XMLElement* element = rootNode->GetDocument()->NewElement(elemName);
-    element->SetAttribute("value", fmt::format("{:.6f}", value).c_str());
+    element->SetAttribute("value", std::format("{:.6f}", value).c_str());
     rootNode->InsertEndChild(element);
 }
 
@@ -536,9 +536,9 @@ void InsertElement(tinyxml2::XMLNode* rootNode, const char* elemName, int value)
 // Contiguous for initializer list
 void InsertElement(tinyxml2::XMLNode* rootNode, const char* elemName, rage::Vec3 value) {
     tinyxml2::XMLElement* element = rootNode->GetDocument()->NewElement(elemName);
-    element->SetAttribute("x", fmt::format("{:.6f}", value.x).c_str());
-    element->SetAttribute("y", fmt::format("{:.6f}", value.y).c_str());
-    element->SetAttribute("z", fmt::format("{:.6f}", value.z).c_str());
+    element->SetAttribute("x", std::format("{:.6f}", value.x).c_str());
+    element->SetAttribute("y", std::format("{:.6f}", value.y).c_str());
+    element->SetAttribute("z", std::format("{:.6f}", value.z).c_str());
     rootNode->InsertEndChild(element);
 }
 
@@ -565,7 +565,7 @@ void InsertElementSubHandlingNULL(tinyxml2::XMLNode* rootNode) {
 
 void SaveCBikeHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& subHandlingData : handlingDataItem.SubHandlingData.CBikeHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CBikeHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CBikeHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CBikeHandlingData");
@@ -597,7 +597,7 @@ void SaveCBikeHandlingData(std::string& fileName, const RTHE::CHandlingDataItem&
 
 void SaveCFlyingHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& subHandlingData : handlingDataItem.SubHandlingData.CFlyingHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CFlyingHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CFlyingHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CFlyingHandlingData");
@@ -675,7 +675,7 @@ void SaveCFlyingHandlingData(std::string& fileName, const RTHE::CHandlingDataIte
 
 void SaveCSpecialFlightHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& subHandlingData : handlingDataItem.SubHandlingData.CSpecialFlightHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CSpecialFlightHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CSpecialFlightHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CSpecialFlightHandlingData");
@@ -725,7 +725,7 @@ void SaveCSpecialFlightHandlingData(std::string& fileName, const RTHE::CHandling
         InsertElement(subHandlingDataItem, "fMinSpeedForThrustFalloff", subHandlingData.fMinSpeedForThrustFalloff);
         InsertElement(subHandlingDataItem, "fBrakingThrustScale", subHandlingData.fBrakingThrustScale);
         InsertElement(subHandlingDataItem, "mode", subHandlingData.mode);
-        InsertElement(subHandlingDataItem, "strFlags", fmt::format("{:08X}", subHandlingData.strFlags).c_str());
+        InsertElement(subHandlingDataItem, "strFlags", std::format("{:08X}", subHandlingData.strFlags).c_str());
 
         shdElement->InsertEndChild(subHandlingDataItem);
     }
@@ -733,7 +733,7 @@ void SaveCSpecialFlightHandlingData(std::string& fileName, const RTHE::CHandling
 
 void SaveCBoatHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& subHandlingData : handlingDataItem.SubHandlingData.CBoatHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CBoatHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CBoatHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CBoatHandlingData");
@@ -783,7 +783,7 @@ void SaveCBoatHandlingData(std::string& fileName, const RTHE::CHandlingDataItem&
 
 void SaveCSeaPlaneHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& subHandlingData : handlingDataItem.SubHandlingData.CSeaPlaneHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CSeaPlaneHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CSeaPlaneHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CSeaPlaneHandlingData");
@@ -806,7 +806,7 @@ void SaveCSeaPlaneHandlingData(std::string& fileName, const RTHE::CHandlingDataI
 
 void SaveCSubmarineHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& subHandlingData : handlingDataItem.SubHandlingData.CSubmarineHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CSubmarineHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CSubmarineHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CSubmarineHandlingData");
@@ -832,7 +832,7 @@ void SaveCSubmarineHandlingData(std::string& fileName, const RTHE::CHandlingData
 
 void SaveCTrailerHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& subHandlingData : handlingDataItem.SubHandlingData.CTrailerHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CTrailerHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CTrailerHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CTrailerHandlingData");
@@ -853,7 +853,7 @@ void SaveCTrailerHandlingData(std::string& fileName, const RTHE::CHandlingDataIt
 
 void SaveCCarHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& handlingDataItem, tinyxml2::XMLElement* shdElement) {
     for (const auto& carHandlingData : handlingDataItem.SubHandlingData.CCarHandlingData) {
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CCarHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", handlingDataItem.Metadata.HandlingName, "Writing CCarHandlingData");
 
         tinyxml2::XMLElement* subHandlingDataItem = shdElement->GetDocument()->NewElement("Item");
         subHandlingDataItem->SetAttribute("type", "CCarHandlingData");
@@ -870,7 +870,7 @@ void SaveCCarHandlingData(std::string& fileName, const RTHE::CHandlingDataItem& 
         InsertElement(subHandlingDataItem, "fMaxDriveBiasTransfer", carHandlingData.fMaxDriveBiasTransfer);
         InsertElement(subHandlingDataItem, "fJumpForceScale", carHandlingData.fJumpForceScale);
         InsertElement(subHandlingDataItem, "fIncreasedRammingForceScale", carHandlingData.fIncreasedRammingForceScale);
-        InsertElement(subHandlingDataItem, "strAdvancedFlags", fmt::format("{:08X}", carHandlingData.strAdvancedFlags).c_str());
+        InsertElement(subHandlingDataItem, "strAdvancedFlags", std::format("{:08X}", carHandlingData.strAdvancedFlags).c_str());
 
         if (carHandlingData.AdvancedData.size() > 0) {
             auto advancedDataElement = subHandlingDataItem->GetDocument()->NewElement("AdvancedData");
@@ -896,14 +896,14 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     tinyxml2::XMLError err = tinyxml2::XMLError::XML_SUCCESS;
 
     std::string fileName = fs::path(targetFile).filename().string();
-    logger.Write(DEBUG, "[Write] Writing handling file [%s]", fileName.c_str());
+    LOG(Debug, "[Write] Writing handling file [{}]", fileName);
     auto comment = doc.NewComment(" Generated by RTHandlingEditor ");
     doc.InsertFirstChild(comment);
 
     tinyxml2::XMLNode* itemNode = doc.NewElement("Item");
     if (!itemNode) {
-        logger.Write(ERROR, "[Write] Error creating root element [Item]");
-        logger.Write(ERROR, "[Write] Error details: %s", GetXMLError(doc).c_str());
+        LOG(Error, "[Write] Error creating root element [Item]");
+        LOG(Error, "[Write] Error details: {}", GetXMLError(doc));
         return false;
     }
     
@@ -973,9 +973,9 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     InsertElement(itemNode, "fBoostMaxSpeed", handlingDataItem.fBoostMaxSpeed);
 
     // flags
-    InsertElement(itemNode, "strModelFlags", fmt::format("{:08X}", handlingDataItem.strModelFlags).c_str());
-    InsertElement(itemNode, "strHandlingFlags", fmt::format("{:08X}", handlingDataItem.strHandlingFlags).c_str());
-    InsertElement(itemNode, "strDamageFlags", fmt::format("{:08X}", handlingDataItem.strDamageFlags).c_str());
+    InsertElement(itemNode, "strModelFlags", std::format("{:08X}", handlingDataItem.strModelFlags).c_str());
+    InsertElement(itemNode, "strHandlingFlags", std::format("{:08X}", handlingDataItem.strHandlingFlags).c_str());
+    InsertElement(itemNode, "strDamageFlags", std::format("{:08X}", handlingDataItem.strDamageFlags).c_str());
 
     // joaat
     std::string AIHandling;
@@ -1006,7 +1006,7 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
         handlingDataItem.SubHandlingData.CTrailerHandlingData.empty() &&
         handlingDataItem.SubHandlingData.CCarHandlingData.empty()) {
 
-        logger.Write(DEBUG, fmt::format("[Write] [{}] {}", fileName, "No SubHandlingData"));
+        LOG(Debug, "[Write] [{}] {}", fileName, "No SubHandlingData");
         InsertElementSubHandlingNULL(itemNode);
     }
     else {
@@ -1027,12 +1027,12 @@ bool RTHE::SaveXMLItem(const CHandlingDataItem& handlingDataItem, const std::str
     err = doc.SaveFile(targetFile.c_str());
 
     if (err != tinyxml2::XMLError::XML_SUCCESS) {
-        logger.Write(ERROR, "[Write] Can't load file [%s]", targetFile.c_str());
-        logger.Write(ERROR, "[Write] Error details: %s", GetXMLError(doc).c_str());
+        LOG(Error, "[Write] Can't load file [{}]", targetFile);
+        LOG(Error, "[Write] Error details: {}", GetXMLError(doc));
         return false;
     }
 
-    logger.Write(DEBUG, "[Write] Finished writing [%s]", fileName.c_str());
+    LOG(Debug, "[Write] Finished writing [{}]", fileName);
 
     return true;
 }

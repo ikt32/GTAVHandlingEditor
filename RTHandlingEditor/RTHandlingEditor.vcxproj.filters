@@ -27,9 +27,6 @@
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menuutils.cpp">
       <Filter>GTAVMenuBase</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\fmt\src\format.cc">
-      <Filter>thirdparty\fmt</Filter>
-    </ClCompile>
     <ClCompile Include="Memory\VehicleExtensions.cpp">
       <Filter>Memory</Filter>
     </ClCompile>
@@ -112,9 +109,6 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\GTAVMenuBase\Scaleform.h">
       <Filter>GTAVMenuBase</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h">
-      <Filter>thirdparty\fmt</Filter>
     </ClInclude>
     <ClInclude Include="Memory\VehicleExtensions.hpp">
       <Filter>Memory</Filter>
@@ -209,9 +203,6 @@
     </Filter>
     <Filter Include="thirdparty\tinyxml2">
       <UniqueIdentifier>{de410f6f-326e-4c9b-8558-64aadf4a42c6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="thirdparty\fmt">
-      <UniqueIdentifier>{c67850ed-3239-4b57-bbca-18d52914ef07}</UniqueIdentifier>
     </Filter>
     <Filter Include="GTAVMenuBase">
       <UniqueIdentifier>{a1dd36ca-d96e-4dd8-a941-3535396e5958}</UniqueIdentifier>

@@ -135,7 +135,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FloatingPointModel>Fast</FloatingPointModel>
       <AdditionalIncludeDirectories>$(SolutionDir)thirdparty;$(SolutionDir)thirdparty\GTAVMenuBase;$(SolutionDir)thirdparty\ScriptHookV_SDK;$(SolutionDir)thirdparty\tinyxml2;$(SolutionDir)thirdparty\fmt\include;$(SolutionDir)thirdparty\GTAVHandlingReplacement;$(SolutionDir)thirdparty\json\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp20</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -148,7 +148,6 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\thirdparty\fmt\src\format.cc" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menu.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menucontrols.cpp" />
     <ClCompile Include="..\thirdparty\GTAVMenuBase\menukeyboard.cpp" />
@@ -189,7 +188,6 @@
     <ClInclude Include="..\thirdparty\curl\system.h" />
     <ClInclude Include="..\thirdparty\curl\typecheck-gcc.h" />
     <ClInclude Include="..\thirdparty\curl\urlapi.h" />
-    <ClInclude Include="..\thirdparty\fmt\include\fmt\format.h" />
     <ClInclude Include="..\thirdparty\GTAVHandlingReplacement\HandlingReplacement.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\InstructionalButton.h" />
     <ClInclude Include="..\thirdparty\GTAVMenuBase\menu.h" />
